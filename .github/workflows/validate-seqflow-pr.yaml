@@ -1,0 +1,13 @@
+name: validate-seqflow-pr
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  seqflow:
+    uses: calq-framework/seqflow-workflow/.github/workflows/validate-seqflow-pr.yaml@main
+    secrets:
+      MAIN_NUGET_PAT: ${{ secrets.MAIN_NUGET_PAT }}
+      CALQ_FRAMEWORK_NUGET_PAT: ${{ secrets.CALQ_FRAMEWORK_NUGET_PAT }}

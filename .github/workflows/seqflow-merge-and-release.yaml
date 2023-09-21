@@ -1,0 +1,19 @@
+name: seqflow merge -r
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  seqflow:
+    uses: calq-framework/seqflow-workflow/.github/workflows/seqflow.yaml@main
+    with:
+      command: merge -r
+    secrets:
+      MAIN_NUGET_PAT: ${{ secrets.MAIN_NUGET_PAT }}
+      CALQ_FRAMEWORK_NUGET_PAT: ${{ secrets.CALQ_FRAMEWORK_NUGET_PAT }}
+      SEQFLOW_PAT: ${{ secrets.SEQFLOW_PAT }}
