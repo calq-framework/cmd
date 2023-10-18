@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Ghbvft6.Calq.Terminal</RootNamespace>
     <PackageId>Ghbvft6.Calq.Terminal</PackageId>
-    <Version>0.0.0</Version>
+    <Version>0.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
