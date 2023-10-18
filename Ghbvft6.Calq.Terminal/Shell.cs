@@ -67,15 +67,35 @@ internal abstract class Shell : IShell
         var cts = new CancellationTokenSource();
         var keyReaderTask = Task.Run(() => // TODO extract this logic
         {
-            while (!cts.Token.IsCancellationRequested)
-            {
-                if (Console.KeyAvailable)
-                {
-                    ConsoleKeyInfo keyInfo = Console.ReadKey();
-                    char keyChar = keyInfo.KeyChar;
-                    input.Write(keyChar);
+            if (!Console.IsInputRedirected) {
+
+                // if Console.IsInputRedirected is not checked in case input is redirected:
+                // ---> System.AggregateException: One or more errors occurred. (Cannot see if a key has been pressed when either application does not have a console or when console input has been redirected from a file. Try Console.In.Peek.)
+                // ---> System.InvalidOperationException: Cannot see if a key has been pressed when either application does not have a console or when console input has been redirected from a file. Try Console.In.Peek.
+
+                if (Environment.UserInteractive == false) {
+                    return;
                 }
-                Task.Delay(1).Wait();
+
+                while (!cts.Token.IsCancellationRequested) {
+                    if (Console.KeyAvailable) {
+                        var keyChar = Console.ReadKey(true).KeyChar;
+                        if (keyChar == '\r') { // windows enterkey is \r and deletes what was typed because of that
+                            keyChar = '\n';
+                        }
+                        Console.Write(keyChar);
+                        input.Write(keyChar);
+                    }
+                    Task.Delay(1).Wait();
+                }
+            } else {
+                while (!cts.Token.IsCancellationRequested) {
+                    if (Console.In.Peek() != -1) {
+                        var keyChar = (char)Console.Read();
+                        input.Write(keyChar);
+                    }
+                    Task.Delay(1).Wait();
+                }
             }
         });
 
