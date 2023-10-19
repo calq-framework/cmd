@@ -17,6 +17,7 @@ internal class CommandLine : Shell
 
         ProcessStartInfo psi = new ProcessStartInfo
         {
+            WorkingDirectory = Environment.CurrentDirectory,
             FileName = command,
             RedirectStandardInput = true,
             RedirectStandardOutput = true,
