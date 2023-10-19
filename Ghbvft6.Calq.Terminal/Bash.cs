@@ -34,6 +34,7 @@ internal class Bash : Shell
 
         ProcessStartInfo psi = new ProcessStartInfo
         {
+            WorkingDirectory = Environment.CurrentDirectory,
             FileName = "bash",
             RedirectStandardInput = true,
             RedirectStandardOutput = true,
