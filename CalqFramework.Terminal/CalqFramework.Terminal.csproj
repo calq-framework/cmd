@@ -5,8 +5,8 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>Ghbvft6.Calq.Terminal</RootNamespace>
-    <PackageId>Ghbvft6.Calq.Terminal</PackageId>
+    <RootNamespace>CalqFramework.Terminal</RootNamespace>
+    <PackageId>CalqFramework.Terminal</PackageId>
     <Version>0.1.1</Version>
   </PropertyGroup>
 

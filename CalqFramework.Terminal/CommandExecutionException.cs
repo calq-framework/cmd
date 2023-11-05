@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ghbvft6.Calq.Terminal;
+namespace CalqFramework.Terminal;
 public class CommandExecutionException : Exception
 {
     public int ExitCode { get; }
