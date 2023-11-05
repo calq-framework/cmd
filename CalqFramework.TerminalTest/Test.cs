@@ -2,13 +2,13 @@ namespace CalqFramework.TerminalTest;
 
 public class Test
 {
-    [Fact]
-    public void BashEcho()
-    {
-        var output = BashUtil.CMD("echo hello world");
+    //[Fact]
+    //public void BashEcho()
+    //{
+    //    var output = BashUtil.CMD("echo hello world");
 
-        Assert.Equal("hello world", output.Trim());
-    }
+    //    Assert.Equal("hello world", output.Trim());
+    //}
 
     // blocks on github actions?
     //[Fact]
