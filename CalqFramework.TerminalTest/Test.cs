@@ -1,4 +1,4 @@
-namespace Ghbvft6.Calq.TerminalTest;
+namespace CalqFramework.TerminalTest;
 
 public class Test
 {

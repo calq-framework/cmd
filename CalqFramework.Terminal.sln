@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ghbvft6.Calq.Terminal", "Ghbvft6.Calq.Terminal\Ghbvft6.Calq.Terminal.csproj", "{906F141D-318A-401E-A97D-2366162535B0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalqFramework.Terminal", "CalqFramework.Terminal\CalqFramework.Terminal.csproj", "{906F141D-318A-401E-A97D-2366162535B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ghbvft6.Calq.TerminalTest", "Ghbvft6.Calq.TerminalTest\Ghbvft6.Calq.TerminalTest.csproj", "{23A0C00D-D6CF-4ADD-9657-8FA99E1953D0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalqFramework.TerminalTest", "CalqFramework.TerminalTest\CalqFramework.TerminalTest.csproj", "{23A0C00D-D6CF-4ADD-9657-8FA99E1953D0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

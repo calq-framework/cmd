@@ -6,10 +6,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Ghbvft6.Calq.Terminal;
-public class BashUtil
+namespace CalqFramework.Terminal;
+public class CommandLineUtil
 {
-    private static readonly Shell shell = new Bash();
+    private static readonly Shell shell = new CommandLine();
     public static string CMD(string script)
     {
         return shell.CMD(script);

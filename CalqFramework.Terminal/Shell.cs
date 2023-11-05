@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Ghbvft6.Calq.Terminal;
+namespace CalqFramework.Terminal;
 
 internal abstract class Shell : IShell
 {
