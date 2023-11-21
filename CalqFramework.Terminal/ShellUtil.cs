@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace CalqFramework.Terminal;
 public class ShellUtil
 {
-    private static readonly Shell shell;
+    private static readonly ShellBase shell;
 
     static ShellUtil()
     {

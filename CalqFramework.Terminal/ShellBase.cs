@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CalqFramework.Terminal;
 
-internal abstract class Shell : IShell
+internal abstract class ShellBase : IShell
 {
     // TODO create interceptor class?
     private static async Task<string> RelayStream(StreamReader reader, TextWriter writer)
@@ -35,17 +35,22 @@ internal abstract class Shell : IShell
             }
             catch (OperationCanceledException)
             {
-                if (bufferArray[0] != '\0')
-                {
-                    await writer.WriteAsync(new string(bufferArray).Replace("\r\n", "\n").Replace("\n", Environment.NewLine));
-                    //await writer.WriteAsync(bufferArray);
-                    await writer.FlushAsync();
-                    output.Append(bufferArray);
-                    Array.Clear(bufferArray);
+                try {
+                    if (bufferArray[0] != '\0') {
+                        await writer.WriteAsync(new string(bufferArray).Replace("\r\n", "\n").Replace("\n", Environment.NewLine));
+                        //await writer.WriteAsync(bufferArray);
+                        await writer.FlushAsync();
+                        output.Append(bufferArray);
+                        Array.Clear(bufferArray);
+                    }
+                } catch (Exception ex) {
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex.StackTrace);
                 }
             }
         }
 
+        await writer.FlushAsync();
         return output.ToString();
     }
 

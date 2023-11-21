@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace CalqFramework.Terminal;
-internal class CommandLine : Shell
+internal class CommandLine : ShellBase
 {
     protected override Process InitializeProcess(string script)
     {
