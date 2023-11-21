@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace CalqFramework.Terminal;
 public class BashUtil
 {
-    private static readonly Shell shell = new Bash();
+    private static readonly ShellBase shell = new Bash();
     public static string CMD(string script)
     {
         return shell.CMD(script);
