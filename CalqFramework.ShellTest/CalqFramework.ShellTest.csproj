@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CalqFramework.Terminal\CalqFramework.Terminal.csproj" />
+    <ProjectReference Include="..\CalqFramework.Shell\CalqFramework.Shell.csproj" />
   </ItemGroup>
 
 </Project>
