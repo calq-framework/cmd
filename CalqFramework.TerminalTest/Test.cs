@@ -2,30 +2,22 @@ namespace CalqFramework.TerminalTest;
 
 public class Test
 {
-    //[Fact]
-    //public void BashEcho()
-    //{
-    //    var output = BashUtil.CMD("echo hello world");
+   [Fact]
+    public void BashUtilTest()
+    {
+        var input = "hello world\n";
+        Console.SetIn(new StringReader(input));
 
-    //    Assert.Equal("hello world", output.Trim());
-    //}
+        var output = BashUtil.CMD("sleep 1; read -r input; echo $input");
 
-    // blocks on github actions?
-    //[Fact]
-    //public void ShellCommand() {
-    //    var output = ShellUtil.CMD("dotnet --version");
+        Assert.Equal(input, output);
+    }
 
-    //    Assert.NotEqual("", output.Trim());
-    //}
+    [Fact]
+    public void CommandLineUtilTest()
+    {
+        var output = CommandLineUtil.CMD("dotnet --version");
 
-    // TODO detect Console.SetIn as input redirect or figure out a test with input redirect from file
-    //[Fact]
-    //public void RedirectedInput() {
-    //    var input = "hello world\n";
-    //    Console.SetIn(new StringReader(input));
-
-    //    var output = BashUtil.CMD("sleep 1; read -r input; echo $input");
-
-    //    Assert.NotEqual(input, output);
-    //}
+        Assert.NotEqual("", output);
+    }
 }

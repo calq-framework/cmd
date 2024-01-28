@@ -69,19 +69,10 @@ internal abstract class ShellBase : IShell
         var errorReaderTask = Task.Run(async () => await RelayStream(process.StandardError, TextWriter.Null));
 
         var input = process.StandardInput;
-        var cts = new CancellationTokenSource();
-        var keyReaderTask = Task.Run(() => // TODO extract this logic
+        using var cts = new CancellationTokenSource();
+        var keyReaderTask = Task.Run(async () => // TODO extract this logic
         {
-            if (!Console.IsInputRedirected) {
-
-                // if Console.IsInputRedirected is not checked in case input is redirected:
-                // ---> System.AggregateException: One or more errors occurred. (Cannot see if a key has been pressed when either application does not have a console or when console input has been redirected from a file. Try Console.In.Peek.)
-                // ---> System.InvalidOperationException: Cannot see if a key has been pressed when either application does not have a console or when console input has been redirected from a file. Try Console.In.Peek.
-
-                if (Environment.UserInteractive == false) {
-                    return;
-                }
-
+            if (Environment.UserInteractive && ReferenceEquals(Console.In, Console.OpenStandardInput())) {
                 while (!cts.Token.IsCancellationRequested) {
                     if (Console.KeyAvailable) {
                         var keyChar = Console.ReadKey(true).KeyChar;
@@ -91,7 +82,7 @@ internal abstract class ShellBase : IShell
                         Console.Write(keyChar);
                         input.Write(keyChar);
                     }
-                    Task.Delay(1).Wait();
+                    await Task.Delay(1);
                 }
             } else {
                 while (!cts.Token.IsCancellationRequested) {
@@ -99,7 +90,7 @@ internal abstract class ShellBase : IShell
                         var keyChar = (char)Console.Read();
                         input.Write(keyChar);
                     }
-                    Task.Delay(1).Wait();
+                    await Task.Delay(1);
                 }
             }
         });
@@ -108,7 +99,10 @@ internal abstract class ShellBase : IShell
         cts.Cancel();
         var output = outputReaderTask.Result;
         var error = errorReaderTask.Result;
-        keyReaderTask.Wait();
+        while (keyReaderTask.Status == TaskStatus.Running)
+        {
+            keyReaderTask.Wait(1);
+        }
 
         if (process.ExitCode != 0)
         {
