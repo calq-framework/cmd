@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 
-namespace CalqFramework.Terminal.RegexGenerator {
+namespace CalqFramework.Shell.RegexGenerator {
     partial class Newline {
         [GeneratedRegex(@"\n")]
         public static partial Regex Unix();

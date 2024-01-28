@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace CalqFramework.Terminal;
-internal class Bash : ShellBase
+namespace CalqFramework.Shell;
+public class Bash : ShellBase
 {
     protected override Process InitializeProcess(string script)
     {

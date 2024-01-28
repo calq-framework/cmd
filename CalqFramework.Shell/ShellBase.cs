@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace CalqFramework.Terminal;
+namespace CalqFramework.Shell;
 
-internal abstract class ShellBase : IShell
+public abstract class ShellBase : IShell
 {
     // TODO create interceptor class?
     private static async Task<string> RelayStream(StreamReader reader, TextWriter writer)
