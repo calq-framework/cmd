@@ -23,9 +23,10 @@ public abstract class ShellBase : IShell
             }
             catch (OperationCanceledException)
             {
-                isRead = false;
                 try {
-                    if (bufferArray[0] != '\0') {
+                    isRead = false;
+                    bytesRead = Array.IndexOf(bufferArray, '\0');
+                    if (bytesRead > 0) {
                         await writer.WriteAsync(new string(bufferArray).Replace("\r\n", "\n").Replace("\n", Environment.NewLine));
                         //await writer.WriteAsync(bufferArray);
                         await writer.FlushAsync();
@@ -45,9 +46,11 @@ public abstract class ShellBase : IShell
                 break;
             }
 
-            await writer.WriteAsync(new string(bufferArray, 0, bytesRead).Replace("\r\n", "\n").Replace("\n", Environment.NewLine)); // TODO extract newline replacement logic
-            //await writer.WriteAsync(bufferArray, 0, bytesRead);
-            output.Append(bufferArray, 0, bytesRead);
+            if (bytesRead > 0) {
+                await writer.WriteAsync(new string(bufferArray, 0, bytesRead).Replace("\r\n", "\n").Replace("\n", Environment.NewLine)); // TODO extract newline replacement logic
+                //await writer.WriteAsync(bufferArray, 0, bytesRead);
+                output.Append(bufferArray, 0, bytesRead);
+            }
         }
 
         await writer.FlushAsync();
