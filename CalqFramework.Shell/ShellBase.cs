@@ -17,6 +17,7 @@ public abstract class ShellBase : IShell
             int bytesRead = 0;
             try
             {
+                Array.Clear(bufferArray);
                 var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(20));
                 bytesRead = await reader.ReadAsync(bufferArray, cancellationTokenSource.Token);
                 isRead = true;
@@ -27,11 +28,10 @@ public abstract class ShellBase : IShell
                     isRead = false;
                     bytesRead = Array.IndexOf(bufferArray, '\0');
                     if (bytesRead > 0) {
-                        await writer.WriteAsync(new string(bufferArray).Replace("\r\n", "\n").Replace("\n", Environment.NewLine));
+                        await writer.WriteAsync(new string(bufferArray, 0, bytesRead).Replace("\r\n", "\n").Replace("\n", Environment.NewLine));
                         //await writer.WriteAsync(bufferArray);
                         await writer.FlushAsync();
                         output.Append(bufferArray);
-                        Array.Clear(bufferArray);
                         continue;
                     }
                 } catch (Exception ex) {
