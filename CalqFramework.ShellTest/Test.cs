@@ -27,8 +27,8 @@ public class Test
     public void LongOutputTest()
     {
         var expectedOutput = "";
-        for (var i = 0; i < 10000; ++i) {
-            expectedOutput += "T";
+        for (var i = 0; i < 2500; ++i) {
+            expectedOutput += "1234567890";
         }
 
         var writer = new StringWriter();
@@ -36,7 +36,7 @@ public class Test
         Console.SetOut(writer);
 
         ShellUtil.SetShell(new Bash());
-        var output = new Bash().CMD("sleep 1; printf 'T'%.0s {1..5000}; sleep 1; printf 'T'%.0s {1..5000}");
+        var output = new Bash().CMD("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
         var writerOutput = writer.ToString();
 
         Assert.Equal(expectedOutput, output);
