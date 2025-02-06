@@ -9,27 +9,21 @@ public abstract class ShellBase : IShell
     private static async Task<string> RelayStream(StreamReader reader, TextWriter writer)
     {
         var bufferArray = new char[4096];
-        var buffer = new Memory<char>(bufferArray);
         var output = new StringBuilder(); // TODO accept array of TextWriter and use StringWriter?
 
         while (true)
         {
+            bool isRead = false;
+            int bytesRead = 0;
             try
             {
                 var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(20));
-                var bytesRead = await reader.ReadAsync(buffer, cancellationTokenSource.Token);
-
-                if (bytesRead == 0)
-                {
-                    break;
-                }
-
-                await writer.WriteAsync(new string(bufferArray, 0, bytesRead).Replace("\r\n", "\n").Replace("\n", Environment.NewLine)); // TODO extract newline replacement logic
-                //await writer.WriteAsync(bufferArray, 0, bytesRead);
-                output.Append(bufferArray, 0, bytesRead);
+                bytesRead = await reader.ReadAsync(bufferArray, cancellationTokenSource.Token);
+                isRead = true;
             }
             catch (OperationCanceledException)
             {
+                isRead = false;
                 try {
                     if (bufferArray[0] != '\0') {
                         await writer.WriteAsync(new string(bufferArray).Replace("\r\n", "\n").Replace("\n", Environment.NewLine));
@@ -37,12 +31,23 @@ public abstract class ShellBase : IShell
                         await writer.FlushAsync();
                         output.Append(bufferArray);
                         Array.Clear(bufferArray);
+                        continue;
                     }
                 } catch (Exception ex) {
+                    // TODO remove? this should never be reached
                     Console.WriteLine(ex.Message);
                     Console.WriteLine(ex.StackTrace);
+                    break;
                 }
             }
+
+            if (isRead && bytesRead == 0) {
+                break;
+            }
+
+            await writer.WriteAsync(new string(bufferArray, 0, bytesRead).Replace("\r\n", "\n").Replace("\n", Environment.NewLine)); // TODO extract newline replacement logic
+            //await writer.WriteAsync(bufferArray, 0, bytesRead);
+            output.Append(bufferArray, 0, bytesRead);
         }
 
         await writer.FlushAsync();
