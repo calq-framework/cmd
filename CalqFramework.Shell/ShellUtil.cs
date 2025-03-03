@@ -1,20 +1,20 @@
 ﻿namespace CalqFramework.Shell;
-public class ShellUtil
-{
+public class ShellUtil {
     public static IShell Shell { get; private set; }
 
-    static ShellUtil()
-    {
+    static ShellUtil() {
         Shell = new CommandLine();
     }
 
-    public static void SetShell(IShell shell)
-    {
+    public static void SetShell(IShell shell) {
         Shell = shell;
     }
 
-    public static string CMD(string script)
-    {
+    public static string CMD(string script) {
         return Shell.CMD(script);
+    }
+
+    public static void RUN(string script) {
+        Shell.RUN(script);
     }
 }

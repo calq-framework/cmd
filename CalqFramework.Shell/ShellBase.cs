@@ -3,33 +3,27 @@ using System.Text;
 
 namespace CalqFramework.Shell;
 
-public abstract class ShellBase : IShell
-{
+public abstract class ShellBase : IShell {
     // TODO create interceptor class?
-    private static async Task<string> RelayStream(StreamReader reader, TextWriter writer)
-    {
+    private static async Task<string> RelayStream(StreamReader reader, TextWriter writer) {
         var bufferArray = new char[4096];
         var output = new StringBuilder(); // TODO accept array of TextWriter and use StringWriter?
 
-        while (true)
-        {
+        while (true) {
             bool isRead = false;
             int bytesRead = 0;
-            try
-            {
+            try {
                 Array.Clear(bufferArray);
                 var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(20));
                 bytesRead = await reader.ReadAsync(bufferArray, cancellationTokenSource.Token);
                 isRead = true;
-            }
-            catch (OperationCanceledException)
-            {
+            } catch (OperationCanceledException) {
                 try {
                     isRead = false;
                     bytesRead = Array.IndexOf(bufferArray, '\0');
                     if (bytesRead > 0) {
                         await writer.WriteAsync(new string(bufferArray, 0, bytesRead).Replace("\r\n", "\n").Replace("\n", Environment.NewLine));
-                        //await writer.WriteAsync(bufferArray);
+                        //await outputWriter.WriteAsync(bufferArray);
                         await writer.FlushAsync();
                         output.Append(bufferArray);
                         continue;
@@ -48,7 +42,7 @@ public abstract class ShellBase : IShell
 
             if (bytesRead > 0) {
                 await writer.WriteAsync(new string(bufferArray, 0, bytesRead).Replace("\r\n", "\n").Replace("\n", Environment.NewLine)); // TODO extract newline replacement logic
-                //await writer.WriteAsync(bufferArray, 0, bytesRead);
+                //await outputWriter.WriteAsync(bufferArray, 0, bytesRead);
                 output.Append(bufferArray, 0, bytesRead);
             }
         }
@@ -59,16 +53,14 @@ public abstract class ShellBase : IShell
 
     protected abstract Process InitializeProcess(string script);
 
-    public string CMD(string script)
-    {
-        string AddLineNumbers(string input)
-        {
+    private string CMD(string script, TextWriter outputWriter) {
+        string AddLineNumbers(string input) {
             var i = 0;
             return string.Join('\n', input.Split('\n').Select(x => $"{i++}: {x}")); // TODO allow for \r\n ?
         }
 
         using var process = InitializeProcess(script);
-        var outputReaderTask = Task.Run(async () => await RelayStream(process.StandardOutput, Console.Out));
+        var outputReaderTask = Task.Run(async () => await RelayStream(process.StandardOutput, outputWriter));
         var errorReaderTask = Task.Run(async () => await RelayStream(process.StandardError, TextWriter.Null));
 
         var input = process.StandardInput;
@@ -102,16 +94,22 @@ public abstract class ShellBase : IShell
         cts.Cancel();
         var output = outputReaderTask.Result;
         var error = errorReaderTask.Result;
-        while (keyReaderTask.Status == TaskStatus.Running)
-        {
+        while (keyReaderTask.Status == TaskStatus.Running) {
             keyReaderTask.Wait(1);
         }
 
-        if (process.ExitCode != 0)
-        {
+        if (process.ExitCode != 0) {
             throw new CommandExecutionException($"\n{AddLineNumbers(script)}\n\nError:\n{error}", process.ExitCode); // TODO extract formatting logic
         }
 
         return output;
+    }
+
+    public string CMD(string script) {
+        return CMD(script, TextWriter.Null);
+    }
+
+    public void RUN(string script) {
+        CMD(script, Console.Out);
     }
 }
