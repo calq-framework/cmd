@@ -1,10 +1,8 @@
 namespace CalqFramework.ShellTest;
 
-public class Test
-{
+public class Test {
     [Fact]
-    public void CommandLineUtilTest()
-    {
+    public void CommandLineUtilTest() {
         ShellUtil.SetShell(new CommandLine());
         var output = ShellUtil.CMD("dotnet --version");
 
@@ -12,8 +10,7 @@ public class Test
     }
 
     [Fact]
-    public void BashUtilTest()
-    {
+    public void BashUtilTest() {
         var input = "hello world\n";
         Console.SetIn(new StringReader(input));
 
@@ -24,8 +21,7 @@ public class Test
     }
 
     [Fact]
-    public void LongOutputTest()
-    {
+    public void LongOutputTest() {
         var expectedOutput = "";
         for (var i = 0; i < 2500; ++i) {
             expectedOutput += "1234567890";
@@ -40,6 +36,24 @@ public class Test
         var writerOutput = writer.ToString();
 
         Assert.Equal(expectedOutput, output);
+        Assert.Empty(writerOutput);
+    }
+
+    [Fact]
+    public void LongRunOutputTest() {
+        var expectedOutput = "";
+        for (var i = 0; i < 2500; ++i) {
+            expectedOutput += "1234567890";
+        }
+
+        var writer = new StringWriter();
+        Console.SetIn(new StringReader(expectedOutput));
+        Console.SetOut(writer);
+
+        ShellUtil.SetShell(new Bash());
+        new Bash().RUN("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
+        var writerOutput = writer.ToString();
+
         Assert.Equal(expectedOutput, writerOutput);
     }
 }
