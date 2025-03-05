@@ -46,7 +46,23 @@ public abstract class ShellBase : IShell {
         await writer.FlushAsync();
     }
 
-    protected abstract Process InitializeProcess(string script);
+    internal Process InitializeProcess(ScriptExecutionInfo scriptExecutionInfo) {
+        ProcessStartInfo psi = new ProcessStartInfo {
+            WorkingDirectory = Environment.CurrentDirectory,
+            FileName = scriptExecutionInfo.FileName,
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            Arguments = scriptExecutionInfo.Arguments
+        };
+
+        var process = new Process { StartInfo = psi };
+        process.Start();
+
+        return process;
+    }
 
     private void CMD(string script, TextWriter outputWriter) {
         string AddLineNumbers(string input) {
@@ -54,7 +70,8 @@ public abstract class ShellBase : IShell {
             return string.Join('\n', input.Split('\n').Select(x => $"{i++}: {x}")); // TODO allow for \r\n ?
         }
 
-        using var process = InitializeProcess(script);
+        var scriptExecutionInfo = GetScriptExecutionInfo(script);
+        using var process = InitializeProcess(scriptExecutionInfo);
         var outputReaderTask = Task.Run(async () => await RelayStream(process.StandardOutput, outputWriter));
         var errorOutputWriter = new StringWriter();
         var errorReaderTask = Task.Run(async () => await RelayStream(process.StandardError, errorOutputWriter));
@@ -109,4 +126,6 @@ public abstract class ShellBase : IShell {
     public void RUN(string script) {
         CMD(script, Console.Out);
     }
+
+    internal abstract ScriptExecutionInfo GetScriptExecutionInfo(string script);
 }
