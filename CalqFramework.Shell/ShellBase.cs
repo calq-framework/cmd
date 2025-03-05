@@ -111,7 +111,8 @@ public abstract class ShellBase : IShell {
 
         var error = errorWriter.ToString();
 
-        if (process.ExitCode != 0 || !string.IsNullOrEmpty(error)) {
+        // stderr might contain diagnostics/info instead of error message so don't throw just because not empty
+        if (process.ExitCode != 0) {
             if (string.IsNullOrEmpty(error) && outputWriter is StringWriter) {
                 error = outputWriter.ToString();
             }
