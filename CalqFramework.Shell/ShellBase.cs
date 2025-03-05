@@ -5,7 +5,7 @@ namespace CalqFramework.Shell;
 public abstract class ShellBase : IShell {
     public TextReader In { get; init; }
     public TextWriter Out { get; init; }
-    public string CurrentDirectory { get; init; }
+    public string CurrentDirectory { get; private set; }
 
     public ShellBase() {
         In = Console.In;
@@ -133,4 +133,8 @@ public abstract class ShellBase : IShell {
     }
 
     internal abstract ScriptExecutionInfo GetScriptExecutionInfo(string script);
+
+    public void CD(string path) {
+        CurrentDirectory = Path.GetFullPath(Path.Combine(CurrentDirectory, path));
+    }
 }
