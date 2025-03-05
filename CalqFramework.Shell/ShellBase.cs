@@ -5,10 +5,12 @@ namespace CalqFramework.Shell;
 public abstract class ShellBase : IShell {
     public TextReader In { get; init; }
     public TextWriter Out { get; init; }
+    public string CurrentDirectory { get; init; }
 
     public ShellBase() {
         In = Console.In;
         Out = Console.Out;
+        CurrentDirectory = Environment.CurrentDirectory;
     }
 
     private static async Task RelayStream(StreamReader reader, TextWriter writer) {
