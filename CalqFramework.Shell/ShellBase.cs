@@ -3,6 +3,14 @@
 namespace CalqFramework.Shell;
 
 public abstract class ShellBase : IShell {
+    public TextReader In { get; init; }
+    public TextWriter Out { get; init; }
+
+    public ShellBase() {
+        In = Console.In;
+        Out = Console.Out;
+    }
+
     private static async Task RelayStream(StreamReader reader, TextWriter writer) {
         var bufferArray = new char[4096];
 
@@ -66,27 +74,27 @@ public abstract class ShellBase : IShell {
         var errorOutputWriter = new StringWriter();
         var errorReaderTask = Task.Run(async () => await RelayStream(process.StandardError, errorOutputWriter));
 
-        var input = process.StandardInput;
+        var processInput = process.StandardInput;
         using var cts = new CancellationTokenSource();
         var keyReaderTask = Task.Run(async () => // TODO extract this logic
         {
-            if (Environment.UserInteractive && ReferenceEquals(Console.In, Console.OpenStandardInput())) {
+            if (Environment.UserInteractive && ReferenceEquals(this.In, Console.OpenStandardInput())) {
                 while (!cts.Token.IsCancellationRequested) {
                     if (Console.KeyAvailable) {
                         var keyChar = Console.ReadKey(true).KeyChar;
                         if (keyChar == '\r') { // windows enterkey is \r and deletes what was typed because of that
                             keyChar = '\n';
                         }
-                        Console.Write(keyChar);
-                        input.Write(keyChar);
+                        Out.Write(keyChar);
+                        processInput.Write(keyChar);
                     }
                     await Task.Delay(1);
                 }
             } else {
                 while (!cts.Token.IsCancellationRequested) {
-                    if (Console.In.Peek() != -1) {
-                        var keyChar = (char)Console.Read();
-                        input.Write(keyChar);
+                    if (this.In.Peek() != -1) {
+                        var keyChar = (char)this.In.Read();
+                        processInput.Write(keyChar);
                     }
                     await Task.Delay(1);
                 }
@@ -114,7 +122,7 @@ public abstract class ShellBase : IShell {
     }
 
     public void RUN(string script) {
-        CMD(script, Console.Out);
+        CMD(script, this.Out);
     }
 
     internal abstract ScriptExecutionInfo GetScriptExecutionInfo(string script);
