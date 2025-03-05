@@ -113,14 +113,16 @@ public abstract class ShellBase : IShell {
         }
     }
 
-    public string CMD(string script) {
+    public string CMD(string script, TextReader? inputReader = null) {
+        inputReader ??= TextReader.Null;
         var output = new StringWriter();
-        CMD(script, TextReader.Null, output);
+        CMD(script, inputReader, output);
         return output.ToString();
     }
 
-    public void RUN(string script) {
-        CMD(script, this.In, this.Out);
+    public void RUN(string script, TextReader? inputReader = null) {
+        inputReader ??= this.In;
+        CMD(script, inputReader, this.Out);
     }
 
     internal abstract ScriptExecutionInfo GetScriptExecutionInfo(string script);
