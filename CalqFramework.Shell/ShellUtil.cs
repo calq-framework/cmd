@@ -17,4 +17,8 @@ public class ShellUtil {
     public static void RUN(string script, TextReader? inputReader = null) {
         Shell.RUN(script, inputReader);
     }
+
+    public static void CD(string path) {
+        Shell.CD(path);
+    }
 }
