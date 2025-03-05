@@ -11,11 +11,14 @@ public class Test {
 
     [Fact]
     public void BashUtilTest() {
+        var writer = new StringWriter();
         var input = "hello world\n";
         Console.SetIn(new StringReader(input));
+        Console.SetOut(writer);
 
         ShellUtil.SetShell(new Bash());
-        var output = new Bash().CMD("sleep 1; read -r input; echo $input");
+        new Bash().RUN("sleep 1; read -r input; echo $input");
+        var output = writer.ToString();
 
         Assert.Equal(input, output);
     }

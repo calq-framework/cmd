@@ -44,24 +44,24 @@ public abstract class ShellBase : IShell {
         await writer.FlushAsync();
     }
 
-    private async Task RelayInput(Process process) {
+    private static async Task RelayInput(Process process, TextReader inputReader, TextWriter outputWriter) {
         var processInput = process.StandardInput;
-        if (Environment.UserInteractive && ReferenceEquals(this.In, Console.OpenStandardInput())) {
+        if (Environment.UserInteractive && ReferenceEquals(inputReader, Console.OpenStandardInput())) {
             while (!process.HasExited) {
                 if (Console.KeyAvailable) {
                     var keyChar = Console.ReadKey(true).KeyChar;
                     if (keyChar == '\r') { // windows enterkey is \r and deletes what was typed because of that
                         keyChar = '\n';
                     }
-                    Out.Write(keyChar);
+                    outputWriter.Write(keyChar);
                     processInput.Write(keyChar);
                 }
                 await Task.Delay(1);
             }
         } else {
             while (!process.HasExited) {
-                if (this.In.Peek() != -1) {
-                    var keyChar = (char)this.In.Read();
+                if (inputReader.Peek() != -1) {
+                    var keyChar = (char)inputReader.Read();
                     processInput.Write(keyChar);
                 }
                 await Task.Delay(1);
@@ -87,7 +87,7 @@ public abstract class ShellBase : IShell {
         return process;
     }
 
-    private void CMD(string script, TextWriter outputWriter) {
+    private void CMD(string script, TextReader inputReader, TextWriter outputWriter) {
         string AddLineNumbers(string input) {
             var i = 0;
             return string.Join('\n', input.Split('\n').Select(x => $"{i++}: {x}")); // TODO allow for \r\n ?
@@ -95,33 +95,32 @@ public abstract class ShellBase : IShell {
 
         var scriptExecutionInfo = GetScriptExecutionInfo(script);
         using var process = InitializeProcess(scriptExecutionInfo);
-        var outputReaderTask = Task.Run(async () => await RelayStream(process.StandardOutput, outputWriter));
-        var errorOutputWriter = new StringWriter();
-        var errorReaderTask = Task.Run(async () => await RelayStream(process.StandardError, errorOutputWriter));
-        var keyReaderTask = Task.Run(async () => await RelayInput(process));
+        var errorWriter = new StringWriter();
+
+        var relayInputTask = Task.Run(async () => await RelayInput(process, inputReader, outputWriter));
+        var relayOutputTask = Task.Run(async () => await RelayStream(process.StandardOutput, outputWriter));
+        var relayErrorTask = Task.Run(async () => await RelayStream(process.StandardError, errorWriter));
 
         process.WaitForExit();
-        keyReaderTask.Wait();
-        outputReaderTask.Wait();
-        errorReaderTask.Wait();
-        var error = errorOutputWriter.ToString();
-        while (keyReaderTask.Status == TaskStatus.Running) {
-            keyReaderTask.Wait(1);
-        }
+        relayInputTask.Wait();
+        relayOutputTask.Wait();
+        relayErrorTask.Wait();
+
+        var error = errorWriter.ToString();
 
         if (process.ExitCode != 0) {
-            throw new CommandExecutionException($"\n{AddLineNumbers(script)}\n\nError:\n{error}", process.ExitCode); // TODO extract formatting logic
+            throw new CommandExecutionException($"\n{AddLineNumbers(script)}\n\nError:\n{error}", process.ExitCode);
         }
     }
 
     public string CMD(string script) {
         var output = new StringWriter();
-        CMD(script, output);
+        CMD(script, TextReader.Null, output);
         return output.ToString();
     }
 
     public void RUN(string script) {
-        CMD(script, this.Out);
+        CMD(script, this.In, this.Out);
     }
 
     internal abstract ScriptExecutionInfo GetScriptExecutionInfo(string script);
