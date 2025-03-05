@@ -97,12 +97,13 @@ public abstract class ShellBase : IShell {
         using var process = InitializeProcess(scriptExecutionInfo);
         var errorWriter = new StringWriter();
 
-        var relayInputTask = Task.Run(async () => await RelayInput(process, inputReader, outputWriter));
+        var relayInputTaskCts = new CancellationTokenSource();
+        var relayInputTask = Task.Run(async () => await RelayInput(process, inputReader, outputWriter), relayInputTaskCts.Token);
         var relayOutputTask = Task.Run(async () => await RelayStream(process.StandardOutput, outputWriter));
         var relayErrorTask = Task.Run(async () => await RelayStream(process.StandardError, errorWriter));
 
         process.WaitForExit();
-        relayInputTask.Wait();
+        relayInputTaskCts.Cancel();
         relayOutputTask.Wait();
         relayErrorTask.Wait();
 
