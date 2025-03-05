@@ -3,7 +3,6 @@
 namespace CalqFramework.Shell;
 
 public abstract class ShellBase : IShell {
-    // TODO create interceptor class?
     private static async Task RelayStream(StreamReader reader, TextWriter writer) {
         var bufferArray = new char[4096];
 
@@ -16,20 +15,12 @@ public abstract class ShellBase : IShell {
                 bytesRead = await reader.ReadAsync(bufferArray, cancellationTokenSource.Token);
                 isRead = true;
             } catch (OperationCanceledException) {
-                try {
-                    isRead = false;
-                    bytesRead = Array.IndexOf(bufferArray, '\0');
-                    if (bytesRead > 0) {
-                        await writer.WriteAsync(new string(bufferArray, 0, bytesRead));
-                        //await outputWriter.WriteAsync(bufferArray);
-                        await writer.FlushAsync();
-                        continue;
-                    }
-                } catch (Exception ex) {
-                    // TODO remove? this should never be reached
-                    Console.WriteLine(ex.Message);
-                    Console.WriteLine(ex.StackTrace);
-                    break;
+                isRead = false;
+                bytesRead = Array.IndexOf(bufferArray, '\0');
+                if (bytesRead > 0) {
+                    await writer.WriteAsync(bufferArray, 0, bytesRead);
+                    await writer.FlushAsync();
+                    continue;
                 }
             }
 
@@ -38,8 +29,7 @@ public abstract class ShellBase : IShell {
             }
 
             if (bytesRead > 0) {
-                await writer.WriteAsync(new string(bufferArray, 0, bytesRead));
-                //await outputWriter.WriteAsync(bufferArray, 0, bytesRead);
+                await writer.WriteAsync(bufferArray, 0, bytesRead);
             }
         }
 
