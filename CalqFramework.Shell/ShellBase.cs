@@ -108,7 +108,10 @@ public abstract class ShellBase : IShell {
 
         var error = errorWriter.ToString();
 
-        if (process.ExitCode != 0) {
+        if (process.ExitCode != 0 || !string.IsNullOrEmpty(error)) {
+            if (string.IsNullOrEmpty(error) && outputWriter is StringWriter) {
+                error = outputWriter.ToString();
+            }
             throw new CommandExecutionException($"\n{AddLineNumbers(script)}\n\nError:\n{error}", process.ExitCode);
         }
     }
