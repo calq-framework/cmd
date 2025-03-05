@@ -44,6 +44,31 @@ public abstract class ShellBase : IShell {
         await writer.FlushAsync();
     }
 
+    private async Task RelayInput(Process process) {
+        var processInput = process.StandardInput;
+        if (Environment.UserInteractive && ReferenceEquals(this.In, Console.OpenStandardInput())) {
+            while (!process.HasExited) {
+                if (Console.KeyAvailable) {
+                    var keyChar = Console.ReadKey(true).KeyChar;
+                    if (keyChar == '\r') { // windows enterkey is \r and deletes what was typed because of that
+                        keyChar = '\n';
+                    }
+                    Out.Write(keyChar);
+                    processInput.Write(keyChar);
+                }
+                await Task.Delay(1);
+            }
+        } else {
+            while (!process.HasExited) {
+                if (this.In.Peek() != -1) {
+                    var keyChar = (char)this.In.Read();
+                    processInput.Write(keyChar);
+                }
+                await Task.Delay(1);
+            }
+        }
+    }
+
     internal Process InitializeProcess(ScriptExecutionInfo scriptExecutionInfo) {
         ProcessStartInfo psi = new ProcessStartInfo {
             WorkingDirectory = Environment.CurrentDirectory,
@@ -73,36 +98,10 @@ public abstract class ShellBase : IShell {
         var outputReaderTask = Task.Run(async () => await RelayStream(process.StandardOutput, outputWriter));
         var errorOutputWriter = new StringWriter();
         var errorReaderTask = Task.Run(async () => await RelayStream(process.StandardError, errorOutputWriter));
-
-        var processInput = process.StandardInput;
-        using var cts = new CancellationTokenSource();
-        var keyReaderTask = Task.Run(async () => // TODO extract this logic
-        {
-            if (Environment.UserInteractive && ReferenceEquals(this.In, Console.OpenStandardInput())) {
-                while (!cts.Token.IsCancellationRequested) {
-                    if (Console.KeyAvailable) {
-                        var keyChar = Console.ReadKey(true).KeyChar;
-                        if (keyChar == '\r') { // windows enterkey is \r and deletes what was typed because of that
-                            keyChar = '\n';
-                        }
-                        Out.Write(keyChar);
-                        processInput.Write(keyChar);
-                    }
-                    await Task.Delay(1);
-                }
-            } else {
-                while (!cts.Token.IsCancellationRequested) {
-                    if (this.In.Peek() != -1) {
-                        var keyChar = (char)this.In.Read();
-                        processInput.Write(keyChar);
-                    }
-                    await Task.Delay(1);
-                }
-            }
-        });
+        var keyReaderTask = Task.Run(async () => await RelayInput(process));
 
         process.WaitForExit();
-        cts.Cancel();
+        keyReaderTask.Wait();
         outputReaderTask.Wait();
         errorReaderTask.Wait();
         var error = errorOutputWriter.ToString();
