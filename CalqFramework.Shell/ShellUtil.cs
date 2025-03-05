@@ -10,11 +10,11 @@ public class ShellUtil {
         Shell = shell;
     }
 
-    public static string CMD(string script) {
-        return Shell.CMD(script);
+    public static string CMD(string script, TextReader? inputReader = null) {
+        return Shell.CMD(script, inputReader);
     }
 
-    public static void RUN(string script) {
-        Shell.RUN(script);
+    public static void RUN(string script, TextReader? inputReader = null) {
+        Shell.RUN(script, inputReader);
     }
 }
