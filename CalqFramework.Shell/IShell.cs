@@ -6,4 +6,5 @@ public interface IShell {
     string CMD(string script, TextReader? inputReader = null);
     void RUN(string script, TextReader? inputReader = null);
     void CD(string path);
+    string GetLocalPath(string path);
 }

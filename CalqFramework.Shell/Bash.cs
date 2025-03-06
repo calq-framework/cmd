@@ -6,6 +6,14 @@ namespace CalqFramework.Shell;
 public class Bash : ShellBase {
     internal bool ExpectWSL { get; init; } = true;
 
+    public override string GetLocalPath(string path) {
+        if (Environment.OSVersion.Platform == PlatformID.Win32NT && ExpectWSL) {
+            var fullPath = Path.GetFullPath(Path.Combine(CurrentDirectory, path));
+            return WindowsToWslPath(fullPath);
+        }
+        return path;
+    }
+
     internal override ScriptExecutionInfo GetScriptExecutionInfo(string script) {
         if (Environment.OSVersion.Platform == PlatformID.Win32NT && ExpectWSL) {
             script = $"cd {WindowsToWslPath(CurrentDirectory)}\n" + script;

@@ -21,4 +21,8 @@ public class ShellUtil {
     public static void CD(string path) {
         Shell.CD(path);
     }
+
+    public static string GetLocalPath(string path) {
+        return Shell.GetLocalPath(path);
+    }
 }
