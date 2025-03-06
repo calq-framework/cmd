@@ -1,5 +1,8 @@
 ﻿namespace CalqFramework.Shell;
 public class CommandLine : ShellBase {
+    public override string GetLocalPath(string path) {
+        return path;
+    }
 
     internal override ScriptExecutionInfo GetScriptExecutionInfo(string script) {
         int spaceIndex = script.IndexOf(' ');

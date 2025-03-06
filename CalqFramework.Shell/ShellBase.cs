@@ -137,4 +137,6 @@ public abstract class ShellBase : IShell {
     public void CD(string path) {
         CurrentDirectory = Path.GetFullPath(Path.Combine(CurrentDirectory, path));
     }
+
+    public abstract string GetLocalPath(string path);
 }
