@@ -91,7 +91,7 @@ public abstract class ShellBase : IShell {
         return process;
     }
 
-    private void Execute(string script, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken) {
+    private async Task ExecuteAsync(string script, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
         string AddLineNumbers(string input) {
             var i = 0;
             return string.Join('\n', input.Split('\n').Select(x => $"{i++}: {x}")); // TODO allow for \r\n ?
@@ -105,17 +105,17 @@ public abstract class ShellBase : IShell {
         var errorWriter = new StringWriter();
 
         var relayInputTaskCts = new CancellationTokenSource();
-        var relayInputTask = Task.Run(async () => await RelayInput(process, inputReader, outputWriter), relayInputTaskCts.Token);
+        var relayInputTask = RelayInput(process, inputReader, outputWriter).WaitAsync(relayInputTaskCts.Token);
 
         var relayOutputTask = RelayStream(process.StandardOutput, outputWriter, cancellationToken);
         var relayErrorTask = RelayStream(process.StandardError, errorWriter, cancellationToken);
 
-        process.WaitForExit();
+        await process.WaitForExitAsync();
         relayInputTaskCts.Cancel();
         cancellationToken.ThrowIfCancellationRequested();
 
-        relayOutputTask.Wait();
-        relayErrorTask.Wait();
+        await relayOutputTask;
+        await relayErrorTask;
 
         var error = errorWriter.ToString();
 
@@ -134,8 +134,16 @@ public abstract class ShellBase : IShell {
 
     public string CMD(string script, TextReader inputReader, TimeSpan? timeout = null) {
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
+        return CMDAsync(script, inputReader, cancellationTokenSource.Token).ConfigureAwait(false).GetAwaiter().GetResult();
+    }
+
+    public async Task<string> CMDAsync(string script, CancellationToken cancellationToken = default) {
+        return await CMDAsync(script, TextReader.Null, cancellationToken);
+    }
+
+    public async Task<string> CMDAsync(string script, TextReader inputReader, CancellationToken cancellationToken = default) {
         var output = new StringWriter();
-        Execute(script, inputReader, output, cancellationTokenSource.Token);
+        await ExecuteAsync(script, inputReader, output, cancellationToken);
         return output.ToString();
     }
 
@@ -145,7 +153,7 @@ public abstract class ShellBase : IShell {
 
     public void RUN(string script, TextReader inputReader, TimeSpan? timeout = null) {
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
-        Execute(script, inputReader, this.Out, cancellationTokenSource.Token);
+        ExecuteAsync(script, inputReader, this.Out, cancellationTokenSource.Token).ConfigureAwait(false).GetAwaiter().GetResult();
     }
 
     internal abstract ScriptExecutionInfo GetScriptExecutionInfo(string script);
