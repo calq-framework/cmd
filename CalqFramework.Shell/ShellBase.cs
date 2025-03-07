@@ -15,10 +15,10 @@ public abstract class ShellBase : IShell {
         CurrentDirectory = Environment.CurrentDirectory;
     }
 
-    private static async Task RelayStream(StreamReader reader, TextWriter writer) {
+    private static async Task RelayStream(StreamReader reader, TextWriter writer, CancellationToken cancellationToken) {
         var bufferArray = new char[4096];
 
-        while (true) {
+        while (!cancellationToken.IsCancellationRequested) {
             bool isRead = false;
             int bytesRead = 0;
             try {
@@ -91,7 +91,7 @@ public abstract class ShellBase : IShell {
         return process;
     }
 
-    private void CMD(string script, TextReader inputReader, TextWriter outputWriter) {
+    private void Execute(string script, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken) {
         string AddLineNumbers(string input) {
             var i = 0;
             return string.Join('\n', input.Split('\n').Select(x => $"{i++}: {x}")); // TODO allow for \r\n ?
@@ -99,15 +99,21 @@ public abstract class ShellBase : IShell {
 
         var scriptExecutionInfo = GetScriptExecutionInfo(script);
         using var process = InitializeProcess(scriptExecutionInfo);
+
+        cancellationToken.Register(process.Kill);
+
         var errorWriter = new StringWriter();
 
         var relayInputTaskCts = new CancellationTokenSource();
         var relayInputTask = Task.Run(async () => await RelayInput(process, inputReader, outputWriter), relayInputTaskCts.Token);
-        var relayOutputTask = Task.Run(async () => await RelayStream(process.StandardOutput, outputWriter));
-        var relayErrorTask = Task.Run(async () => await RelayStream(process.StandardError, errorWriter));
+
+        var relayOutputTask = RelayStream(process.StandardOutput, outputWriter, cancellationToken);
+        var relayErrorTask = RelayStream(process.StandardError, errorWriter, cancellationToken);
 
         process.WaitForExit();
         relayInputTaskCts.Cancel();
+        cancellationToken.ThrowIfCancellationRequested();
+
         relayOutputTask.Wait();
         relayErrorTask.Wait();
 
@@ -122,16 +128,24 @@ public abstract class ShellBase : IShell {
         }
     }
 
-    public string CMD(string script, TextReader? inputReader = null) {
-        inputReader ??= TextReader.Null;
+    public string CMD(string script, TimeSpan? timeout = null) {
+        return CMD(script, TextReader.Null, timeout);
+    }
+
+    public string CMD(string script, TextReader inputReader, TimeSpan? timeout = null) {
+        var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
         var output = new StringWriter();
-        CMD(script, inputReader, output);
+        Execute(script, inputReader, output, cancellationTokenSource.Token);
         return output.ToString();
     }
 
-    public void RUN(string script, TextReader? inputReader = null) {
-        inputReader ??= this.In;
-        CMD(script, inputReader, this.Out);
+    public void RUN(string script, TimeSpan? timeout = null) {
+        RUN(script, this.In, timeout);
+    }
+
+    public void RUN(string script, TextReader inputReader, TimeSpan? timeout = null) {
+        var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
+        Execute(script, inputReader, this.Out, cancellationTokenSource.Token);
     }
 
     internal abstract ScriptExecutionInfo GetScriptExecutionInfo(string script);
