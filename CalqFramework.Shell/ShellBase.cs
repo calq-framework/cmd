@@ -3,11 +3,13 @@
 namespace CalqFramework.Shell;
 
 public abstract class ShellBase : IShell {
+    public readonly AsyncLocal<string> _currentDirectory;
     public TextReader In { get; init; }
     public TextWriter Out { get; init; }
-    public string CurrentDirectory { get; private set; }
+    public string CurrentDirectory { get => _currentDirectory.Value!; private set => _currentDirectory.Value = value; }
 
     public ShellBase() {
+        _currentDirectory = new AsyncLocal<string>();
         In = Console.In;
         Out = Console.Out;
         CurrentDirectory = Environment.CurrentDirectory;
@@ -73,7 +75,7 @@ public abstract class ShellBase : IShell {
 
     internal Process InitializeProcess(ScriptExecutionInfo scriptExecutionInfo) {
         ProcessStartInfo psi = new ProcessStartInfo {
-            WorkingDirectory = Environment.CurrentDirectory,
+            WorkingDirectory = CurrentDirectory,
             FileName = scriptExecutionInfo.FileName,
             RedirectStandardInput = true,
             RedirectStandardOutput = true,

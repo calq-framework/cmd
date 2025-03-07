@@ -2,8 +2,29 @@ namespace CalqFramework.ShellTest;
 
 public class Test {
     [Fact]
+    public void LocalShellTest() {
+        ShellUtil.LocalShell = new CommandLine();
+        var cmd = ShellUtil.LocalShell;
+        Task.Run(() => {
+            ShellUtil.LocalShell = new Bash();
+            Assert.True(ShellUtil.LocalShell is Bash);
+        });
+        Assert.Equal(cmd, ShellUtil.LocalShell);
+    }
+
+    [Fact]
+    public void CurrentDirectoryTest() {
+        var currentDirectory = ShellUtil.LocalShell.CurrentDirectory;
+        Task.Run(() => {
+            ShellUtil.CD("changed");
+            Assert.NotEqual(currentDirectory, ShellUtil.LocalShell.CurrentDirectory);
+        });
+        Assert.Equal(currentDirectory, ShellUtil.LocalShell.CurrentDirectory);
+    }
+
+    [Fact]
     public void CommandLineUtilTest() {
-        ShellUtil.SetShell(new CommandLine());
+        ShellUtil.LocalShell = new CommandLine();
         var output = ShellUtil.CMD("dotnet --version");
 
         Assert.NotEqual("", output);
@@ -16,7 +37,7 @@ public class Test {
         Console.SetIn(new StringReader(input));
         Console.SetOut(writer);
 
-        ShellUtil.SetShell(new Bash());
+        ShellUtil.LocalShell = new Bash();
         new Bash().RUN("sleep 1; read -r input; echo $input");
         var output = writer.ToString();
 
@@ -34,7 +55,7 @@ public class Test {
         Console.SetIn(new StringReader(expectedOutput));
         Console.SetOut(writer);
 
-        ShellUtil.SetShell(new Bash());
+        ShellUtil.LocalShell = new Bash();
         var output = new Bash().CMD("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
         var writerOutput = writer.ToString();
 
@@ -53,7 +74,7 @@ public class Test {
         Console.SetIn(new StringReader(expectedOutput));
         Console.SetOut(writer);
 
-        ShellUtil.SetShell(new Bash());
+        ShellUtil.LocalShell = new Bash();
         new Bash().RUN("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
         var writerOutput = writer.ToString();
 

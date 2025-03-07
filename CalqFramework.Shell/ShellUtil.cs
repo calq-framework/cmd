@@ -1,28 +1,30 @@
 ﻿namespace CalqFramework.Shell;
 public class ShellUtil {
-    public static IShell Shell { get; private set; }
+    private readonly static IShell _defaultShell;
+    private readonly static AsyncLocal<IShell> _localShell;
 
-    static ShellUtil() {
-        Shell = new CommandLine();
+    public static IShell LocalShell {
+        get {
+            _localShell.Value ??= _defaultShell;
+            return _localShell.Value!;
+        }
+        set => _localShell.Value = value;
     }
 
-    public static void SetShell(IShell shell) {
-        Shell = shell;
+    static ShellUtil() {
+        _defaultShell = new CommandLine();
+        _localShell = new AsyncLocal<IShell>();
     }
 
     public static string CMD(string script, TextReader? inputReader = null) {
-        return Shell.CMD(script, inputReader);
+        return LocalShell.CMD(script, inputReader);
     }
 
     public static void RUN(string script, TextReader? inputReader = null) {
-        Shell.RUN(script, inputReader);
+        LocalShell.RUN(script, inputReader);
     }
 
     public static void CD(string path) {
-        Shell.CD(path);
-    }
-
-    public static string GetLocalPath(string path) {
-        return Shell.GetLocalPath(path);
+        LocalShell.CD(path);
     }
 }
