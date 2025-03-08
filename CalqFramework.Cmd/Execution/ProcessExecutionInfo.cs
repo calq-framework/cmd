@@ -1,6 +1,6 @@
-﻿namespace CalqFramework.Cmd {
-    internal class ScriptExecutionInfo {
-        public ScriptExecutionInfo(string fileName, string arguments) {
+﻿namespace CalqFramework.Cmd.Execution {
+    internal class ProcessExecutionInfo {
+        public ProcessExecutionInfo(string fileName, string arguments) {
             FileName = fileName;
             Arguments = arguments;
         }
