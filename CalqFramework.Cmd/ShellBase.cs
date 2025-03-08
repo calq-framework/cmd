@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace CalqFramework.Shell;
+namespace CalqFramework.Cmd;
 
 public abstract class ShellBase : IShell {
     public readonly AsyncLocal<string> _currentDirectory;

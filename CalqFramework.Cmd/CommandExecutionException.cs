@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CalqFramework.Shell;
+namespace CalqFramework.Cmd;
 public class CommandExecutionException : Exception
 {
     public int ExitCode { get; }

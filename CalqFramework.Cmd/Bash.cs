@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace CalqFramework.Shell;
+namespace CalqFramework.Cmd;
 public class Bash : ShellBase {
     internal bool ExpectWSL { get; init; } = true;
 

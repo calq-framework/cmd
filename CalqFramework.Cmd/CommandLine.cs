@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Shell;
+﻿namespace CalqFramework.Cmd;
 public class CommandLine : ShellBase {
     public override string GetLocalPath(string path) {
         return path;
