@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Shell;
+﻿namespace CalqFramework.Cmd;
 public class ShellUtil {
     private readonly static IShell _defaultShell;
     private readonly static AsyncLocal<IShell> _localShell;

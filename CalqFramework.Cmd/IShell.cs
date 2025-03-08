@@ -1,5 +1,5 @@
 ﻿
-namespace CalqFramework.Shell {
+namespace CalqFramework.Cmd {
     public interface IShell {
         string CurrentDirectory { get; }
         TextReader In { get; init; }

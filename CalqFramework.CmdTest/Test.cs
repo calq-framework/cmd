@@ -1,4 +1,4 @@
-namespace CalqFramework.ShellTest;
+namespace CalqFramework.CmdTest;
 
 public class Test {
     [Fact]
