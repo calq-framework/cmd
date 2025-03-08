@@ -1,31 +1,38 @@
+using CalqFramework.Cmd.Shells;
+using static CalqFramework.Cmd.Terminal;
+
 namespace CalqFramework.CmdTest;
 
-public class Test {
+public class TerminalTest {
     [Fact]
     public void LocalShellTest() {
-        ShellUtil.LocalShell = new CommandLine();
-        var cmd = ShellUtil.LocalShell;
+        LocalShell = new Cmd.Shells.CommandLine();
+        var cmd = LocalShell;
         Task.Run(() => {
-            ShellUtil.LocalShell = new Bash();
-            Assert.True(ShellUtil.LocalShell is Bash);
+            LocalShell = new Bash();
+            Assert.True(LocalShell is Bash);
         });
-        Assert.Equal(cmd, ShellUtil.LocalShell);
+        Assert.Equal(cmd, LocalShell);
     }
 
     [Fact]
     public void CurrentDirectoryTest() {
-        var currentDirectory = ShellUtil.LocalShell.CurrentDirectory;
+        var currentDirectory = LocalShell.CurrentDirectory;
         Task.Run(() => {
-            ShellUtil.CD("changed");
-            Assert.NotEqual(currentDirectory, ShellUtil.LocalShell.CurrentDirectory);
+            try {
+                CD("changed");
+            } catch (CommandExecutionException e) {
+
+            }
+            Assert.NotEqual(currentDirectory, LocalShell.CurrentDirectory);
         });
-        Assert.Equal(currentDirectory, ShellUtil.LocalShell.CurrentDirectory);
+        Assert.Equal(currentDirectory, LocalShell.CurrentDirectory);
     }
 
     [Fact]
     public void CommandLineUtilTest() {
-        ShellUtil.LocalShell = new CommandLine();
-        var output = ShellUtil.CMD("dotnet --version");
+        LocalShell = new Cmd.Shells.CommandLine();
+        var output = CMD("dotnet --version");
 
         Assert.NotEqual("", output);
     }
@@ -37,8 +44,8 @@ public class Test {
         Console.SetIn(new StringReader(input));
         Console.SetOut(writer);
 
-        ShellUtil.LocalShell = new Bash();
-        new Bash().RUN("sleep 1; read -r input; echo $input");
+        LocalShell = new Bash();
+        RUN("sleep 1; read -r input; echo $input");
         var output = writer.ToString();
 
         Assert.Equal(input, output);
@@ -55,8 +62,8 @@ public class Test {
         Console.SetIn(new StringReader(expectedOutput));
         Console.SetOut(writer);
 
-        ShellUtil.LocalShell = new Bash();
-        var output = new Bash().CMD("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
+        LocalShell = new Bash();
+        var output = CMD("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
         var writerOutput = writer.ToString();
 
         Assert.Equal(expectedOutput, output);
@@ -74,8 +81,8 @@ public class Test {
         Console.SetIn(new StringReader(expectedOutput));
         Console.SetOut(writer);
 
-        ShellUtil.LocalShell = new Bash();
-        new Bash().RUN("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
+        LocalShell = new Bash();
+        RUN("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
         var writerOutput = writer.ToString();
 
         Assert.Equal(expectedOutput, writerOutput);

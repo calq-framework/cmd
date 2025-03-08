@@ -1,8 +1,9 @@
-﻿using System.Runtime.InteropServices;
+﻿using CalqFramework.Cmd.Execution;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace CalqFramework.Cmd;
+namespace CalqFramework.Cmd.Shells;
 public class Bash : ShellBase {
     internal bool ExpectWSL { get; init; } = true;
 
@@ -14,7 +15,7 @@ public class Bash : ShellBase {
         return path;
     }
 
-    internal override ScriptExecutionInfo GetScriptExecutionInfo(string script) {
+    internal override ProcessExecutionInfo GetProcessExecutionInfo(string script) {
         if (Environment.OSVersion.Platform == PlatformID.Win32NT && ExpectWSL) {
             script = $"cd {WindowsToWslPath(CurrentDirectory)}\n" + script;
         }
@@ -41,7 +42,7 @@ public class Bash : ShellBase {
 
         //Arguments = $"-c 'script -E never -e -q -f /dev/null -c \"{evalCommand}\"'",
 
-        return new ScriptExecutionInfo("bash", $"-c \"{evalCommand}\"");
+        return new ProcessExecutionInfo("bash", $"-c \"{evalCommand}\"");
     }
 
     private static string? GetUncPathFromDrive(string driveLetter) {

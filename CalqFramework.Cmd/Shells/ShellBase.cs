@@ -1,12 +1,13 @@
-﻿using System.Diagnostics;
+﻿using CalqFramework.Cmd.Execution;
+using System.Diagnostics;
 
-namespace CalqFramework.Cmd;
+namespace CalqFramework.Cmd.Shells;
 
 public abstract class ShellBase : IShell {
     public readonly AsyncLocal<string> _currentDirectory;
     public TextReader In { get; init; }
     public TextWriter Out { get; init; }
-    public string CurrentDirectory { get => _currentDirectory.Value!; private set => _currentDirectory.Value = value; }
+    public string CurrentDirectory { get => _currentDirectory.Value!; set => _currentDirectory.Value = value; }
 
     public ShellBase() {
         _currentDirectory = new AsyncLocal<string>();
@@ -73,7 +74,7 @@ public abstract class ShellBase : IShell {
         }
     }
 
-    internal Process InitializeProcess(ScriptExecutionInfo scriptExecutionInfo) {
+    internal Process InitializeProcess(ProcessExecutionInfo scriptExecutionInfo) {
         ProcessStartInfo psi = new ProcessStartInfo {
             WorkingDirectory = CurrentDirectory,
             FileName = scriptExecutionInfo.FileName,
@@ -91,13 +92,25 @@ public abstract class ShellBase : IShell {
         return process;
     }
 
-    private async Task ExecuteAsync(string script, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
+    public async Task ExecuteAsync(string script, CancellationToken cancellationToken = default) {
+        await ExecuteAsync(script, In, Out, cancellationToken);
+    }
+
+    public async Task ExecuteAsync(string script, TextReader inputReader, CancellationToken cancellationToken = default) {
+        await ExecuteAsync(script, inputReader, Out, cancellationToken);
+    }
+
+    public async Task ExecuteAsync(string script, TextWriter outputWriter, CancellationToken cancellationToken = default) {
+        await ExecuteAsync(script, In, outputWriter, cancellationToken);
+    }
+
+    public async Task ExecuteAsync(string script, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
         string AddLineNumbers(string input) {
             var i = 0;
             return string.Join('\n', input.Split('\n').Select(x => $"{i++}: {x}")); // TODO allow for \r\n ?
         }
 
-        var scriptExecutionInfo = GetScriptExecutionInfo(script);
+        var scriptExecutionInfo = GetProcessExecutionInfo(script);
         using var process = InitializeProcess(scriptExecutionInfo);
 
         cancellationToken.Register(process.Kill);
@@ -128,39 +141,7 @@ public abstract class ShellBase : IShell {
         }
     }
 
-    public string CMD(string script, TimeSpan? timeout = null) {
-        return CMD(script, TextReader.Null, timeout);
-    }
-
-    public string CMD(string script, TextReader inputReader, TimeSpan? timeout = null) {
-        var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
-        return CMDAsync(script, inputReader, cancellationTokenSource.Token).ConfigureAwait(false).GetAwaiter().GetResult();
-    }
-
-    public async Task<string> CMDAsync(string script, CancellationToken cancellationToken = default) {
-        return await CMDAsync(script, TextReader.Null, cancellationToken);
-    }
-
-    public async Task<string> CMDAsync(string script, TextReader inputReader, CancellationToken cancellationToken = default) {
-        var output = new StringWriter();
-        await ExecuteAsync(script, inputReader, output, cancellationToken);
-        return output.ToString();
-    }
-
-    public void RUN(string script, TimeSpan? timeout = null) {
-        RUN(script, this.In, timeout);
-    }
-
-    public void RUN(string script, TextReader inputReader, TimeSpan? timeout = null) {
-        var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
-        ExecuteAsync(script, inputReader, this.Out, cancellationTokenSource.Token).ConfigureAwait(false).GetAwaiter().GetResult();
-    }
-
-    internal abstract ScriptExecutionInfo GetScriptExecutionInfo(string script);
-
-    public void CD(string path) {
-        CurrentDirectory = Path.GetFullPath(Path.Combine(CurrentDirectory, path));
-    }
+    internal abstract ProcessExecutionInfo GetProcessExecutionInfo(string script);
 
     public abstract string GetLocalPath(string path);
 }
