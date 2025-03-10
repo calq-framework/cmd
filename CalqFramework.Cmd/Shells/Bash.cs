@@ -7,17 +7,16 @@ namespace CalqFramework.Cmd.Shells;
 public class Bash : ShellBase {
     internal bool ExpectWSL { get; init; } = true;
 
-    public override string GetLocalPath(string path) {
+    public override string GetInternalPath(string hostPath) {
         if (Environment.OSVersion.Platform == PlatformID.Win32NT && ExpectWSL) {
-            var fullPath = Path.GetFullPath(Path.Combine(CurrentDirectory, path));
-            return WindowsToWslPath(fullPath);
+            return WindowsToWslPath(hostPath);
         }
-        return path;
+        return hostPath;
     }
 
-    internal override ProcessExecutionInfo GetProcessExecutionInfo(string script) {
+    internal override ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script) {
         if (Environment.OSVersion.Platform == PlatformID.Win32NT && ExpectWSL) {
-            script = $"cd {WindowsToWslPath(CurrentDirectory)}\n" + script;
+            script = $"cd {WindowsToWslPath(workingDirectory)}\n" + script;
         }
 
         script = script.Replace("\r\n", "\n");
