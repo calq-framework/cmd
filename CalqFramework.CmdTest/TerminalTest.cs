@@ -5,46 +5,48 @@ namespace CalqFramework.CmdTest;
 
 public class TerminalTest {
     [Fact]
-    public void LocalShellTest() {
-        LocalShell = new Cmd.Shells.CommandLine();
-        var cmd = LocalShell;
-        Task.Run(() => {
-            LocalShell = new Bash();
-            Assert.True(LocalShell is Bash);
+    public async void LocalShellTest() {
+        LocalTerminal.Shell = new CommandLine();
+        var cmd = LocalTerminal.Shell;
+        await Task.Run(() => {
+            LocalTerminal.Shell = new Bash();
+            Assert.True(LocalTerminal.Shell is Bash);
         });
-        Assert.Equal(cmd, LocalShell);
+        Assert.Equal(cmd, LocalTerminal.Shell);
     }
 
     [Fact]
-    public void CurrentDirectoryTest() {
-        var currentDirectory = LocalShell.CurrentDirectory;
-        Task.Run(() => {
+    public async void CurrentDirectoryTest() {
+        var currentDirectory = LocalTerminal.WorkingDirectory;
+        await Task.Run(() => {
             try {
                 CD("changed");
             } catch (CommandExecutionException e) {
 
             }
-            Assert.NotEqual(currentDirectory, LocalShell.CurrentDirectory);
+            Assert.NotEqual(currentDirectory, LocalTerminal.WorkingDirectory);
         });
-        Assert.Equal(currentDirectory, LocalShell.CurrentDirectory);
+        Assert.Equal(currentDirectory, LocalTerminal.WorkingDirectory);
     }
 
     [Fact]
-    public void CommandLineUtilTest() {
-        LocalShell = new Cmd.Shells.CommandLine();
+    public async void CommandLineUtilTest() {
+        LocalTerminal.Shell = new CommandLine();
+
         var output = CMD("dotnet --version");
 
         Assert.NotEqual("", output);
     }
 
     [Fact]
-    public void BashUtilTest() {
+    public async void BashUtilTest() {
         var writer = new StringWriter();
         var input = "hello world\n";
-        Console.SetIn(new StringReader(input));
-        Console.SetOut(writer);
 
-        LocalShell = new Bash();
+        LocalTerminal.In = new StringReader(input);
+        LocalTerminal.Out = writer;
+        LocalTerminal.Shell = new Bash();
+
         RUN("sleep 1; read -r input; echo $input");
         var output = writer.ToString();
 
@@ -52,17 +54,17 @@ public class TerminalTest {
     }
 
     [Fact]
-    public void LongOutputTest() {
+    public async void LongOutputTest() {
         var expectedOutput = "";
         for (var i = 0; i < 2500; ++i) {
             expectedOutput += "1234567890";
         }
 
         var writer = new StringWriter();
-        Console.SetIn(new StringReader(expectedOutput));
-        Console.SetOut(writer);
+        LocalTerminal.In = new StringReader(expectedOutput);
+        LocalTerminal.Out = writer;
+        LocalTerminal.Shell = new Bash();
 
-        LocalShell = new Bash();
         var output = CMD("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
         var writerOutput = writer.ToString();
 
@@ -71,17 +73,17 @@ public class TerminalTest {
     }
 
     [Fact]
-    public void LongRunOutputTest() {
+    public async void LongRunOutputTest() {
         var expectedOutput = "";
         for (var i = 0; i < 2500; ++i) {
             expectedOutput += "1234567890";
         }
 
         var writer = new StringWriter();
-        Console.SetIn(new StringReader(expectedOutput));
-        Console.SetOut(writer);
+        LocalTerminal.In = new StringReader(expectedOutput);
+        LocalTerminal.Out = writer;
+        LocalTerminal.Shell = new Bash();
 
-        LocalShell = new Bash();
         RUN("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
         var writerOutput = writer.ToString();
 

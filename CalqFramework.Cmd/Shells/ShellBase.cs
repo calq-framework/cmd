@@ -4,18 +4,6 @@ using System.Diagnostics;
 namespace CalqFramework.Cmd.Shells;
 
 public abstract class ShellBase : IShell {
-    public readonly AsyncLocal<string> _currentDirectory;
-    public TextReader In { get; init; }
-    public TextWriter Out { get; init; }
-    public string CurrentDirectory { get => _currentDirectory.Value!; set => _currentDirectory.Value = value; }
-
-    public ShellBase() {
-        _currentDirectory = new AsyncLocal<string>();
-        In = Console.In;
-        Out = Console.Out;
-        CurrentDirectory = Environment.CurrentDirectory;
-    }
-
     private static async Task RelayStream(StreamReader reader, TextWriter writer, CancellationToken cancellationToken) {
         var bufferArray = new char[4096];
 
@@ -74,9 +62,9 @@ public abstract class ShellBase : IShell {
         }
     }
 
-    internal Process InitializeProcess(ProcessExecutionInfo scriptExecutionInfo) {
+    internal Process InitializeProcess(string workingDirectory, ProcessExecutionInfo scriptExecutionInfo) {
         ProcessStartInfo psi = new ProcessStartInfo {
-            WorkingDirectory = CurrentDirectory,
+            WorkingDirectory = workingDirectory,
             FileName = scriptExecutionInfo.FileName,
             RedirectStandardInput = true,
             RedirectStandardOutput = true,
@@ -92,26 +80,14 @@ public abstract class ShellBase : IShell {
         return process;
     }
 
-    public async Task ExecuteAsync(string script, CancellationToken cancellationToken = default) {
-        await ExecuteAsync(script, In, Out, cancellationToken);
-    }
-
-    public async Task ExecuteAsync(string script, TextReader inputReader, CancellationToken cancellationToken = default) {
-        await ExecuteAsync(script, inputReader, Out, cancellationToken);
-    }
-
-    public async Task ExecuteAsync(string script, TextWriter outputWriter, CancellationToken cancellationToken = default) {
-        await ExecuteAsync(script, In, outputWriter, cancellationToken);
-    }
-
-    public async Task ExecuteAsync(string script, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
+    public async Task ExecuteAsync(string workingDirectory, string script, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
         string AddLineNumbers(string input) {
             var i = 0;
             return string.Join('\n', input.Split('\n').Select(x => $"{i++}: {x}")); // TODO allow for \r\n ?
         }
 
-        var scriptExecutionInfo = GetProcessExecutionInfo(script);
-        using var process = InitializeProcess(scriptExecutionInfo);
+        var scriptExecutionInfo = GetProcessExecutionInfo(workingDirectory, script);
+        using var process = InitializeProcess(workingDirectory, scriptExecutionInfo);
 
         cancellationToken.Register(process.Kill);
 
@@ -141,7 +117,7 @@ public abstract class ShellBase : IShell {
         }
     }
 
-    internal abstract ProcessExecutionInfo GetProcessExecutionInfo(string script);
+    internal abstract ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script);
 
-    public abstract string GetLocalPath(string path);
+    public abstract string GetInternalPath(string hostPath);
 }
