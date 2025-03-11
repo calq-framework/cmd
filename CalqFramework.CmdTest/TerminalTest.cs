@@ -19,11 +19,7 @@ public class TerminalTest {
     public async void CurrentDirectoryTest() {
         var currentDirectory = LocalTerminal.WorkingDirectory;
         await Task.Run(() => {
-            try {
-                CD("changed");
-            } catch (CommandExecutionException e) {
-
-            }
+            CD("changed");
             Assert.NotEqual(currentDirectory, LocalTerminal.WorkingDirectory);
         });
         Assert.Equal(currentDirectory, LocalTerminal.WorkingDirectory);
@@ -32,6 +28,7 @@ public class TerminalTest {
     [Fact]
     public async void CommandLineUtilTest() {
         LocalTerminal.Shell = new CommandLine();
+        LocalTerminal.In = new StringReader("");
 
         var output = CMD("dotnet --version");
 
@@ -91,16 +88,20 @@ public class TerminalTest {
     }
 
     [Fact]
-    public async void CmdPTest() {
+    public async void CmdTest() {
         LocalTerminal.Shell = new Bash();
         LocalTerminal.In = new StringReader("");
-        if (string.Compare("Hello, World!\n", CMDP("echo \"Hello, World!\"")) != 0) {
+        var echoText = "hello, world";
+        var echoCommand = CMD($"echo {echoText}");
+
+        if (string.Compare($"{echoText}\n", echoCommand) != 0) {
             Assert.True(false);
         }
-        if ("Hello, World!\n" != CMDP("echo \"Hello, World!\"")) {
+        if ($"{echoText}\n" != echoCommand) {
             Assert.True(false);
         }
-        string x = CMDP("echo \"Hello, World!\"") | CMDP("cut -d',' -f1");
-        Assert.Equal("Hello\n", x);
+
+        string output = echoCommand | CMD("cut -d',' -f1");
+        Assert.Equal("hello\n", output);
     }
 }

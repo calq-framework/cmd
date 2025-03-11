@@ -9,34 +9,14 @@ public static class Terminal {
         LocalTerminal.WorkingDirectory = Path.GetFullPath(Path.Combine(LocalTerminal.WorkingDirectory, path));
     }
 
-    public static string CMD(string script, TimeSpan? timeout = null) {
+    public static Command CMD(string script, TimeSpan? timeout = null) {
         return CMD(script, TextReader.Null, timeout);
     }
 
-    public static string CMD(string script, TextReader inputReader, TimeSpan? timeout = null) {
+    public static Command CMD(string script, TextReader inputReader, TimeSpan? timeout = null) {
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
-        return CMDAsync(script, inputReader, cancellationTokenSource.Token).ConfigureAwait(false).GetAwaiter().GetResult();
-    }
-
-    public static async Task<string> CMDAsync(string script, CancellationToken cancellationToken = default) {
-        return await CMDAsync(script, TextReader.Null, cancellationToken);
-    }
-
-    public static async Task<string> CMDAsync(string script, TextReader inputReader, CancellationToken cancellationToken = default) {
-        var output = new StringWriter();
-        await LocalTerminal.Shell.ExecuteAsync(LocalTerminal.WorkingDirectory, script, inputReader, output, cancellationToken);
-        return output.ToString();
-    }
-
-
-
-
-    public static Command CMDP(string script) {
         return new Command(LocalTerminal.Shell, LocalTerminal.WorkingDirectory, script, LocalTerminal.In);
     }
-
-
-
 
     public static void RUN(string script, TimeSpan? timeout = null) {
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);

@@ -37,6 +37,9 @@ public abstract class ShellBase : IShell {
         await writer.FlushAsync();
     }
 
+    // FIXME get ctx and loop until cancelled
+    // FIXME inputReader may lock indefinitely so limit by time the same way its done in RelayStream()
+    // TODO relay block by block
     private static async Task RelayInput(Process process, TextReader inputReader, TextWriter outputWriter) {
         var processInput = process.StandardInput;
         if (Environment.UserInteractive && ReferenceEquals(inputReader, Console.OpenStandardInput())) {
