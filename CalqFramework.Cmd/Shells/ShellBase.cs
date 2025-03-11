@@ -53,10 +53,12 @@ public abstract class ShellBase : IShell {
             }
         } else {
             while (!process.HasExited) {
-                if (inputReader.Peek() != -1) {
-                    var keyChar = (char)inputReader.Read();
-                    processInput.Write(keyChar);
+                var keyChar = (char)inputReader.Read();
+                if (keyChar == -1 || keyChar == '\uffff') {
+                    processInput.Close();
+                    break;
                 }
+                processInput.Write(keyChar);
                 await Task.Delay(1);
             }
         }
