@@ -28,6 +28,16 @@ public static class Terminal {
         return output.ToString();
     }
 
+
+
+
+    public static Command CMDP(string script) {
+        return new Command(LocalTerminal.Shell, LocalTerminal.WorkingDirectory, script, LocalTerminal.In);
+    }
+
+
+
+
     public static void RUN(string script, TimeSpan? timeout = null) {
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
         LocalTerminal.Shell.ExecuteAsync(LocalTerminal.WorkingDirectory, script, LocalTerminal.In, LocalTerminal.Out, cancellationTokenSource.Token).ConfigureAwait(false).GetAwaiter().GetResult();

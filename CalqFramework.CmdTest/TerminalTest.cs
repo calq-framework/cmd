@@ -89,4 +89,18 @@ public class TerminalTest {
 
         Assert.Equal(expectedOutput, writerOutput);
     }
+
+    [Fact]
+    public async void CmdPTest() {
+        LocalTerminal.Shell = new Bash();
+        LocalTerminal.In = new StringReader("");
+        if (string.Compare("Hello, World!\n", CMDP("echo \"Hello, World!\"")) != 0) {
+            Assert.True(false);
+        }
+        if ("Hello, World!\n" != CMDP("echo \"Hello, World!\"")) {
+            Assert.True(false);
+        }
+        string x = CMDP("echo \"Hello, World!\"") | CMDP("cut -d',' -f1");
+        Assert.Equal("Hello\n", x);
+    }
 }
