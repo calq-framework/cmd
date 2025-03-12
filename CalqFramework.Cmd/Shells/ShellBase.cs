@@ -32,38 +32,44 @@ public abstract class ShellBase : IShell {
             if (bytesRead > 0) {
                 await writer.WriteAsync(bufferArray, 0, bytesRead);
             }
+
+            await Task.Delay(1);
         }
 
         await writer.FlushAsync();
     }
-
-    // FIXME get ctx and loop until cancelled
-    // FIXME inputReader may lock indefinitely so limit by time the same way its done in RelayStream()
-    // TODO relay block by block
-    private static async Task RelayInput(Process process, TextReader inputReader, TextWriter outputWriter) {
-        var processInput = process.StandardInput;
-        if (Environment.UserInteractive && ReferenceEquals(inputReader, Console.OpenStandardInput())) {
-            while (!process.HasExited) {
-                if (Console.KeyAvailable) {
-                    var keyChar = Console.ReadKey(true).KeyChar;
-                    if (keyChar == '\r') { // windows enterkey is \r and deletes what was typed because of that
-                        keyChar = '\n';
+    private static async Task RelayInput(StreamWriter processInput, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken) {
+        try {
+            if (Environment.UserInteractive && ReferenceEquals(inputReader, Console.OpenStandardInput())) {
+                while (!cancellationToken.IsCancellationRequested) {
+                    if (Console.KeyAvailable) {
+                        var keyChar = Console.ReadKey(true).KeyChar;
+                        if (keyChar == '\r') { // windows enterkey is \r and deletes what was typed because of that
+                            keyChar = '\n';
+                        }
+                        outputWriter.Write(keyChar);
+                        processInput.Write(keyChar);
                     }
-                    outputWriter.Write(keyChar);
+
+                    await Task.Delay(1);
+                }
+            } else {
+                // TODO relay block by block
+                var buffer = new char[1];
+
+                while (!cancellationToken.IsCancellationRequested) {
+                    var bytesRead = await inputReader.ReadAsync(buffer, cancellationToken);
+                    var keyChar = buffer[0];
+                    if (bytesRead == 0 || keyChar == -1 || keyChar == '\uffff') {
+                        break;
+                    }
                     processInput.Write(keyChar);
+
+                    await Task.Delay(1);
                 }
-                await Task.Delay(1);
             }
-        } else {
-            while (!process.HasExited) {
-                var keyChar = (char)inputReader.Read();
-                if (keyChar == -1 || keyChar == '\uffff') {
-                    processInput.Close();
-                    break;
-                }
-                processInput.Write(keyChar);
-                await Task.Delay(1);
-            }
+        } finally {
+            processInput.Close();
         }
     }
 
@@ -88,7 +94,7 @@ public abstract class ShellBase : IShell {
     public async Task ExecuteAsync(string workingDirectory, string script, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
         string AddLineNumbers(string input) {
             var i = 0;
-            return string.Join('\n', input.Split('\n').Select(x => $"{i++}: {x}")); // TODO allow for \r\n ?
+            return string.Join('\n', input.Split('\n').Select(x => $"{i++}: {x}"));
         }
 
         var scriptExecutionInfo = GetProcessExecutionInfo(workingDirectory, script);
@@ -99,9 +105,10 @@ public abstract class ShellBase : IShell {
         var errorWriter = new StringWriter();
 
         var relayInputTaskCts = new CancellationTokenSource();
-        var relayInputTask = RelayInput(process, inputReader, outputWriter).WaitAsync(relayInputTaskCts.Token);
+        var relayInputTask = Task.Run(async () => await RelayInput(process.StandardInput, inputReader, outputWriter, relayInputTaskCts.Token), relayInputTaskCts.Token);
 
-        var relayOutputTask = RelayStream(process.StandardOutput, outputWriter, cancellationToken);
+        var relayOutputTask = Task.Run(async () => await RelayStream(process.StandardOutput, outputWriter, cancellationToken), cancellationToken);
+
         var relayErrorTask = RelayStream(process.StandardError, errorWriter, cancellationToken);
 
         await process.WaitForExitAsync();

@@ -28,7 +28,6 @@ public class TerminalTest {
     [Fact]
     public async void CommandLineUtilTest() {
         LocalTerminal.Shell = new CommandLine();
-        LocalTerminal.In = new StringReader("");
 
         var output = CMD("dotnet --version");
 
@@ -90,7 +89,6 @@ public class TerminalTest {
     [Fact]
     public async void CmdTest() {
         LocalTerminal.Shell = new Bash();
-        LocalTerminal.In = new StringReader("");
         var echoText = "hello, world";
         var echoCommand = CMD($"echo {echoText}");
 
