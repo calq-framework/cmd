@@ -1,95 +1,8 @@
 ﻿using CalqFramework.Cmd.Execution;
-using System.Diagnostics;
 
 namespace CalqFramework.Cmd.Shells;
 
 public abstract class ShellBase : IShell {
-    private static async Task RelayStream(StreamReader reader, TextWriter writer, CancellationToken cancellationToken) {
-        var bufferArray = new char[4096];
-
-        while (!cancellationToken.IsCancellationRequested) {
-            bool isRead = false;
-            int bytesRead = 0;
-            try {
-                Array.Clear(bufferArray);
-                var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(20));
-                bytesRead = await reader.ReadAsync(bufferArray, cancellationTokenSource.Token);
-                isRead = true;
-            } catch (OperationCanceledException) {
-                isRead = false;
-                bytesRead = Array.IndexOf(bufferArray, '\0');
-                if (bytesRead > 0) {
-                    await writer.WriteAsync(bufferArray, 0, bytesRead);
-                    await writer.FlushAsync();
-                    continue;
-                }
-            }
-
-            if (isRead && bytesRead == 0) {
-                break;
-            }
-
-            if (bytesRead > 0) {
-                await writer.WriteAsync(bufferArray, 0, bytesRead);
-            }
-
-            await Task.Delay(1);
-        }
-
-        await writer.FlushAsync();
-    }
-    private static async Task RelayInput(StreamWriter processInput, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken) {
-        try {
-            if (Environment.UserInteractive && ReferenceEquals(inputReader, Console.OpenStandardInput())) {
-                while (!cancellationToken.IsCancellationRequested) {
-                    if (Console.KeyAvailable) {
-                        var keyChar = Console.ReadKey(true).KeyChar;
-                        if (keyChar == '\r') { // windows enterkey is \r and deletes what was typed because of that
-                            keyChar = '\n';
-                        }
-                        outputWriter.Write(keyChar);
-                        processInput.Write(keyChar);
-                    }
-
-                    await Task.Delay(1);
-                }
-            } else {
-                // TODO relay block by block
-                var buffer = new char[1];
-
-                while (!cancellationToken.IsCancellationRequested) {
-                    var bytesRead = await inputReader.ReadAsync(buffer, cancellationToken);
-                    var keyChar = buffer[0];
-                    if (bytesRead == 0 || keyChar == -1 || keyChar == '\uffff') {
-                        break;
-                    }
-                    processInput.Write(keyChar);
-
-                    await Task.Delay(1);
-                }
-            }
-        } finally {
-            processInput.Close();
-        }
-    }
-
-    internal Process InitializeProcess(string workingDirectory, ProcessExecutionInfo scriptExecutionInfo) {
-        ProcessStartInfo psi = new ProcessStartInfo {
-            WorkingDirectory = workingDirectory,
-            FileName = scriptExecutionInfo.FileName,
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            Arguments = scriptExecutionInfo.Arguments
-        };
-
-        var process = new Process { StartInfo = psi };
-        process.Start();
-
-        return process;
-    }
 
     public async Task ExecuteAsync(string workingDirectory, string script, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
         string AddLineNumbers(string input) {
@@ -97,35 +10,21 @@ public abstract class ShellBase : IShell {
             return string.Join('\n', input.Split('\n').Select(x => $"{i++}: {x}"));
         }
 
-        var scriptExecutionInfo = GetProcessExecutionInfo(workingDirectory, script);
-        using var process = InitializeProcess(workingDirectory, scriptExecutionInfo);
-
-        cancellationToken.Register(process.Kill);
+        var processExecutionInfo = GetProcessExecutionInfo(workingDirectory, script);
+        using var processRunner = new ProcessRunner();
 
         var errorWriter = new StringWriter();
 
-        var relayInputTaskCts = new CancellationTokenSource();
-        var relayInputTask = Task.Run(async () => await RelayInput(process.StandardInput, inputReader, outputWriter, relayInputTaskCts.Token), relayInputTaskCts.Token);
-
-        var relayOutputTask = Task.Run(async () => await RelayStream(process.StandardOutput, outputWriter, cancellationToken), cancellationToken);
-
-        var relayErrorTask = RelayStream(process.StandardError, errorWriter, cancellationToken);
-
-        await process.WaitForExitAsync();
-        relayInputTaskCts.Cancel();
-        cancellationToken.ThrowIfCancellationRequested();
-
-        await relayOutputTask;
-        await relayErrorTask;
+        int exitCode = await processRunner.Run(workingDirectory, processExecutionInfo, inputReader, outputWriter, errorWriter, cancellationToken);
 
         var error = errorWriter.ToString();
 
         // stderr might contain diagnostics/info instead of error message so don't throw just because not empty
-        if (process.ExitCode != 0) {
+        if (exitCode != 0) {
             if (string.IsNullOrEmpty(error) && outputWriter is StringWriter) {
                 error = outputWriter.ToString();
             }
-            throw new CommandExecutionException($"\n{AddLineNumbers(script)}\n\nError:\n{error}", process.ExitCode);
+            throw new CommandExecutionException($"\n{AddLineNumbers(script)}\n\nError:\n{error}", exitCode);
         }
     }
 
