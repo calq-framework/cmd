@@ -1,4 +1,5 @@
 ﻿using CalqFramework.Cmd.Shells;
+using CalqFramework.Cmd.SystemProcess;
 
 namespace CalqFramework.Cmd {
     public class Command {
@@ -6,18 +7,24 @@ namespace CalqFramework.Cmd {
 
         private volatile string? _value;
 
-        public Command(IShell shell, string workingDirectory, string script, TextReader inReader) {
-            In = inReader;
+        private Command(IShell shell, string script, IProcessRunConfiguration processRunConfiguration, TextReader input, StringWriter output) : this(shell, script, processRunConfiguration) {
+            In = input;
+            Out = output;
+        }
+
+        public Command(IShell shell, string script, IProcessRunConfiguration processRunConfiguration) {
             Shell = shell;
-            WorkingDirectory = workingDirectory;
             Script = script;
+            ProcessRunConfiguration = processRunConfiguration;
+            In = processRunConfiguration.In;
             Out = new StringWriter();
         }
+
         private TextReader In { get; }
         private StringWriter Out { get; }
+        private IProcessRunConfiguration ProcessRunConfiguration { get; }
         private string Script { get; }
         private IShell Shell { get; }
-        private string WorkingDirectory { get; }
 
         public static implicit operator string(Command obj) {
             return obj.GetValueAsync().ConfigureAwait(false).GetAwaiter().GetResult();
@@ -25,7 +32,7 @@ namespace CalqFramework.Cmd {
 
         public static Command operator |(Command a, Command b) {
             var cIn = new StringReader(a.GetValueAsync().ConfigureAwait(false).GetAwaiter().GetResult()); // TODO asynchronously relay stream in loop instead of converting to string (fire a task and forget)
-            var c = new Command(b.Shell, b.WorkingDirectory, b.Script, cIn);
+            var c = new Command(b.Shell, b.Script, b.ProcessRunConfiguration, cIn, b.Out);
             return c;
         }
 
@@ -36,7 +43,7 @@ namespace CalqFramework.Cmd {
                 try {
                     localValue = _value;
                     if (localValue == null) {
-                        await Shell.ExecuteAsync(WorkingDirectory, Script, In, Out, cancellationToken);
+                        await Shell.ExecuteAsync(Script, new ProcessRunConfiguration(ProcessRunConfiguration) { In = In, Out = Out }, cancellationToken);
                         _value = localValue = Out.ToString();
                     }
                 } finally {

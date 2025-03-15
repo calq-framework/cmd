@@ -1,4 +1,4 @@
-﻿using CalqFramework.Cmd.Execution;
+﻿using CalqFramework.Cmd.SystemProcess;
 
 namespace CalqFramework.Cmd.Shells;
 public class CommandLine : ShellBase {
@@ -6,10 +6,10 @@ public class CommandLine : ShellBase {
         return hostPath;
     }
 
-    internal override ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script) {
+    internal override ProcessRunInfo GetProcessRunInfo(string workingDirectory, string script) {
         int spaceIndex = script.IndexOf(' ');
         var command = script.Substring(0, spaceIndex);
         var arguments = script.Substring(spaceIndex + 1);
-        return new ProcessExecutionInfo(command, arguments);
+        return new ProcessRunInfo(command, arguments);
     }
 }

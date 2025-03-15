@@ -1,8 +1,9 @@
-﻿
+﻿using CalqFramework.Cmd.SystemProcess;
+
 namespace CalqFramework.Cmd.Shells {
     public interface IShell {
 
-        Task ExecuteAsync(string workingDirectory, string script, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default);
+        Task ExecuteAsync(string script, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default);
 
         string GetInternalPath(string hostPath);
     }

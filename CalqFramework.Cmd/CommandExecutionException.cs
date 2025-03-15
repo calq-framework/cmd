@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CalqFramework.Cmd;
-public class CommandExecutionException : Exception
-{
+﻿namespace CalqFramework.Cmd;
+public class CommandExecutionException : Exception {
     public int ExitCode { get; }
 
-    public CommandExecutionException(string message, int exitCode) : base(message)
-    {
+    public CommandExecutionException(int exitCode, string? message) : this(exitCode, message, null) {
+    }
+
+    public CommandExecutionException(int exitCode, string? message, Exception? innerException) : base(message, innerException) {
         ExitCode = exitCode;
     }
 }
