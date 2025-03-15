@@ -17,12 +17,12 @@ public class TerminalTest {
 
     [Fact]
     public async void CurrentDirectoryTest() {
-        var currentDirectory = LocalTerminal.WorkingDirectory;
+        var currentDirectory = LocalTerminal.ProcessRunConfiguration.WorkingDirectory;
         await Task.Run(() => {
             CD("changed");
-            Assert.NotEqual(currentDirectory, LocalTerminal.WorkingDirectory);
+            Assert.NotEqual(currentDirectory, LocalTerminal.ProcessRunConfiguration.WorkingDirectory);
         });
-        Assert.Equal(currentDirectory, LocalTerminal.WorkingDirectory);
+        Assert.Equal(currentDirectory, LocalTerminal.ProcessRunConfiguration.WorkingDirectory);
     }
 
     [Fact]
@@ -39,8 +39,8 @@ public class TerminalTest {
         var writer = new StringWriter();
         var input = "hello world\n";
 
-        LocalTerminal.In = new StringReader(input);
-        LocalTerminal.Out = writer;
+        LocalTerminal.ProcessRunConfiguration.In = new StringReader(input);
+        LocalTerminal.ProcessRunConfiguration.Out = writer;
         LocalTerminal.Shell = new Bash();
 
         RUN("sleep 1; read -r input; echo $input");
@@ -57,8 +57,8 @@ public class TerminalTest {
         }
 
         var writer = new StringWriter();
-        LocalTerminal.In = new StringReader(expectedOutput);
-        LocalTerminal.Out = writer;
+        LocalTerminal.ProcessRunConfiguration.In = new StringReader(expectedOutput);
+        LocalTerminal.ProcessRunConfiguration.Out = writer;
         LocalTerminal.Shell = new Bash();
 
         var output = CMD("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
@@ -76,8 +76,8 @@ public class TerminalTest {
         }
 
         var writer = new StringWriter();
-        LocalTerminal.In = new StringReader(expectedOutput);
-        LocalTerminal.Out = writer;
+        LocalTerminal.ProcessRunConfiguration.In = new StringReader(expectedOutput);
+        LocalTerminal.ProcessRunConfiguration.Out = writer;
         LocalTerminal.Shell = new Bash();
 
         RUN("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");

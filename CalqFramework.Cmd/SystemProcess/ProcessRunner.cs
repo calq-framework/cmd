@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace CalqFramework.Cmd.Execution {
+namespace CalqFramework.Cmd.SystemProcess {
     internal class ProcessRunner : IDisposable {
         private bool _disposed;
 
@@ -24,16 +24,16 @@ namespace CalqFramework.Cmd.Execution {
             GC.SuppressFinalize(this);
         }
 
-        public async Task<int> Run(string workingDirectory, ProcessExecutionInfo processExecutionInfo, TextReader inputReader, TextWriter outputWriter, TextWriter errorWriter, CancellationToken cancellationToken = default) {
+        public async Task Run(ProcessRunInfo processRunInfo, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default) {
             var psi = new ProcessStartInfo {
-                WorkingDirectory = workingDirectory,
-                FileName = processExecutionInfo.FileName,
+                WorkingDirectory = processRunConfiguration.WorkingDirectory,
+                FileName = processRunInfo.FileName,
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
-                Arguments = processExecutionInfo.Arguments
+                Arguments = processRunInfo.Arguments
             };
 
             Process = new Process() {
@@ -45,10 +45,11 @@ namespace CalqFramework.Cmd.Execution {
             InOutStreamCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var relayInputTaskAbortCts = CancellationTokenSource.CreateLinkedTokenSource(InOutStreamCts.Token);
 
-            var relayInputTask = Task.Run(async () => RelayInput(Process.StandardInput, inputReader, outputWriter, InOutStreamCts.Token)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock threadb
+            var relayInputTask = Task.Run(async () => RelayInput(Process.StandardInput, processRunConfiguration.In, processRunConfiguration.Out, InOutStreamCts.Token)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock threadb
 
-            var relayOutputTask = RelayStream(Process.StandardOutput, outputWriter, InOutStreamCts.Token);
+            var relayOutputTask = RelayStream(Process.StandardOutput, processRunConfiguration.Out, InOutStreamCts.Token);
 
+            var errorWriter = new StringWriter();
             var relayErrorTask = RelayStream(Process.StandardError, errorWriter, InOutStreamCts.Token);
 
             await Process.WaitForExitAsync(cancellationToken);
@@ -63,7 +64,9 @@ namespace CalqFramework.Cmd.Execution {
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            return Process.ExitCode;
+            var error = errorWriter.ToString();
+
+            processRunConfiguration.ErrorHandler.AssertSuccess(processRunInfo, processRunConfiguration, Process, error);
         }
 
         protected virtual void Dispose(bool disposing) {
