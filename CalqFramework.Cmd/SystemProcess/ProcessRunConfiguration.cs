@@ -1,6 +1,11 @@
 ﻿namespace CalqFramework.Cmd.SystemProcess {
     internal class ProcessRunConfiguration : IProcessRunConfiguration {
-        public ProcessRunConfiguration() { }
+        public ProcessRunConfiguration() {
+            ErrorHandler = new ProcessErrorHandler();
+            In = Console.In;
+            Out = Console.Out;
+            WorkingDirectory = Environment.CurrentDirectory;
+        }
 
         public ProcessRunConfiguration(IProcessRunConfiguration processRunConfiguration) {
             ErrorHandler = processRunConfiguration.ErrorHandler;

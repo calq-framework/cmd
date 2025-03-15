@@ -61,6 +61,7 @@ public static class Terminal {
 
         public LocalTerminalConfigurationContext() {
             _defaultShell = new CommandLine();
+
             _localShell = new AsyncLocal<IShell>();
         }
 
@@ -75,10 +76,7 @@ public static class Terminal {
         }
 
         public class ProcessRunConfigurationContext : IProcessRunConfiguration {
-            private readonly ProcessErrorHandler _defaulErrorHandler;
-            private readonly TextReader _defaultIn;
-            private readonly TextWriter _defaultOut;
-            private readonly string _defaultWorkingDirectory;
+            private readonly ProcessRunConfiguration _defaultRunConfiguration;
 
             private readonly AsyncLocal<ProcessErrorHandler> _localErrorHandler;
             private readonly AsyncLocal<TextReader> _localIn;
@@ -86,10 +84,8 @@ public static class Terminal {
             private readonly AsyncLocal<string> _localWorkingDirectory;
 
             public ProcessRunConfigurationContext() {
-                _defaulErrorHandler = new ProcessErrorHandler();
-                _defaultIn = Console.In;
-                _defaultOut = Console.Out;
-                _defaultWorkingDirectory = Environment.CurrentDirectory;
+                _defaultRunConfiguration = new ProcessRunConfiguration();
+
                 _localIn = new AsyncLocal<TextReader>();
                 _localOut = new AsyncLocal<TextWriter>();
                 _localWorkingDirectory = new AsyncLocal<string>();
@@ -98,7 +94,7 @@ public static class Terminal {
 
             public ProcessErrorHandler ErrorHandler {
                 get {
-                    _localErrorHandler.Value ??= _defaulErrorHandler;
+                    _localErrorHandler.Value ??= _defaultRunConfiguration.ErrorHandler;
                     return _localErrorHandler.Value!;
                 }
                 set => _localErrorHandler.Value = value;
@@ -106,7 +102,7 @@ public static class Terminal {
 
             public TextReader In {
                 get {
-                    _localIn.Value ??= _defaultIn;
+                    _localIn.Value ??= _defaultRunConfiguration.In;
                     return _localIn.Value!;
                 }
                 set => _localIn.Value = value;
@@ -114,7 +110,7 @@ public static class Terminal {
 
             public TextWriter Out {
                 get {
-                    _localOut.Value ??= _defaultOut;
+                    _localOut.Value ??= _defaultRunConfiguration.Out;
                     return _localOut.Value!;
                 }
                 set => _localOut.Value = value;
@@ -123,7 +119,7 @@ public static class Terminal {
 
             public string WorkingDirectory {
                 get {
-                    _localWorkingDirectory.Value ??= _defaultWorkingDirectory;
+                    _localWorkingDirectory.Value ??= _defaultRunConfiguration.WorkingDirectory;
                     return _localWorkingDirectory.Value!;
                 }
                 set => _localWorkingDirectory.Value = value;
