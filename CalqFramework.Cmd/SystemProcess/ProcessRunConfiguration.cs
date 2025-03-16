@@ -14,7 +14,7 @@
             WorkingDirectory = processRunConfiguration.WorkingDirectory;
         }
 
-        public ProcessErrorHandler ErrorHandler { get; init; }
+        public IProcessErrorHandler ErrorHandler { get; init; }
         public TextReader In { get; init; }
         public TextWriter Out { get; init; }
         public string WorkingDirectory { get; init; }
