@@ -57,7 +57,7 @@ namespace CalqFramework.Cmd.SystemProcess {
             relayInputTaskAbortCts.Cancel();
             try {
                 await relayInputTask;
-            } catch (TaskCanceledException) { }
+            } catch (TaskCanceledException) { } // triggered by relayInputTaskAbortCts which should be ignored
 
             await relayOutputTask;
             await relayErrorTask;
