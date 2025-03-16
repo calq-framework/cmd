@@ -25,6 +25,10 @@ public abstract class ShellBase : IShell {
 
     internal abstract bool IsUsingWSL { get; }
 
+    public void Execute(string script, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default) {
+        ExecuteAsync(script, processRunConfiguration, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
+    }
+
     public async Task ExecuteAsync(string script, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default) {
         string AddLineNumbers(string input) {
             var i = 0;
