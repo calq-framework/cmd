@@ -19,54 +19,74 @@ public static class Terminal {
     }
 
     public static void RUN(string script, TimeSpan? timeout = null) {
+        LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
         LocalTerminal.Shell.Execute(script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration), cancellationTokenSource.Token);
     }
 
     public static void RUN(string script, TextWriter outputWriter, TimeSpan? timeout = null) {
+        LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
         LocalTerminal.Shell.Execute(script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { Out = outputWriter }, cancellationTokenSource.Token);
     }
 
     public static void RUN(string script, TextReader inputReader, TimeSpan? timeout = null) {
+        LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
         LocalTerminal.Shell.Execute(script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader }, cancellationTokenSource.Token);
     }
 
     public static void RUN(string script, TextReader inputReader, TextWriter outputWriter, TimeSpan? timeout = null) {
+        LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
         LocalTerminal.Shell.Execute(script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader, Out = outputWriter }, cancellationTokenSource.Token);
     }
 
     public static async Task RUNAsync(string script, CancellationToken cancellationToken = default) {
+        LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
         await LocalTerminal.Shell.ExecuteAsync(script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration), cancellationToken);
     }
 
     public static async Task RUNAsync(string script, TextReader inputReader, CancellationToken cancellationToken = default) {
+        LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
         await LocalTerminal.Shell.ExecuteAsync(script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader }, cancellationToken);
     }
 
     public static async Task RUNAsync(string script, TextWriter outputWriter, CancellationToken cancellationToken = default) {
+        LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
         await LocalTerminal.Shell.ExecuteAsync(script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { Out = outputWriter }, cancellationToken);
     }
 
     public static async Task RUNAsync(string script, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
+        LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
         await LocalTerminal.Shell.ExecuteAsync(script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader, Out = outputWriter }, cancellationToken);
     }
 
     public class LocalTerminalConfigurationContext {
         private readonly ICommandProcessor _defaultCommandProcessor;
         private readonly IShell _defaultShell;
+        private readonly ITerminalLogger _defaultTerminalLogger;
 
         private readonly AsyncLocal<ICommandProcessor> _localCommandProcessor;
         private readonly AsyncLocal<IShell> _localShell;
+        private readonly AsyncLocal<ITerminalLogger> _localTerminalLogger;
 
         public LocalTerminalConfigurationContext() {
             _defaultShell = new CommandLine();
             _defaultCommandProcessor = new CommandProcessor();
+            _defaultTerminalLogger = new TerminalLogger();
 
             _localShell = new AsyncLocal<IShell>();
             _localCommandProcessor = new AsyncLocal<ICommandProcessor>();
+            _localTerminalLogger = new AsyncLocal<ITerminalLogger>();
+        }
+
+        public ITerminalLogger TerminalLogger {
+            get {
+                _localTerminalLogger.Value ??= _defaultTerminalLogger;
+                return _localTerminalLogger.Value!;
+            }
+            set => _localTerminalLogger.Value = value;
         }
 
         public ICommandProcessor CommandProcessor {
