@@ -3,6 +3,8 @@ using CalqFramework.Cmd.SystemProcess;
 using System.Diagnostics;
 
 namespace CalqFramework.Cmd {
+
+    [DebuggerDisplay("{Script}")]
     public class Command {
         private static readonly SemaphoreSlim _valueSemaphore = new SemaphoreSlim(1, 1);
 
@@ -61,6 +63,10 @@ namespace CalqFramework.Cmd {
                 }
             }
             return CommandProcessor.ProcessValue(localValue);
+        }
+
+        public override string ToString() {
+            return Value;
         }
     }
 }
