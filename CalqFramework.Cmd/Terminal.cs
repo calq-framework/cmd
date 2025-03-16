@@ -78,7 +78,7 @@ public static class Terminal {
         public class ProcessRunConfigurationContext : IProcessRunConfiguration {
             private readonly ProcessRunConfiguration _defaultRunConfiguration;
 
-            private readonly AsyncLocal<ProcessErrorHandler> _localErrorHandler;
+            private readonly AsyncLocal<IProcessErrorHandler> _localErrorHandler;
             private readonly AsyncLocal<TextReader> _localIn;
             private readonly AsyncLocal<TextWriter> _localOut;
             private readonly AsyncLocal<string> _localWorkingDirectory;
@@ -89,10 +89,10 @@ public static class Terminal {
                 _localIn = new AsyncLocal<TextReader>();
                 _localOut = new AsyncLocal<TextWriter>();
                 _localWorkingDirectory = new AsyncLocal<string>();
-                _localErrorHandler = new AsyncLocal<ProcessErrorHandler>();
+                _localErrorHandler = new AsyncLocal<IProcessErrorHandler>();
             }
 
-            public ProcessErrorHandler ErrorHandler {
+            public IProcessErrorHandler ErrorHandler {
                 get {
                     _localErrorHandler.Value ??= _defaultRunConfiguration.ErrorHandler;
                     return _localErrorHandler.Value!;
