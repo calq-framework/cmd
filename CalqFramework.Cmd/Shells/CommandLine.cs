@@ -2,9 +2,8 @@
 
 namespace CalqFramework.Cmd.Shells;
 public class CommandLine : ShellBase {
-    public override string GetInternalPath(string hostPath) {
-        return hostPath;
-    }
+
+    internal override bool IsUsingWSL => false;
 
     internal override ProcessRunInfo GetProcessRunInfo(string workingDirectory, string script) {
         int spaceIndex = script.IndexOf(' ');

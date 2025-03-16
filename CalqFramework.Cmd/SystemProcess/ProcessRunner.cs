@@ -45,7 +45,7 @@ namespace CalqFramework.Cmd.SystemProcess {
             InOutStreamCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var relayInputTaskAbortCts = CancellationTokenSource.CreateLinkedTokenSource(InOutStreamCts.Token);
 
-            var relayInputTask = Task.Run(async () => RelayInput(Process.StandardInput, processRunConfiguration.In, processRunConfiguration.Out, InOutStreamCts.Token)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock threadb
+            var relayInputTask = Task.Run(async () => await RelayInput(Process.StandardInput, processRunConfiguration.In, processRunConfiguration.Out, InOutStreamCts.Token)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock threadb
 
             var relayOutputTask = RelayStream(Process.StandardOutput, processRunConfiguration.Out, InOutStreamCts.Token);
 
