@@ -92,14 +92,14 @@ public class TerminalTest {
         var echoText = "hello, world";
         var echoCommand = CMD($"echo {echoText}");
 
-        if (string.Compare($"{echoText}\n", echoCommand) != 0) {
+        if (string.Compare(echoText, echoCommand) != 0) {
             Assert.True(false);
         }
-        if ($"{echoText}\n" != echoCommand) {
+        if (echoText != echoCommand) {
             Assert.True(false);
         }
 
         string output = echoCommand | CMD("cut -d',' -f1");
-        Assert.Equal("hello\n", output);
+        Assert.Equal("hello", output);
     }
 }
