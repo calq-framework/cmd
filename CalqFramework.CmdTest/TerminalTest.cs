@@ -46,7 +46,7 @@ public class TerminalTest {
         RUN("sleep 1; read -r input; echo $input");
         var output = writer.ToString();
 
-        Assert.Equal(input, output);
+        Assert.Equal(input, string.Join("\n", output.Split('\n').Skip(3))); // skip log output
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public class TerminalTest {
         RUN("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
         var writerOutput = writer.ToString();
 
-        Assert.Equal(expectedOutput, writerOutput);
+        Assert.Equal(expectedOutput, string.Join("\n", writerOutput.Split('\n').Skip(3))); // skip log output
     }
 
     [Fact]
