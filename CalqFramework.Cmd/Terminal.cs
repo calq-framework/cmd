@@ -15,7 +15,7 @@ public static class Terminal {
 
     public static Command CMD(string script, TextReader inputReader, TimeSpan? timeout = null) {
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
-        return new Command(LocalTerminal.Shell, script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader });
+        return new Command(LocalTerminal.Shell, script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader }) { CommandProcessor = LocalTerminal.CommandProcessor };
     }
 
     public static void RUN(string script, TimeSpan? timeout = null) {
@@ -55,14 +55,26 @@ public static class Terminal {
     }
 
     public class LocalTerminalConfigurationContext {
+        private readonly ICommandProcessor _defaultCommandProcessor;
         private readonly IShell _defaultShell;
 
+        private readonly AsyncLocal<ICommandProcessor> _localCommandProcessor;
         private readonly AsyncLocal<IShell> _localShell;
 
         public LocalTerminalConfigurationContext() {
             _defaultShell = new CommandLine();
+            _defaultCommandProcessor = new CommandProcessor();
 
             _localShell = new AsyncLocal<IShell>();
+            _localCommandProcessor = new AsyncLocal<ICommandProcessor>();
+        }
+
+        public ICommandProcessor CommandProcessor {
+            get {
+                _localCommandProcessor.Value ??= _defaultCommandProcessor;
+                return _localCommandProcessor.Value!;
+            }
+            set => _localCommandProcessor.Value = value;
         }
 
         public ProcessRunConfigurationContext ProcessRunConfiguration { get; } = new ProcessRunConfigurationContext();
@@ -76,7 +88,7 @@ public static class Terminal {
         }
 
         public class ProcessRunConfigurationContext : IProcessRunConfiguration {
-            private readonly ProcessRunConfiguration _defaultRunConfiguration;
+            private readonly IProcessRunConfiguration _defaultProcessRunConfiguration;
 
             private readonly AsyncLocal<IProcessErrorHandler> _localErrorHandler;
             private readonly AsyncLocal<TextReader> _localIn;
@@ -84,7 +96,7 @@ public static class Terminal {
             private readonly AsyncLocal<string> _localWorkingDirectory;
 
             public ProcessRunConfigurationContext() {
-                _defaultRunConfiguration = new ProcessRunConfiguration();
+                _defaultProcessRunConfiguration = new ProcessRunConfiguration();
 
                 _localIn = new AsyncLocal<TextReader>();
                 _localOut = new AsyncLocal<TextWriter>();
@@ -94,7 +106,7 @@ public static class Terminal {
 
             public IProcessErrorHandler ErrorHandler {
                 get {
-                    _localErrorHandler.Value ??= _defaultRunConfiguration.ErrorHandler;
+                    _localErrorHandler.Value ??= _defaultProcessRunConfiguration.ErrorHandler;
                     return _localErrorHandler.Value!;
                 }
                 set => _localErrorHandler.Value = value;
@@ -102,7 +114,7 @@ public static class Terminal {
 
             public TextReader In {
                 get {
-                    _localIn.Value ??= _defaultRunConfiguration.In;
+                    _localIn.Value ??= _defaultProcessRunConfiguration.In;
                     return _localIn.Value!;
                 }
                 set => _localIn.Value = value;
@@ -110,7 +122,7 @@ public static class Terminal {
 
             public TextWriter Out {
                 get {
-                    _localOut.Value ??= _defaultRunConfiguration.Out;
+                    _localOut.Value ??= _defaultProcessRunConfiguration.Out;
                     return _localOut.Value!;
                 }
                 set => _localOut.Value = value;
@@ -119,7 +131,7 @@ public static class Terminal {
 
             public string WorkingDirectory {
                 get {
-                    _localWorkingDirectory.Value ??= _defaultRunConfiguration.WorkingDirectory;
+                    _localWorkingDirectory.Value ??= _defaultProcessRunConfiguration.WorkingDirectory;
                     return _localWorkingDirectory.Value!;
                 }
                 set => _localWorkingDirectory.Value = value;

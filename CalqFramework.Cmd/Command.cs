@@ -7,10 +7,7 @@ namespace CalqFramework.Cmd {
 
         private volatile string? _value;
 
-        private Command(IShell shell, string script, IProcessRunConfiguration processRunConfiguration, TextReader input, StringWriter output) : this(shell, script, processRunConfiguration) {
-            In = input;
-            Out = output;
-        }
+        public ICommandProcessor CommandProcessor { get; init; } = new CommandProcessor();
 
         public Command(IShell shell, string script, IProcessRunConfiguration processRunConfiguration) {
             Shell = shell;
@@ -18,6 +15,11 @@ namespace CalqFramework.Cmd {
             ProcessRunConfiguration = processRunConfiguration;
             In = processRunConfiguration.In;
             Out = new StringWriter();
+        }
+
+        private Command(IShell shell, string script, IProcessRunConfiguration processRunConfiguration, TextReader input, StringWriter output) : this(shell, script, processRunConfiguration) {
+            In = input;
+            Out = output;
         }
 
         private TextReader In { get; }
@@ -32,7 +34,7 @@ namespace CalqFramework.Cmd {
 
         public static Command operator |(Command a, Command b) {
             var cIn = new StringReader(a.GetValueAsync().ConfigureAwait(false).GetAwaiter().GetResult()); // TODO asynchronously relay stream in loop instead of converting to string (fire a task and forget)
-            var c = new Command(b.Shell, b.Script, b.ProcessRunConfiguration, cIn, b.Out);
+            var c = new Command(b.Shell, b.Script, b.ProcessRunConfiguration, cIn, b.Out) { CommandProcessor = b.CommandProcessor };
             return c;
         }
 
@@ -44,7 +46,7 @@ namespace CalqFramework.Cmd {
                     localValue = _value;
                     if (localValue == null) {
                         await Shell.ExecuteAsync(Script, new ProcessRunConfiguration(ProcessRunConfiguration) { In = In, Out = Out }, cancellationToken);
-                        _value = localValue = Out.ToString();
+                        _value = localValue = CommandProcessor.ProcessValue(Out.ToString());
                     }
                 } finally {
                     _valueSemaphore.Release();
