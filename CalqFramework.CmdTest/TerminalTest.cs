@@ -90,7 +90,7 @@ public class TerminalTest {
     public async void CmdTest() {
         LocalTerminal.Shell = new Bash();
         var echoText = "hello, world";
-        var echoCommand = CMD($"echo {echoText}");
+        var echoCommand = CMDV($"echo {echoText}");
 
         if (string.Compare(echoText, echoCommand) != 0) {
             Assert.True(false);
@@ -99,7 +99,7 @@ public class TerminalTest {
             Assert.True(false);
         }
 
-        string output = echoCommand | CMD("cut -d',' -f1");
+        string output = echoCommand | CMDV("cut -d',' -f1");
         Assert.Equal("hello", output);
     }
 }
