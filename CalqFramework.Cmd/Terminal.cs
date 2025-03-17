@@ -9,15 +9,32 @@ public static class Terminal {
         LocalTerminal.ProcessRunConfiguration.WorkingDirectory = Path.GetFullPath(Path.Combine(LocalTerminal.ProcessRunConfiguration.WorkingDirectory, path));
     }
 
-    public static Command CMD(string script, TimeSpan? timeout = null) {
+    public static string CMD(string script, TimeSpan? timeout = null) {
         return CMD(script, TextReader.Null, timeout);
     }
 
-    public static Command CMD(string script, TextReader inputReader, TimeSpan? timeout = null) {
+    public static string CMD(string script, TextReader inputReader, TimeSpan? timeout = null) {
+        var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
+        return new Command(LocalTerminal.Shell, script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader }) { CommandProcessor = LocalTerminal.CommandProcessor }.Value;
+    }
+
+    public static Task<string> CMDAsync(string script, TimeSpan? timeout = null) {
+        return CMDAsync(script, TextReader.Null, timeout);
+    }
+
+    public static Task<string> CMDAsync(string script, TextReader inputReader, TimeSpan? timeout = null) {
+        var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
+        return new Command(LocalTerminal.Shell, script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader }) { CommandProcessor = LocalTerminal.CommandProcessor }.GetValueAsync();
+    }
+
+    public static Command CMDV(string script, TimeSpan? timeout = null) {
+        return CMDV(script, TextReader.Null, timeout);
+    }
+
+    public static Command CMDV(string script, TextReader inputReader, TimeSpan? timeout = null) {
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
         return new Command(LocalTerminal.Shell, script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader }) { CommandProcessor = LocalTerminal.CommandProcessor };
     }
-
     public static void RUN(string script, TimeSpan? timeout = null) {
         LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
@@ -81,14 +98,6 @@ public static class Terminal {
             _localTerminalLogger = new AsyncLocal<ITerminalLogger>();
         }
 
-        public ITerminalLogger TerminalLogger {
-            get {
-                _localTerminalLogger.Value ??= _defaultTerminalLogger;
-                return _localTerminalLogger.Value!;
-            }
-            set => _localTerminalLogger.Value = value;
-        }
-
         public ICommandProcessor CommandProcessor {
             get {
                 _localCommandProcessor.Value ??= _defaultCommandProcessor;
@@ -107,6 +116,13 @@ public static class Terminal {
             set => _localShell.Value = value;
         }
 
+        public ITerminalLogger TerminalLogger {
+            get {
+                _localTerminalLogger.Value ??= _defaultTerminalLogger;
+                return _localTerminalLogger.Value!;
+            }
+            set => _localTerminalLogger.Value = value;
+        }
         public class ProcessRunConfigurationContext : IProcessRunConfiguration {
             private readonly IProcessRunConfiguration _defaultProcessRunConfiguration;
 
