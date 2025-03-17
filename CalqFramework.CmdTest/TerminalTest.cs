@@ -5,7 +5,7 @@ namespace CalqFramework.CmdTest;
 
 public class TerminalTest {
     [Fact]
-    public async void LocalShellTest() {
+    public async void Shell_WhenChangedInTask_RevertsToOriginal() {
         LocalTerminal.Shell = new CommandLine();
         var cmd = LocalTerminal.Shell;
         await Task.Run(() => {
@@ -16,7 +16,7 @@ public class TerminalTest {
     }
 
     [Fact]
-    public async void CurrentDirectoryTest() {
+    public async void WorkingDirectory_WhenChangedInTask_RevertsToOriginal() {
         var currentDirectory = LocalTerminal.ProcessRunConfiguration.WorkingDirectory;
         await Task.Run(() => {
             CD("changed");
@@ -26,7 +26,7 @@ public class TerminalTest {
     }
 
     [Fact]
-    public async void CommandLineUtilTest() {
+    public async void CMD_WithValidCommand_ReturnsNonEmpty() {
         LocalTerminal.Shell = new CommandLine();
 
         var output = CMD("dotnet --version");
@@ -35,7 +35,7 @@ public class TerminalTest {
     }
 
     [Fact]
-    public async void BashUtilTest() {
+    public async void Bash_ReadInput_EchosCorrectly() {
         var writer = new StringWriter();
         var input = "hello world\n";
 
@@ -50,7 +50,7 @@ public class TerminalTest {
     }
 
     [Fact]
-    public async void LongOutputTest() {
+    public async void CMD_WithLongOutput_ReturnsCorrectly() {
         var expectedOutput = "";
         for (var i = 0; i < 2500; ++i) {
             expectedOutput += "1234567890";
@@ -69,7 +69,7 @@ public class TerminalTest {
     }
 
     [Fact]
-    public async void LongRunOutputTest() {
+    public async void RUN_WithLongOutput_WritesCorrectly() {
         var expectedOutput = "";
         for (var i = 0; i < 2500; ++i) {
             expectedOutput += "1234567890";
@@ -87,7 +87,7 @@ public class TerminalTest {
     }
 
     [Fact]
-    public async void CmdTest() {
+    public async void CommandPiping_WithEchoAndCut_ReturnsCorrectly() {
         LocalTerminal.Shell = new Bash();
         var echoText = "hello, world";
         var echoCommand = CMDV($"echo {echoText}");
