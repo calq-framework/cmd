@@ -1,6 +1,6 @@
 ﻿
 namespace CalqFramework.Cmd {
-    public interface ICommandProcessor {
+    public interface ICommandOutputPostprocessor {
         string ProcessValue(string value);
     }
 }

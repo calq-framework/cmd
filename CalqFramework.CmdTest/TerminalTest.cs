@@ -102,4 +102,19 @@ public class TerminalTest {
         string output = echoCommand | CMDV("cut -d',' -f1");
         Assert.Equal("hello", output);
     }
+
+    [Fact]
+    public void CommandStart_AfterGarbageCollection_ReturnsCorrectly2() {
+        LocalTerminal.Shell = new Bash();
+        var input = "hello world";
+
+        var command = CMDV($"sleep 2; echo {input}");
+        using var proc = command.Start();
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        var output = proc.StandardOutput.ReadLine();
+
+
+        Assert.Equal(input, output);
+    }
 }

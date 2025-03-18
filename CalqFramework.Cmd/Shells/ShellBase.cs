@@ -1,4 +1,5 @@
 ﻿using CalqFramework.Cmd.SystemProcess;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -8,10 +9,10 @@ public abstract class ShellBase : IShell {
 
     static ShellBase() {
         if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
-            var output = new StringWriter();
-            var pr = new ProcessRunner();
-            pr.Run(new ProcessRunInfo("bash", "-c \"uname -s\""), new ProcessRunConfiguration() { In = TextReader.Null, Out = output }).ConfigureAwait(false).GetAwaiter().GetResult();
-            IsRunningBashOnWSL = output.ToString().TrimEnd() switch {
+            var outputWriter = new StringWriter();
+            using var process = new RunnableProcess();
+            process.Run(new ProcessExecutionInfo("bash", "-c \"uname -s\""), new ProcessRunConfiguration() { In = TextReader.Null, Out = outputWriter }).ConfigureAwait(false).GetAwaiter().GetResult();
+            IsRunningBashOnWSL = outputWriter.ToString().TrimEnd() switch {
                 "Linux" => true,
                 "Darwin" => true,
                 _ => false
@@ -25,31 +26,40 @@ public abstract class ShellBase : IShell {
 
     internal abstract bool IsUsingWSL { get; }
 
-    public void Execute(string script, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default) {
-        ExecuteAsync(script, processRunConfiguration, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
-    }
-
-    public async Task ExecuteAsync(string script, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default) {
-        string AddLineNumbers(string input) {
-            var i = 0;
-            return string.Join('\n', input.Split('\n').Select(x => $"{i++}: {x}"));
-        }
-
-        var processRunInfo = GetProcessRunInfo(processRunConfiguration.WorkingDirectory, script);
-        using var processRunner = new ProcessRunner();
-
-        try {
-            await processRunner.Run(processRunInfo, processRunConfiguration, cancellationToken);
-        } catch (ProcessExecutionException ex) {
-            throw new CommandExecutionException(ex.ExitCode, $"\n{AddLineNumbers(script)}\n\nExit code:\n{ex.ExitCode}\n\nError:\n{ex.Message}", ex); // TODO formalize error handling
-        }
-    }
-
     public string GetInternalPath(string hostPath) {
         if (IsUsingWSL) {
             return WindowsToWslPath(hostPath);
         }
         return hostPath;
+    }
+
+    public void Run(string script, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default) {
+        RunAsync(script, processRunConfiguration, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
+    }
+
+    public async Task RunAsync(string script, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default) {
+        string AddLineNumbers(string input) {
+            var i = 0;
+            return string.Join('\n', input.Split('\n').Select(x => $"{i++}: {x}"));
+        }
+
+        var processExecutionInfo = GetProcessExecutionInfo(processRunConfiguration.WorkingDirectory, script);
+        using var process = new RunnableProcess();
+
+        try {
+            await process.Run(processExecutionInfo, processRunConfiguration, cancellationToken);
+        } catch (ProcessExecutionException ex) {
+            throw new CommandExecutionException(ex.ExitCode, $"\n{AddLineNumbers(script)}\n\nExit code:\n{ex.ExitCode}\n\nError:\n{ex.Message}", ex); // TODO formalize error handling
+        }
+    }
+
+    public Process Start(string script, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) {
+        var processExecutionInfo = GetProcessExecutionInfo(processStartConfiguration.WorkingDirectory, script);
+        var process = new RunnableProcess();
+
+        process.Start(processExecutionInfo, processStartConfiguration, cancellationToken);
+
+        return process;
     }
 
     internal static string WindowsToWslPath(string windowsPath) {
@@ -83,7 +93,7 @@ public abstract class ShellBase : IShell {
         throw new ArgumentException("Unsupported path format", nameof(windowsPath));
     }
 
-    internal abstract ProcessRunInfo GetProcessRunInfo(string workingDirectory, string script);
+    internal abstract ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script);
 
     private static string? GetUncPathFromDrive(string driveLetter) {
         var maxPathSize = 256;

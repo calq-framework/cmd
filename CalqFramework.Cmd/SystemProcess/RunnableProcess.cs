@@ -1,58 +1,45 @@
 ﻿using System.Diagnostics;
 
 namespace CalqFramework.Cmd.SystemProcess {
-    internal class ProcessRunner : IDisposable {
+    internal class RunnableProcess : Process {
         private bool _disposed;
 
-        public ProcessRunner() {
+        public RunnableProcess() {
             _disposed = false;
             HasStarted = false;
             InOutStreamCts = null;
-            Process = null;
-        }
-
-        ~ProcessRunner() {
-            Dispose(false);
         }
 
         private bool HasStarted { get; set; }
         private CancellationTokenSource? InOutStreamCts { get; set; }
-        private Process? Process { get; set; }
 
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public async Task Run(ProcessRunInfo processRunInfo, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default) {
+        public async Task Run(ProcessExecutionInfo processExecutionInfo, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default) {
             var psi = new ProcessStartInfo {
                 WorkingDirectory = processRunConfiguration.WorkingDirectory,
-                FileName = processRunInfo.FileName,
+                FileName = processExecutionInfo.FileName,
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
-                Arguments = processRunInfo.Arguments
+                Arguments = processExecutionInfo.Arguments
             };
 
-            Process = new Process() {
-                StartInfo = psi
-            };
+            StartInfo = psi;
 
-            HasStarted = Process.Start();
+            HasStarted = Start();
 
             InOutStreamCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var relayInputTaskAbortCts = CancellationTokenSource.CreateLinkedTokenSource(InOutStreamCts.Token);
 
-            var relayInputTask = Task.Run(async () => await RelayInput(Process.StandardInput, processRunConfiguration.In, processRunConfiguration.Out, InOutStreamCts.Token)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock threadb
+            var relayInputTask = Task.Run(async () => await RelayInput(StandardInput, processRunConfiguration.In, processRunConfiguration.InWriter, InOutStreamCts.Token)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
 
-            var relayOutputTask = RelayStream(Process.StandardOutput, processRunConfiguration.Out, InOutStreamCts.Token);
+            var relayOutputTask = RelayStream(StandardOutput, processRunConfiguration.Out, InOutStreamCts.Token);
 
             var errorWriter = new StringWriter();
-            var relayErrorTask = RelayStream(Process.StandardError, errorWriter, InOutStreamCts.Token);
+            var relayErrorTask = RelayStream(StandardError, errorWriter, InOutStreamCts.Token);
 
-            await Process.WaitForExitAsync(cancellationToken);
+            await WaitForExitAsync(cancellationToken);
 
             relayInputTaskAbortCts.Cancel();
             try {
@@ -66,28 +53,48 @@ namespace CalqFramework.Cmd.SystemProcess {
 
             var error = errorWriter.ToString();
 
-            processRunConfiguration.ErrorHandler.AssertSuccess(processRunInfo, processRunConfiguration, Process, error);
+            processRunConfiguration.ErrorHandler.AssertSuccess(processExecutionInfo, processRunConfiguration, this, error);
         }
 
-        protected virtual void Dispose(bool disposing) {
+        public void Start(ProcessExecutionInfo processExecutionInfo, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) {
+            var psi = new ProcessStartInfo {
+                WorkingDirectory = processStartConfiguration.WorkingDirectory,
+                FileName = processExecutionInfo.FileName,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                Arguments = processExecutionInfo.Arguments,
+            };
+
+            StartInfo = psi;
+
+            InOutStreamCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var relayInputTaskAbortCts = CancellationTokenSource.CreateLinkedTokenSource(InOutStreamCts.Token);
+
+            EnableRaisingEvents = true;
+            Exited += (s, e) => relayInputTaskAbortCts.Cancel();
+
+            HasStarted = Start();
+
+            var relayInputTask = Task.Run(async () => await RelayInput(StandardInput, processStartConfiguration.In, processStartConfiguration.InWriter, InOutStreamCts.Token)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
+        }
+
+        protected override void Dispose(bool disposing) {
             if (!_disposed) {
-                if (Process != null) {
-                    if (HasStarted && !Process.HasExited) {
-                        Process.Kill(true); // killing already killed process shouldn't throw
+                if (HasStarted && !HasExited) {
+                    Kill(true); // killing already killed process shouldn't throw
 
-                        if (InOutStreamCts != null) {
-                            InOutStreamCts.Cancel();
-                        }
-                    }
-
-
-                    if (disposing) {
-                        Process.Dispose();
+                    if (InOutStreamCts != null) {
+                        InOutStreamCts.Cancel();
                     }
                 }
 
                 _disposed = true;
             }
+
+            base.Dispose(disposing);
         }
 
         private static async Task RelayInput(StreamWriter processInput, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken) {

@@ -6,7 +6,7 @@ namespace CalqFramework.Cmd.Shells;
 public class Bash : ShellBase {
     internal override bool IsUsingWSL => IsRunningBashOnWSL;
 
-    internal override ProcessRunInfo GetProcessRunInfo(string workingDirectory, string script) {
+    internal override ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script) {
         if (IsUsingWSL) {
             script = $"cd {WindowsToWslPath(workingDirectory)}\n" + script;
         }
@@ -33,6 +33,6 @@ public class Bash : ShellBase {
 
         //Arguments = $"-c 'script -E never -e -q -f /dev/null -c \"{evalCommand}\"'",
 
-        return new ProcessRunInfo("bash", $"-c \"{evalCommand}\"");
+        return new ProcessExecutionInfo("bash", $"-c \"{evalCommand}\"");
     }
 }
