@@ -1,16 +1,17 @@
-﻿using CalqFramework.Cmd.Shells;
+﻿using CalqFramework.Cmd.Shell;
 using CalqFramework.Cmd.SystemProcess;
+using CalqFramework.Cmd.TerminalComponents.ShellCommandComponents;
 using System.Diagnostics;
 
 namespace CalqFramework.Cmd {
 
     [DebuggerDisplay("{Script}")]
-    public class Command {
+    public class ShellCommand {
         private static readonly SemaphoreSlim _valueSemaphore = new SemaphoreSlim(1, 1);
 
         private volatile string? _value;
 
-        public Command(IShell shell, string script, IProcessRunConfiguration processRunConfiguration) {
+        public ShellCommand(IShell shell, string script, IProcessRunConfiguration processRunConfiguration) {
             Shell = shell;
             Script = script;
             ProcessRunConfiguration = processRunConfiguration;
@@ -18,7 +19,7 @@ namespace CalqFramework.Cmd {
             Out = new StringWriter();
         }
 
-        private Command(IShell shell, string script, IProcessRunConfiguration processRunConfiguration, TextReader inputReader, StringWriter outputWriter) : this(shell, script, processRunConfiguration) {
+        private ShellCommand(IShell shell, string script, IProcessRunConfiguration processRunConfiguration, TextReader inputReader, StringWriter outputWriter) : this(shell, script, processRunConfiguration) {
             In = inputReader;
             Out = outputWriter;
         }
@@ -30,20 +31,20 @@ namespace CalqFramework.Cmd {
             }
         }
 
-        public ICommandOutputPostprocessor OutputPostprocessor { get; init; } = new CommandOutputPostprocessor();
+        public IShellCommandPostprocessor ShellCommandPostprocessor { get; init; } = new ShellCommandPostprocessor();
         private TextReader In { get; }
         private StringWriter Out { get; }
         private IProcessRunConfiguration ProcessRunConfiguration { get; }
         private string Script { get; }
         private IShell Shell { get; }
 
-        public static implicit operator string(Command obj) {
+        public static implicit operator string(ShellCommand obj) {
             return obj.Output;
         }
 
-        public static Command operator |(Command a, Command b) {
+        public static ShellCommand operator |(ShellCommand a, ShellCommand b) {
             var cIn = new StringReader(a.Output); // TODO asynchronously relay stream in loop instead of converting to string (fire a task and forget)
-            var c = new Command(b.Shell, b.Script, b.ProcessRunConfiguration, cIn, b.Out) { OutputPostprocessor = b.OutputPostprocessor };
+            var c = new ShellCommand(b.Shell, b.Script, b.ProcessRunConfiguration, cIn, b.Out) { ShellCommandPostprocessor = b.ShellCommandPostprocessor };
             return c;
         }
 
@@ -61,7 +62,7 @@ namespace CalqFramework.Cmd {
                     _valueSemaphore.Release();
                 }
             }
-            return OutputPostprocessor.ProcessValue(localValue);
+            return ShellCommandPostprocessor.ProcessOutput(localValue);
         }
 
         public Process Start(CancellationToken cancellationToken = default) {

@@ -1,4 +1,5 @@
-﻿using CalqFramework.Cmd.SystemProcess;
+﻿using CalqFramework.Cmd.Shell;
+using CalqFramework.Cmd.SystemProcess;
 
 namespace CalqFramework.Cmd.Shells;
 public class CommandLine : ShellBase {

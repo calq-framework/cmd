@@ -1,4 +1,5 @@
-﻿using CalqFramework.Cmd.SystemProcess;
+﻿using CalqFramework.Cmd.Shell;
+using CalqFramework.Cmd.SystemProcess;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -8,7 +9,7 @@ public class Bash : ShellBase {
 
     internal override ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script) {
         if (IsUsingWSL) {
-            script = $"cd {WindowsToWslPath(workingDirectory)}\n" + script;
+            script = $"cd {WSLUtils.WindowsToWslPath(workingDirectory)}\n" + script;
         }
 
         script = script.Replace("\r\n", "\n");
