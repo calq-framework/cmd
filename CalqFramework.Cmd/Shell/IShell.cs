@@ -1,9 +1,9 @@
 ﻿using CalqFramework.Cmd.SystemProcess;
 using System.Diagnostics;
 
-namespace CalqFramework.Cmd.Shells {
+namespace CalqFramework.Cmd.Shell {
     public interface IShell {
-        string GetInternalPath(string hostPath);
+        string MapToInternalPath(string hostPath);
 
         void Run(string script, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default);
 

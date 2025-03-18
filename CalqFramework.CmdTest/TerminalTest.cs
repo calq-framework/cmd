@@ -104,7 +104,7 @@ public class TerminalTest {
     }
 
     [Fact]
-    public void CommandStart_AfterGarbageCollection_ReturnsCorrectly2() {
+    public void CommandStart_AfterGarbageCollection_ReturnsCorrectly() {
         LocalTerminal.Shell = new Bash();
         var input = "hello world";
 

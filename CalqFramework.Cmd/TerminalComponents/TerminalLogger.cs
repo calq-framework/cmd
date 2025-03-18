@@ -1,6 +1,6 @@
 ﻿using CalqFramework.Cmd.SystemProcess;
 
-namespace CalqFramework.Cmd {
+namespace CalqFramework.Cmd.TerminalComponents {
     internal class TerminalLogger : ITerminalLogger {
         public void Log(string script, IProcessRunConfiguration processRunConfiguration) {
             processRunConfiguration.Out.WriteLine($"\nDIR: {processRunConfiguration.WorkingDirectory}");
