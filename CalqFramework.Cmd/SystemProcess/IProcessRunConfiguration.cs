@@ -1,8 +1,6 @@
 ﻿namespace CalqFramework.Cmd.SystemProcess {
-    public interface IProcessRunConfiguration {
+    public interface IProcessRunConfiguration : IProcessStartConfiguration {
         IProcessErrorHandler ErrorHandler { get; }
-        TextReader In { get; }
         TextWriter Out { get; }
-        string WorkingDirectory { get; }
     }
 }

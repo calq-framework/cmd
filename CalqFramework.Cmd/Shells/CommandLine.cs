@@ -5,10 +5,10 @@ public class CommandLine : ShellBase {
 
     internal override bool IsUsingWSL => false;
 
-    internal override ProcessRunInfo GetProcessRunInfo(string workingDirectory, string script) {
+    internal override ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script) {
         int spaceIndex = script.IndexOf(' ');
         var command = script.Substring(0, spaceIndex);
         var arguments = script.Substring(spaceIndex + 1);
-        return new ProcessRunInfo(command, arguments);
+        return new ProcessExecutionInfo(command, arguments);
     }
 }
