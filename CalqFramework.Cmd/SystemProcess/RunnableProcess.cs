@@ -1,8 +1,14 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace CalqFramework.Cmd.SystemProcess {
     internal class RunnableProcess : Process {
+        private static ConcurrentDictionary<Process, byte> _runningProcesses = new ConcurrentDictionary<Process, byte>();
         private bool _disposed;
+
+        static RunnableProcess() {
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+        }
 
         public RunnableProcess() {
             _disposed = false;
@@ -11,6 +17,7 @@ namespace CalqFramework.Cmd.SystemProcess {
         }
 
         private bool HasStarted { get; set; }
+
         private CancellationTokenSource? InOutStreamCts { get; set; }
 
         public async Task Run(ProcessExecutionInfo processExecutionInfo, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default) {
@@ -37,31 +44,6 @@ namespace CalqFramework.Cmd.SystemProcess {
             processRunConfiguration.ErrorHandler.AssertSuccess(processExecutionInfo, processRunConfiguration, this, error);
         }
 
-        private Task StartCore(ProcessExecutionInfo processExecutionInfo, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) {
-            var psi = new ProcessStartInfo {
-                WorkingDirectory = processStartConfiguration.WorkingDirectory,
-                FileName = processExecutionInfo.FileName,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                Arguments = processExecutionInfo.Arguments,
-            };
-
-            StartInfo = psi;
-
-            InOutStreamCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            var relayInputTaskAbortCts = CancellationTokenSource.CreateLinkedTokenSource(InOutStreamCts.Token);
-
-            EnableRaisingEvents = true;
-            Exited += (s, e) => relayInputTaskAbortCts.Cancel();
-
-            HasStarted = Start();
-
-            return Task.Run(async () => await RelayInput(StandardInput, processStartConfiguration.In, processStartConfiguration.InWriter, InOutStreamCts.Token)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
-        }
-
         public void Start(ProcessExecutionInfo processExecutionInfo, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) {
             _ = StartCore(processExecutionInfo, processStartConfiguration, cancellationToken);
         }
@@ -80,6 +62,16 @@ namespace CalqFramework.Cmd.SystemProcess {
             }
 
             base.Dispose(disposing);
+        }
+
+        private static void OnProcessExit(object? sender, EventArgs e) {
+            foreach (var process in _runningProcesses.Keys) {
+                try {
+                    if (!process.HasExited) {
+                        process.Kill(true);
+                    }
+                } catch (Exception) { }
+            }
         }
 
         private static async Task RelayInput(StreamWriter processInput, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken) {
@@ -150,6 +142,36 @@ namespace CalqFramework.Cmd.SystemProcess {
             }
 
             await writer.FlushAsync();
+        }
+
+        private Task StartCore(ProcessExecutionInfo processExecutionInfo, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) {
+            var psi = new ProcessStartInfo {
+                WorkingDirectory = processStartConfiguration.WorkingDirectory,
+                FileName = processExecutionInfo.FileName,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                Arguments = processExecutionInfo.Arguments,
+            };
+
+            StartInfo = psi;
+
+            InOutStreamCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var relayInputTaskAbortCts = CancellationTokenSource.CreateLinkedTokenSource(InOutStreamCts.Token);
+
+            EnableRaisingEvents = true;
+            Exited += (s, e) => {
+                relayInputTaskAbortCts.Cancel();
+                _ = _runningProcesses.TryRemove(this, out _);
+            };
+
+            _ = _runningProcesses.TryAdd(this, 0);
+
+            HasStarted = Start();
+
+            return Task.Run(async () => await RelayInput(StandardInput, processStartConfiguration.In, processStartConfiguration.InWriter, InOutStreamCts.Token)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
         }
     }
 }
