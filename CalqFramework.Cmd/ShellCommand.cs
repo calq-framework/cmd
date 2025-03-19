@@ -35,6 +35,11 @@ namespace CalqFramework.Cmd {
         private bool HasStarted { get; set; }
         private TextReader In { get; }
         private StringWriter Out { get; }
+
+        /// <summary>
+        /// Holds ref of Piped process preventing it from being finalized and terminated.
+        /// </summary>
+        private Process? PipedProcesses { get; init; }
         private IProcessRunConfiguration ProcessRunConfiguration { get; }
         private string Script { get; }
         private IShell Shell { get; }
@@ -44,8 +49,23 @@ namespace CalqFramework.Cmd {
         }
 
         public static ShellCommand operator |(ShellCommand a, ShellCommand b) {
-            var cIn = new StringReader(a.Output); // TODO asynchronously relay stream in loop instead of converting to string (fire a task and forget)
-            var c = new ShellCommand(b.Shell, b.Script, b.ProcessRunConfiguration, cIn, b.Out) { ShellCommandPostprocessor = b.ShellCommandPostprocessor };
+            TextReader cIn;
+            Process? cPipedProcess;
+
+            if (a.HasStarted) {
+                cIn = new StringReader(a.Output);
+                cPipedProcess = null;
+            } else {
+                var aProcess = a.Start();
+                cIn = aProcess.StandardOutput;
+                cPipedProcess = aProcess;
+            }
+
+            var c = new ShellCommand(b.Shell, b.Script, b.ProcessRunConfiguration, cIn, b.Out) {
+                ShellCommandPostprocessor = b.ShellCommandPostprocessor,
+                PipedProcesses = cPipedProcess
+            };
+
             return c;
         }
 
