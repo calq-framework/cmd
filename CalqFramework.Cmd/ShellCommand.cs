@@ -82,6 +82,10 @@ namespace CalqFramework.Cmd {
                         _output = localOutput = Out.ToString();
                     }
                 } finally {
+                    if (PipedProcesses != null) {
+                        // ShellCommand is the only owner of the piped process but ShellCommand is not IDisposable
+                        PipedProcesses.Dispose();
+                    }
                     _hasStartedSemaphore.Release();
                 }
             }
@@ -89,7 +93,7 @@ namespace CalqFramework.Cmd {
         }
 
         public Process Start(CancellationToken cancellationToken = default) {
-            Process result;
+            Process? result = null;
             AssertNotStarted();
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMicroseconds(1)); // queued means HasStarted = true
             try {
@@ -99,6 +103,18 @@ namespace CalqFramework.Cmd {
                     HasStarted = true;
                     result = Shell.Start(Script, new ProcessRunConfiguration(ProcessRunConfiguration) { In = In, Out = Out }, cancellationToken);
                 } finally {
+                    // ShellCommand is the only owner of the piped process but ShellCommand is not IDisposable
+                    if (PipedProcesses != null) {
+                        if (result == null) {
+                            PipedProcesses.Dispose();
+                        } else {
+                            // processed are terminated on dispose so if result is disposed so will be PipedProcess
+                            result.EnableRaisingEvents = true;
+                            result.Exited += (s, e) => {
+                                PipedProcesses.Dispose();
+                            };
+                        }
+                    }
                     _hasStartedSemaphore.Release();
                 }
             } catch (OperationCanceledException) {
