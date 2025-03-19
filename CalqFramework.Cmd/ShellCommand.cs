@@ -7,7 +7,7 @@ namespace CalqFramework.Cmd {
 
     [DebuggerDisplay("{Script}")]
     public class ShellCommand {
-        private static readonly SemaphoreSlim _hasStartedSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _hasStartedSemaphore = new SemaphoreSlim(1, 1);
 
         private volatile string? _output;
 
