@@ -114,7 +114,47 @@ public class TerminalTest {
         GC.WaitForPendingFinalizers();
         var output = proc.StandardOutput.ReadLine();
 
-
         Assert.Equal(input, output);
+    }
+
+    [Fact]
+    public void CommandOutput_AfterOutput_ReturnsCorrectly() {
+        LocalTerminal.Shell = new Bash();
+        var input = "hello world";
+
+        var command = CMDV($"echo {input}");
+        var output1 = command.Output;
+        var output2 = command.Output;
+
+        Assert.Equal(input, output1);
+        Assert.Equal(input, output2);
+    }
+
+    [Fact]
+    public void CommandOutput_AfterStart_ThrowsInvalidOperationException() {
+        LocalTerminal.Shell = new Bash();
+        var writer = new StringWriter();
+        var input = "hello world\n";
+
+        LocalTerminal.ProcessRunConfiguration.In = new StringReader(input);
+        var command = CMDV("sleep 2; read -r input; echo $input");
+        using var proc = command.Start();
+        Assert.Throws<InvalidOperationException>(() => {
+            var output = command.Output;
+        });
+    }
+
+    [Fact]
+    public void CommandStart_AfterStart_ThrowsInvalidOperationException() {
+        LocalTerminal.Shell = new Bash();
+        var writer = new StringWriter();
+        var input = "hello world\n";
+
+        LocalTerminal.ProcessRunConfiguration.In = new StringReader(input);
+        var command = CMDV("sleep 2; read -r input; echo $input");
+        using var proc1 = command.Start();
+        Assert.Throws<InvalidOperationException>(() => {
+            using var proc2 = command.Start();
+        });
     }
 }

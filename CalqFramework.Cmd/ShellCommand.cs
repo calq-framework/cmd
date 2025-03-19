@@ -7,9 +7,9 @@ namespace CalqFramework.Cmd {
 
     [DebuggerDisplay("{Script}")]
     public class ShellCommand {
-        private static readonly SemaphoreSlim _valueSemaphore = new SemaphoreSlim(1, 1);
+        private static readonly SemaphoreSlim _hasStartedSemaphore = new SemaphoreSlim(1, 1);
 
-        private volatile string? _value;
+        private volatile string? _output;
 
         public ShellCommand(IShell shell, string script, IProcessRunConfiguration processRunConfiguration) {
             Shell = shell;
@@ -32,6 +32,7 @@ namespace CalqFramework.Cmd {
         }
 
         public IShellCommandPostprocessor ShellCommandPostprocessor { get; init; } = new ShellCommandPostprocessor();
+        private bool HasStarted { get; set; }
         private TextReader In { get; }
         private StringWriter Out { get; }
         private IProcessRunConfiguration ProcessRunConfiguration { get; }
@@ -49,28 +50,51 @@ namespace CalqFramework.Cmd {
         }
 
         public async Task<string> GetOutputAsync(CancellationToken cancellationToken = default) {
-            var localValue = _value;
-            if (localValue == null) {
-                await _valueSemaphore.WaitAsync();
+            var localOutput = _output;
+            if (localOutput == null) {
+                await _hasStartedSemaphore.WaitAsync();
                 try {
-                    localValue = _value;
-                    if (localValue == null) {
+                    localOutput = _output;
+                    if (localOutput == null) {
+                        AssertNotStarted();
+                        HasStarted = true;
                         await Shell.RunAsync(Script, new ProcessRunConfiguration(ProcessRunConfiguration) { In = In, Out = Out }, cancellationToken);
-                        _value = localValue = Out.ToString();
+                        _output = localOutput = Out.ToString();
                     }
                 } finally {
-                    _valueSemaphore.Release();
+                    _hasStartedSemaphore.Release();
                 }
             }
-            return ShellCommandPostprocessor.ProcessOutput(localValue);
+            return ShellCommandPostprocessor.ProcessOutput(localOutput);
         }
 
         public Process Start(CancellationToken cancellationToken = default) {
-            return Shell.Start(Script, new ProcessRunConfiguration(ProcessRunConfiguration) { In = In, Out = Out }, cancellationToken);
+            Process result;
+            AssertNotStarted();
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMicroseconds(1)); // queued means HasStarted = true
+            try {
+                _hasStartedSemaphore.Wait(cancellationTokenSource.Token);
+                try {
+                    AssertNotStarted();
+                    HasStarted = true;
+                    result = Shell.Start(Script, new ProcessRunConfiguration(ProcessRunConfiguration) { In = In, Out = Out }, cancellationToken);
+                } finally {
+                    _hasStartedSemaphore.Release();
+                }
+            } catch (OperationCanceledException) {
+                throw new InvalidOperationException("ShellCommand has already started");
+            }
+            return result;
         }
 
         public override string ToString() {
             return Output;
+        }
+
+        private void AssertNotStarted() {
+            if (HasStarted) {
+                throw new InvalidOperationException("ShellCommand has already started");
+            }
         }
     }
 }
