@@ -104,6 +104,15 @@ public class TerminalTest {
     }
 
     [Fact]
+    public void CommandPiping_AfterMultiplePipes_ReturnsCorrectly() {
+        LocalTerminal.Shell = new Bash();
+        var echoText = "hello world";
+
+        string output = CMDV($"echo {echoText}") | CMDV("cat") | CMDV("cat") | CMDV("cat");
+        Assert.Equal(echoText, output);
+    }
+
+    [Fact]
     public void CommandStart_AfterGarbageCollection_ReturnsCorrectly() {
         LocalTerminal.Shell = new Bash();
         var input = "hello world";
