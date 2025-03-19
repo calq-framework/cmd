@@ -14,25 +14,7 @@ namespace CalqFramework.Cmd.SystemProcess {
         private CancellationTokenSource? InOutStreamCts { get; set; }
 
         public async Task Run(ProcessExecutionInfo processExecutionInfo, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default) {
-            var psi = new ProcessStartInfo {
-                WorkingDirectory = processRunConfiguration.WorkingDirectory,
-                FileName = processExecutionInfo.FileName,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                Arguments = processExecutionInfo.Arguments
-            };
-
-            StartInfo = psi;
-
-            HasStarted = Start();
-
-            InOutStreamCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            var relayInputTaskAbortCts = CancellationTokenSource.CreateLinkedTokenSource(InOutStreamCts.Token);
-
-            var relayInputTask = Task.Run(async () => await RelayInput(StandardInput, processRunConfiguration.In, processRunConfiguration.InWriter, InOutStreamCts.Token)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
+            var relayInputTask = StartCore(processExecutionInfo, processRunConfiguration, cancellationToken);
 
             var relayOutputTask = RelayStream(StandardOutput, processRunConfiguration.Out, InOutStreamCts.Token);
 
@@ -41,7 +23,6 @@ namespace CalqFramework.Cmd.SystemProcess {
 
             await WaitForExitAsync(cancellationToken);
 
-            relayInputTaskAbortCts.Cancel();
             try {
                 await relayInputTask;
             } catch (TaskCanceledException) { } // triggered by relayInputTaskAbortCts which should be ignored
@@ -56,7 +37,7 @@ namespace CalqFramework.Cmd.SystemProcess {
             processRunConfiguration.ErrorHandler.AssertSuccess(processExecutionInfo, processRunConfiguration, this, error);
         }
 
-        public void Start(ProcessExecutionInfo processExecutionInfo, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) {
+        private Task StartCore(ProcessExecutionInfo processExecutionInfo, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) {
             var psi = new ProcessStartInfo {
                 WorkingDirectory = processStartConfiguration.WorkingDirectory,
                 FileName = processExecutionInfo.FileName,
@@ -78,7 +59,11 @@ namespace CalqFramework.Cmd.SystemProcess {
 
             HasStarted = Start();
 
-            var relayInputTask = Task.Run(async () => await RelayInput(StandardInput, processStartConfiguration.In, processStartConfiguration.InWriter, InOutStreamCts.Token)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
+            return Task.Run(async () => await RelayInput(StandardInput, processStartConfiguration.In, processStartConfiguration.InWriter, InOutStreamCts.Token)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
+        }
+
+        public void Start(ProcessExecutionInfo processExecutionInfo, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) {
+            _ = StartCore(processExecutionInfo, processStartConfiguration, cancellationToken);
         }
 
         protected override void Dispose(bool disposing) {
