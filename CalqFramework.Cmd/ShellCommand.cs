@@ -26,13 +26,12 @@ namespace CalqFramework.Cmd {
         }
 
         public IShellCommandPostprocessor ShellCommandPostprocessor { get; init; } = new ShellCommandPostprocessor();
+        /// <summary>
+        /// Disposed on WaitForExitAsync().
+        /// </summary>
         private Process? AssociatedProcess { get; set; }
         private bool HasStarted { get; set; } // TODO remove
-        private StringWriter Out { get; init; }
-
-        /// <summary>
-        /// Holds ref of Piped process preventing it from being finalized and terminated.
-        /// </summary>
+        private StringWriter Out { get; }
         private ShellCommand? PipedShellCommand { get; init; }
         private IProcessRunConfiguration ProcessRunConfiguration { get; }
         private string Script { get; }
@@ -43,13 +42,10 @@ namespace CalqFramework.Cmd {
         }
 
         public static ShellCommand operator |(ShellCommand a, ShellCommand b) {
-            if (b.HasStarted) {
-                // TODO throw
-            }
+            b.AssertNotStarted(); // sanity check
 
             var c = new ShellCommand(b.Shell, b.Script, b.ProcessRunConfiguration) {
-                PipedShellCommand = a,
-                Out = b.Out
+                PipedShellCommand = a
             };
 
             return c;
@@ -64,9 +60,19 @@ namespace CalqFramework.Cmd {
                     if (localOutput == null) {
                         AssertNotStarted();
                         HasStarted = true;
-                        var pipedProcesses = PipedShellCommand != null && PipedShellCommand.HasStarted == false ? PipedShellCommand.StartCore() : null;
-                        var pipedIn = pipedProcesses?.Last().StandardOutput ?? (PipedShellCommand != null ? PipedShellCommand.AssociatedProcess?.StandardOutput ?? (TextReader)new StringReader(PipedShellCommand.Output) : ProcessRunConfiguration.In);
-                        await Shell.RunAsync(Script, new ProcessRunConfiguration(ProcessRunConfiguration) { In = pipedIn, Out = Out }, cancellationToken);
+                        TextReader inputReader;
+                        if (PipedShellCommand != null) {
+                            if (PipedShellCommand._output != null) {
+                                inputReader = new StringReader(PipedShellCommand._output);
+                            } else {
+                                var pipedProcess = PipedShellCommand.Start();
+                                inputReader = pipedProcess.StandardOutput;
+                            }
+                        } else {
+                            inputReader = ProcessRunConfiguration.In;
+                        }
+                        await Shell.RunAsync(Script, new ProcessRunConfiguration(ProcessRunConfiguration) { In = inputReader, Out = Out }, cancellationToken);
+                        await WaitForExitAsync();
                         _output = localOutput = Out.ToString();
                     }
                 } finally {
@@ -77,24 +83,42 @@ namespace CalqFramework.Cmd {
         }
 
         public Process Start(CancellationToken cancellationToken = default) {
-            Process? result = null;
             AssertNotStarted();
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMicroseconds(1)); // queued means HasStarted = true
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMicroseconds(1)); // queued means HasStarted = true when out of queue
             try {
                 _hasStartedSemaphore.Wait(cancellationTokenSource.Token);
                 try {
                     AssertNotStarted();
                     HasStarted = true;
-                    var pipedProcesses = PipedShellCommand != null && PipedShellCommand.HasStarted == false ? PipedShellCommand.StartCore() : null;
-                    var pipedIn = pipedProcesses?.Last().StandardOutput ?? (PipedShellCommand != null ? PipedShellCommand.AssociatedProcess?.StandardOutput ?? (TextReader)new StringReader(PipedShellCommand.Output) : ProcessRunConfiguration.In);
-                    result = AssociatedProcess = Shell.Start(Script, new ProcessRunConfiguration(ProcessRunConfiguration) { In = pipedIn }, cancellationToken);
+                    TextReader inputReader;
+                    if (PipedShellCommand != null) {
+                        if (PipedShellCommand._output != null) {
+                            inputReader = new StringReader(PipedShellCommand._output);
+                        } else {
+                            var pipedProcess = PipedShellCommand.Start();
+                            inputReader = pipedProcess.StandardOutput;
+                        }
+                    } else {
+                        inputReader = ProcessRunConfiguration.In;
+                    }
+                    AssociatedProcess = Shell.Start(Script, new ProcessRunConfiguration(ProcessRunConfiguration) { In = inputReader }, cancellationToken);
                 } finally {
                     _hasStartedSemaphore.Release();
                 }
             } catch (OperationCanceledException) {
                 throw new InvalidOperationException("ShellCommand has already started");
             }
-            return result;
+            return AssociatedProcess;
+        }
+
+        private async Task WaitForExitAsync() {
+            if (PipedShellCommand != null) {
+                await PipedShellCommand.WaitForExitAsync();
+            }
+            if (AssociatedProcess != null) {
+                await AssociatedProcess.WaitForExitAsync();
+                AssociatedProcess.Dispose();
+            }
         }
 
         public override string ToString() {
@@ -105,35 +129,6 @@ namespace CalqFramework.Cmd {
             if (HasStarted) {
                 throw new InvalidOperationException("ShellCommand has already started");
             }
-        }
-
-        private IList<Process> StartCore(CancellationToken cancellationToken = default) {
-            IList<Process> pipedProcesses;
-            AssertNotStarted();
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMicroseconds(1)); // queued means HasStarted = true
-            try {
-                _hasStartedSemaphore.Wait(cancellationTokenSource.Token);
-                try {
-                    AssertNotStarted();
-                    HasStarted = true;
-                    if (PipedShellCommand == null) {
-                        pipedProcesses = new List<Process>();
-                        AssociatedProcess = Shell.Start(Script, ProcessRunConfiguration, cancellationToken);
-                        pipedProcesses.Add(AssociatedProcess);
-                    } else {
-                        pipedProcesses = PipedShellCommand != null && PipedShellCommand.HasStarted == false ? PipedShellCommand.StartCore() : null;
-                        var pipedIn = pipedProcesses?.Last().StandardOutput ?? (PipedShellCommand != null ? PipedShellCommand.AssociatedProcess?.StandardOutput ?? (TextReader)new StringReader(PipedShellCommand.Output) : ProcessRunConfiguration.In);
-                        AssociatedProcess = Shell.Start(Script, new ProcessRunConfiguration(ProcessRunConfiguration) { In = pipedIn }, cancellationToken);
-                        pipedProcesses.Add(AssociatedProcess);
-                    }
-
-                } finally {
-                    _hasStartedSemaphore.Release();
-                }
-            } catch (OperationCanceledException) {
-                throw new InvalidOperationException("ShellCommand has already started");
-            }
-            return pipedProcesses;
         }
     }
 }
