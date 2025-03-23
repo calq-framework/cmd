@@ -1,5 +1,4 @@
 ﻿using CalqFramework.Cmd.SystemProcess;
-using System.Diagnostics;
 
 namespace CalqFramework.Cmd.Shell;
 
@@ -48,15 +47,61 @@ public abstract class ShellBase : IShell {
         try {
             await process.Run(processExecutionInfo, processRunConfiguration, cancellationToken);
         } catch (ProcessExecutionException ex) {
-            throw new ShellCommandExecutionException(ex.ExitCode, $"\n{AddLineNumbers(script)}\n\nExit code:\n{ex.ExitCode}\n\nError:\n{ex.Message}", ex); // TODO formalize error handling
+            string message;
+            if (string.IsNullOrEmpty(ex.Message) && processRunConfiguration.Out is StringWriter stringOutputWriter) {
+                message = stringOutputWriter.ToString();
+            } else {
+                message = ex.Message;
+            }
+            throw new ShellCommandExecutionException(ex.ExitCode, $"\n{AddLineNumbers(script)}\n\nExit code:\n{ex.ExitCode}\n\nError:\n{message}", ex); // TODO formalize error handling
         }
     }
 
-    public Process Start(string script, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) {
+    public async Task RunAsync(string script, IProcessRunConfiguration processRunConfiguration, RunnableProcess? pipedProcess, CancellationToken cancellationToken = default) {
+        string AddLineNumbers(string input) {
+            var i = 0;
+            return string.Join('\n', input.Split('\n').Select(x => $"{i++}: {x}"));
+        }
+
+        var processExecutionInfo = GetProcessExecutionInfo(processRunConfiguration.WorkingDirectory, script);
+        using var process = new RunnableProcess() { PipedProcess = pipedProcess };
+
+        try {
+            await process.Run(processExecutionInfo, processRunConfiguration, cancellationToken);
+        } catch (ProcessExecutionException ex) {
+            string message;
+            if (string.IsNullOrEmpty(ex.Message) && processRunConfiguration.Out is StringWriter stringOutputWriter) {
+                message = stringOutputWriter.ToString();
+            } else {
+                message = ex.Message;
+            }
+            throw new ShellCommandExecutionException(ex.ExitCode, $"\n{AddLineNumbers(script)}\n\nExit code:\n{ex.ExitCode}\n\nError:\n{message}", ex); // TODO formalize error handling
+        }
+    }
+
+    public RunnableProcess Start(string script, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) {
         var processExecutionInfo = GetProcessExecutionInfo(processStartConfiguration.WorkingDirectory, script);
         var process = new RunnableProcess();
 
         process.Start(processExecutionInfo, processStartConfiguration, cancellationToken);
+
+        return process;
+    }
+
+    public RunnableProcess Start(string script, IProcessStartConfiguration processStartConfiguration, RunnableProcess? pipedProcess, CancellationToken cancellationToken = default) {
+        var processExecutionInfo = GetProcessExecutionInfo(processStartConfiguration.WorkingDirectory, script);
+        var process = new RunnableProcess() { PipedProcess = pipedProcess };
+
+        process.Start(processExecutionInfo, processStartConfiguration, cancellationToken);
+
+        return process;
+    }
+
+    public RunnableProcess Start(string script, IProcessRunConfiguration processRunConfiguration, RunnableProcess? pipedProcess, CancellationToken cancellationToken = default) {
+        var processExecutionInfo = GetProcessExecutionInfo(processRunConfiguration.WorkingDirectory, script);
+        var process = new RunnableProcess() { PipedProcess = pipedProcess };
+
+        process.Start(processExecutionInfo, processRunConfiguration, cancellationToken);
 
         return process;
     }

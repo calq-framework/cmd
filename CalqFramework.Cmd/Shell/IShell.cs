@@ -1,5 +1,4 @@
 ﻿using CalqFramework.Cmd.SystemProcess;
-using System.Diagnostics;
 
 namespace CalqFramework.Cmd.Shell {
     public interface IShell {
@@ -8,7 +7,9 @@ namespace CalqFramework.Cmd.Shell {
         void Run(string script, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default);
 
         Task RunAsync(string script, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default);
+        Task RunAsync(string script, IProcessRunConfiguration processRunConfiguration, RunnableProcess? pipedProcess, CancellationToken cancellationToken = default);
 
-        Process Start(string script, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default);
+        RunnableProcess Start(string script, IProcessStartConfiguration processStartConfiguration, RunnableProcess? pipedProcess, CancellationToken cancellationToken = default);
+        RunnableProcess Start(string script, IProcessRunConfiguration processRunConfiguration, RunnableProcess? pipedProcess, CancellationToken cancellationToken = default);
     }
 }

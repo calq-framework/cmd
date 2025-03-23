@@ -1,7 +1,5 @@
-﻿using System.Diagnostics;
-
-namespace CalqFramework.Cmd.SystemProcess {
+﻿namespace CalqFramework.Cmd.SystemProcess {
     public interface IProcessErrorHandler {
-        void AssertSuccess(ProcessExecutionInfo processExecutionInfo, IProcessRunConfiguration processRunConfiguration, Process process, string error);
+        void AssertSuccess(int code, string message);
     }
 }
