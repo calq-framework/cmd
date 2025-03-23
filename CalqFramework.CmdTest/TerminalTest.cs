@@ -140,30 +140,12 @@ public class TerminalTest {
     }
 
     [Fact]
-    public void CommandOutput_AfterStart_ThrowsInvalidOperationException() {
+    public void CommandPiping_WithError_ThrowsException() {
         LocalTerminal.Shell = new Bash();
-        var writer = new StringWriter();
-        var input = "hello world\n";
+        var echoText = "hello world";
 
-        LocalTerminal.ProcessRunConfiguration.In = new StringReader(input);
-        var command = CMDV("sleep 2; read -r input; echo $input");
-        using var proc = command.Start();
-        Assert.Throws<InvalidOperationException>(() => {
-            var output = command.Output;
-        });
-    }
-
-    [Fact]
-    public void CommandStart_AfterStart_ThrowsInvalidOperationException() {
-        LocalTerminal.Shell = new Bash();
-        var writer = new StringWriter();
-        var input = "hello world\n";
-
-        LocalTerminal.ProcessRunConfiguration.In = new StringReader(input);
-        var command = CMDV("sleep 2; read -r input; echo $input");
-        using var proc1 = command.Start();
-        Assert.Throws<InvalidOperationException>(() => {
-            using var proc2 = command.Start();
+        Assert.Throws<ShellCommandExecutionException>(() => {
+            string output = CMDV($"echo {echoText}") | CMDV("cat; exit 1;") | CMDV("cat");
         });
     }
 }

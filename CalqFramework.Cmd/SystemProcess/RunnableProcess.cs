@@ -2,7 +2,7 @@
 using System.Diagnostics;
 
 namespace CalqFramework.Cmd.SystemProcess {
-    internal class RunnableProcess : Process {
+    public class RunnableProcess : Process {
         private static ConcurrentDictionary<Process, byte> _runningProcesses = new ConcurrentDictionary<Process, byte>();
         private bool _disposed;
 
@@ -18,15 +18,16 @@ namespace CalqFramework.Cmd.SystemProcess {
 
         private bool HasStarted { get; set; }
 
+        public RunnableProcess? PipedProcess { get; init; }
+
         private CancellationTokenSource? InOutStreamCts { get; set; }
+
+        private IProcessErrorHandler ErrorHandler { get; set; } = new ProcessErrorHandler();
 
         public async Task Run(ProcessExecutionInfo processExecutionInfo, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default) {
             var relayInputTask = StartCore(processExecutionInfo, processRunConfiguration, cancellationToken);
 
             var relayOutputTask = RelayStream(StandardOutput, processRunConfiguration.Out, InOutStreamCts.Token);
-
-            var errorWriter = new StringWriter();
-            var relayErrorTask = RelayStream(StandardError, errorWriter, InOutStreamCts.Token);
 
             await WaitForExitAsync(cancellationToken);
 
@@ -35,13 +36,18 @@ namespace CalqFramework.Cmd.SystemProcess {
             } catch (TaskCanceledException) { } // triggered by relayInputTaskAbortCts which should be ignored
 
             await relayOutputTask;
-            await relayErrorTask;
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var error = errorWriter.ToString();
+            await WaitForSuccess();
+        }
 
-            processRunConfiguration.ErrorHandler.AssertSuccess(processExecutionInfo, processRunConfiguration, this, error);
+        public async Task WaitForSuccess() {
+            if (PipedProcess != null) {
+                await PipedProcess.WaitForSuccess();
+            }
+            await WaitForExitAsync();
+            ErrorHandler.AssertSuccess(ExitCode, await StandardError.ReadToEndAsync());
         }
 
         public void Start(ProcessExecutionInfo processExecutionInfo, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) {
@@ -56,6 +62,10 @@ namespace CalqFramework.Cmd.SystemProcess {
                     if (InOutStreamCts != null) {
                         InOutStreamCts.Cancel();
                     }
+                }
+
+                if (disposing) {
+                    PipedProcess?.Dispose();
                 }
 
                 _disposed = true;
@@ -145,6 +155,8 @@ namespace CalqFramework.Cmd.SystemProcess {
         }
 
         private Task StartCore(ProcessExecutionInfo processExecutionInfo, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) {
+            ErrorHandler = processStartConfiguration.ErrorHandler;
+
             var psi = new ProcessStartInfo {
                 WorkingDirectory = processStartConfiguration.WorkingDirectory,
                 FileName = processExecutionInfo.FileName,
