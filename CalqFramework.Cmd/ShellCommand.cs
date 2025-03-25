@@ -7,7 +7,7 @@ namespace CalqFramework.Cmd {
 
     [DebuggerDisplay("{Script}")]
     public class ShellCommand {
-        private readonly SemaphoreSlim _hasStartedSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _outputSemaphore = new SemaphoreSlim(1, 1);
 
         private volatile string? _output;
 
@@ -49,12 +49,12 @@ namespace CalqFramework.Cmd {
         public async Task<string> GetOutputAsync(CancellationToken cancellationToken = default) {
             var localOutput = _output;
             if (localOutput == null) {
-                await _hasStartedSemaphore.WaitAsync();
+                await _outputSemaphore.WaitAsync();
                 try {
                     localOutput = _output;
                     if (localOutput == null) {
                         TextReader inputReader;
-                        RunnableProcess? pipedProcess = null;
+                        ShellWorker? pipedProcess = null;
                         if (PipedShellCommand != null) {
                             if (PipedShellCommand._output != null) {
                                 inputReader = new StringReader(PipedShellCommand._output);
@@ -69,15 +69,15 @@ namespace CalqFramework.Cmd {
                         _output = localOutput = Out.ToString();
                     }
                 } finally {
-                    _hasStartedSemaphore.Release();
+                    _outputSemaphore.Release();
                 }
             }
             return ShellCommandPostprocessor.ProcessOutput(localOutput);
         }
 
-        public RunnableProcess Start(CancellationToken cancellationToken = default) {
+        public ShellWorker Start(CancellationToken cancellationToken = default) {
             TextReader inputReader;
-            RunnableProcess? pipedProcess = null;
+            ShellWorker? pipedProcess = null;
             if (PipedShellCommand != null) {
                 if (PipedShellCommand._output != null) {
                     inputReader = new StringReader(PipedShellCommand._output);
@@ -88,7 +88,7 @@ namespace CalqFramework.Cmd {
             } else {
                 inputReader = ProcessRunConfiguration.In;
             }
-            return Shell.Start(Script, new ProcessRunConfiguration(ProcessRunConfiguration) { In = inputReader } as IProcessStartConfiguration, pipedProcess, cancellationToken);
+            return Shell.Start(Script, new ProcessRunConfiguration(ProcessRunConfiguration) { In = inputReader }, pipedProcess, cancellationToken);
         }
 
         public override string ToString() {
