@@ -37,7 +37,7 @@ namespace CalqFramework.Cmd {
 
         public async Task<string> GetOutputAsync(CancellationToken cancellationToken = default) {
             TextReader inputReader;
-            ShellWorker? pipedProcess = null;
+            ShellWorkerBase? pipedProcess = null;
             if (PipedShellCommand != null) {
                 pipedProcess = PipedShellCommand.Start();
                 inputReader = pipedProcess.StandardOutput;
@@ -50,9 +50,9 @@ namespace CalqFramework.Cmd {
             return ShellCommandPostprocessor.ProcessOutput(output);
         }
 
-        public ShellWorker Start(CancellationToken cancellationToken = default) {
+        public ShellWorkerBase Start(CancellationToken cancellationToken = default) {
             TextReader inputReader;
-            ShellWorker? pipedProcess = null;
+            ShellWorkerBase? pipedProcess = null;
             if (PipedShellCommand != null) {
                 pipedProcess = PipedShellCommand.Start();
                 inputReader = pipedProcess.StandardOutput;

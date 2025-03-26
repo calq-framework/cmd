@@ -3,13 +3,13 @@ using CalqFramework.Cmd.SystemProcess;
 
 namespace CalqFramework.Cmd.Shells;
 public class CommandLine : ShellBase {
+    public override string MapToInternalPath(string hostPath) {
+        return hostPath;
+    }
 
-    internal override bool IsUsingWSL => false;
-
-    internal override ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script) {
-        int spaceIndex = script.IndexOf(' ');
-        var command = script.Substring(0, spaceIndex);
-        var arguments = script.Substring(spaceIndex + 1);
-        return new ProcessExecutionInfo(command, arguments);
+    internal override ShellWorkerBase CreateShellWorker(string script, IProcessStartConfiguration processStartConfiguration, ShellWorkerBase? pipedWorker, CancellationToken cancellationToken = default) {
+        return new CommandLineWorker(script, processStartConfiguration, cancellationToken) {
+            PipedWorker = pipedWorker
+        };
     }
 }

@@ -2,15 +2,16 @@
 using System.Diagnostics;
 
 namespace CalqFramework.Cmd.Shell {
-    public class ShellWorker : IDisposable {
+    public abstract class ShellWorkerBase : IDisposable {
         private bool _disposed;
 
         private AutoTerminateProcess _process;
 
         private Task RelayInputTask;
 
-        public ShellWorker(ProcessExecutionInfo processExecutionInfo, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) {
-            ProcessExecutionInfo = processExecutionInfo;
+        public ShellWorkerBase(string script, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) {
+            var processExecutionInfo = GetProcessExecutionInfo(processStartConfiguration.WorkingDirectory, script);
+
             ProcessStartConfiguration = processStartConfiguration;
 
             _process = new AutoTerminateProcess() {
@@ -38,11 +39,12 @@ namespace CalqFramework.Cmd.Shell {
             RelayInputTask = Task.Run(async () => await StreamUtils.RelayInput(_process.StandardInput, processStartConfiguration.In, processStartConfiguration.InWriter, cancellationToken)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
         }
 
-        public ShellWorker? PipedWorker { get; init; }
+        public ShellWorkerBase? PipedWorker { get; init; }
+
         public TextReader StandardOutput { get => _process.StandardOutput; }
-        private ProcessExecutionInfo ProcessExecutionInfo { get; }
 
         private IProcessStartConfiguration ProcessStartConfiguration { get; }
+
         public void Dispose() {
             if (!_disposed) {
                 PipedWorker?.Dispose();
@@ -64,5 +66,7 @@ namespace CalqFramework.Cmd.Shell {
 
             ProcessStartConfiguration.ErrorHandler.AssertSuccess(_process.ExitCode, await _process.StandardError.ReadToEndAsync());
         }
+
+        internal abstract ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script);
     }
 }
