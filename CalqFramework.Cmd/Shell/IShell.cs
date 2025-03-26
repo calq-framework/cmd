@@ -5,7 +5,7 @@ namespace CalqFramework.Cmd.Shell {
         string MapToInternalPath(string hostPath);
         void Run(string script, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default);
         Task RunAsync(string script, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default);
-        Task RunAsync(string script, IProcessRunConfiguration processRunConfiguration, ShellWorker? pipedShellWorker, CancellationToken cancellationToken = default);
-        ShellWorker Start(string script, IProcessStartConfiguration processStartConfiguration, ShellWorker? pipedShellWorker, CancellationToken cancellationToken = default);
+        Task RunAsync(string script, IProcessRunConfiguration processRunConfiguration, ShellWorkerBase? pipedShellWorker, CancellationToken cancellationToken = default);
+        ShellWorkerBase Start(string script, IProcessStartConfiguration processStartConfiguration, ShellWorkerBase? pipedShellWorker, CancellationToken cancellationToken = default);
     }
 }

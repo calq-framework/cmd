@@ -3,31 +3,7 @@
 namespace CalqFramework.Cmd.Shell;
 
 public abstract class ShellBase : IShell {
-
-    static ShellBase() {
-        if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
-            using var worker = new ShellWorker(new ProcessExecutionInfo("bash", @"-c ""uname -s"""), new ProcessRunConfiguration() { In = TextReader.Null });
-            IsRunningBashOnWSL = worker.StandardOutput.ReadToEnd().TrimEnd() switch {
-                "Linux" => true,
-                "Darwin" => true,
-                _ => false
-            };
-        } else {
-            IsRunningBashOnWSL = false;
-        }
-    }
-
-    internal static bool IsRunningBashOnWSL { get; }
-
-    internal abstract bool IsUsingWSL { get; }
-
-    public string MapToInternalPath(string hostPath) {
-        if (IsUsingWSL) {
-            return WSLUtils.WindowsToWslPath(hostPath);
-        }
-
-        return hostPath;
-    }
+    public abstract string MapToInternalPath(string hostPath);
 
     public void Run(string script, IProcessRunConfiguration processRunConfiguration, CancellationToken cancellationToken = default) {
         RunAsync(script, processRunConfiguration, null, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -37,17 +13,13 @@ public abstract class ShellBase : IShell {
         await RunAsync(script, processRunConfiguration, null, cancellationToken);
     }
 
-    public async Task RunAsync(string script, IProcessRunConfiguration processRunConfiguration, ShellWorker? pipedShellWorker, CancellationToken cancellationToken = default) {
+    public async Task RunAsync(string script, IProcessRunConfiguration processRunConfiguration, ShellWorkerBase? pipedShellWorker, CancellationToken cancellationToken = default) {
         string AddLineNumbers(string input) {
             var i = 0;
             return string.Join('\n', input.Split('\n').Select(x => $"{i++}: {x}"));
         }
 
-        var processExecutionInfo = GetProcessExecutionInfo(processRunConfiguration.WorkingDirectory, script);
-
-        using var worker = new ShellWorker(processExecutionInfo, processRunConfiguration, cancellationToken) {
-            PipedWorker = pipedShellWorker
-        };
+        using var worker = CreateShellWorker(script, processRunConfiguration, pipedShellWorker, cancellationToken);
 
         var relayOutputCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         var relayOutputTask = StreamUtils.RelayStream(worker.StandardOutput, processRunConfiguration.Out, relayOutputCts.Token);
@@ -74,16 +46,11 @@ public abstract class ShellBase : IShell {
 
         cancellationToken.ThrowIfCancellationRequested();
     }
-    public ShellWorker Start(string script, IProcessStartConfiguration processStartConfiguration, ShellWorker? pipedShellWorker, CancellationToken cancellationToken = default) {
-        var processExecutionInfo = GetProcessExecutionInfo(processStartConfiguration.WorkingDirectory, script);
-
-        var worker = new ShellWorker(processExecutionInfo, processStartConfiguration, cancellationToken) {
-            PipedWorker = pipedShellWorker
-        };
+    public ShellWorkerBase Start(string script, IProcessStartConfiguration processStartConfiguration, ShellWorkerBase? pipedShellWorker, CancellationToken cancellationToken = default) {
+        var worker = CreateShellWorker(script, processStartConfiguration, pipedShellWorker, cancellationToken);
 
         return worker;
     }
 
-
-    internal abstract ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script);
+    internal abstract ShellWorkerBase CreateShellWorker(string script, IProcessStartConfiguration processStartConfiguration, ShellWorkerBase? pipedWorker, CancellationToken cancellationToken = default); // TODO protected
 }
