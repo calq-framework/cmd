@@ -15,7 +15,7 @@ public static class Terminal {
 
     public static string CMD(string script, TextReader inputReader, TimeSpan? timeout = null) {
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
-        return new ShellCommand(LocalTerminal.Shell, script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader }) { ShellCommandPostprocessor = LocalTerminal.ShellCommandPostprocessor }.Output;
+        return new ShellCommand(LocalTerminal.Shell, script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader }) { ShellCommandPostprocessor = LocalTerminal.ShellCommandPostprocessor }.GetOutput();
     }
 
     public static Task<string> CMDAsync(string script, TimeSpan? timeout = null) {
