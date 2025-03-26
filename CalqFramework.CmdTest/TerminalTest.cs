@@ -132,8 +132,8 @@ public class TerminalTest {
         var input = "hello world";
 
         var command = CMDV($"echo {input}");
-        var output1 = command.Output;
-        var output2 = command.Output;
+        var output1 = command.GetOutput();
+        var output2 = command.GetOutput();
 
         Assert.Equal(input, output1);
         Assert.Equal(input, output2);
