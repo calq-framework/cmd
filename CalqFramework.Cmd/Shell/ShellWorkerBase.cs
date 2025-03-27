@@ -10,6 +10,8 @@ namespace CalqFramework.Cmd.Shell {
         private Task RelayInputTask;
 
         public ShellWorkerBase(string script, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) {
+            Script = script;
+
             var processExecutionInfo = GetProcessExecutionInfo(processStartConfiguration.WorkingDirectory, script);
 
             ProcessStartConfiguration = processStartConfiguration;
@@ -42,7 +44,7 @@ namespace CalqFramework.Cmd.Shell {
         public ShellWorkerBase? PipedWorker { get; init; }
 
         public TextReader StandardOutput { get => _process.StandardOutput; }
-
+        public string Script { get; }
         private IProcessStartConfiguration ProcessStartConfiguration { get; }
 
         public void Dispose() {
@@ -54,7 +56,7 @@ namespace CalqFramework.Cmd.Shell {
             }
         }
 
-        public async Task WaitForSuccess() {
+        public async Task WaitForSuccess(StringWriter? outputWriter = null) {
             if (PipedWorker != null) {
                 await PipedWorker.WaitForSuccess();
             }
@@ -64,7 +66,14 @@ namespace CalqFramework.Cmd.Shell {
                 await RelayInputTask;
             } catch (TaskCanceledException) { } // triggered by relayInputTaskAbortCts which should be ignored
 
-            ProcessStartConfiguration.ErrorHandler.AssertSuccess(_process.ExitCode, await _process.StandardError.ReadToEndAsync());
+
+            var errorMessage = await _process.StandardError.ReadToEndAsync();
+            string? output = null;
+            if (string.IsNullOrEmpty(errorMessage) && outputWriter != null) {
+                output = outputWriter.ToString();
+            }
+
+            ProcessStartConfiguration.ErrorHandler.AssertSuccess(Script, _process.ExitCode, errorMessage, output);
         }
 
         internal abstract ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script);

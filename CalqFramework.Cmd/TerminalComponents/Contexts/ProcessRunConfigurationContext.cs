@@ -1,10 +1,11 @@
-﻿using CalqFramework.Cmd.SystemProcess;
+﻿using CalqFramework.Cmd.Shell;
+using CalqFramework.Cmd.SystemProcess;
 
 namespace CalqFramework.Cmd.TerminalComponents.Contexts {
     public class ProcessRunConfigurationContext : IProcessRunConfiguration {
         private readonly IProcessRunConfiguration _defaultProcessRunConfiguration;
 
-        private readonly AsyncLocal<IProcessErrorHandler> _localErrorHandler;
+        private readonly AsyncLocal<IShellWorkerErrorHandler> _localErrorHandler;
         private readonly AsyncLocal<TextReader> _localIn;
         private readonly AsyncLocal<TextWriter> _localInWriter;
         private readonly AsyncLocal<TextWriter> _localOut;
@@ -17,10 +18,10 @@ namespace CalqFramework.Cmd.TerminalComponents.Contexts {
             _localInWriter = new AsyncLocal<TextWriter>();
             _localOut = new AsyncLocal<TextWriter>();
             _localWorkingDirectory = new AsyncLocal<string>();
-            _localErrorHandler = new AsyncLocal<IProcessErrorHandler>();
+            _localErrorHandler = new AsyncLocal<IShellWorkerErrorHandler>();
         }
 
-        public IProcessErrorHandler ErrorHandler {
+        public IShellWorkerErrorHandler ErrorHandler {
             get {
                 _localErrorHandler.Value ??= _defaultProcessRunConfiguration.ErrorHandler;
                 return _localErrorHandler.Value!;
