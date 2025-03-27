@@ -1,7 +1,9 @@
-﻿namespace CalqFramework.Cmd.SystemProcess {
+﻿using CalqFramework.Cmd.Shell;
+
+namespace CalqFramework.Cmd.SystemProcess {
     internal class ProcessRunConfiguration : IProcessRunConfiguration {
         public ProcessRunConfiguration() {
-            ErrorHandler = new ProcessErrorHandler();
+            ErrorHandler = new ShellWorkerErrorHandler();
             In = Console.In;
             InWriter = Console.Out;
             Out = Console.Out;
@@ -15,7 +17,7 @@
             WorkingDirectory = processRunConfiguration.WorkingDirectory;
         }
 
-        public IProcessErrorHandler ErrorHandler { get; init; }
+        public IShellWorkerErrorHandler ErrorHandler { get; init; }
         public TextReader In { get; init; }
         public TextWriter InWriter { get; init; }
         public TextWriter Out { get; init; }

@@ -14,11 +14,6 @@ public abstract class ShellBase : IShell {
     }
 
     public async Task RunAsync(string script, IProcessRunConfiguration processRunConfiguration, ShellWorkerBase? pipedShellWorker, CancellationToken cancellationToken = default) {
-        string AddLineNumbers(string input) {
-            var i = 0;
-            return string.Join('\n', input.Split('\n').Select(x => $"{i++}: {x}"));
-        }
-
         using var worker = CreateShellWorker(script, processRunConfiguration, pipedShellWorker, cancellationToken);
 
         var relayOutputCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -26,19 +21,8 @@ public abstract class ShellBase : IShell {
 
         try {
             await worker.WaitForSuccess();
-        } catch (ProcessExecutionException ex) {
+        } catch {
             relayOutputCts.Cancel();
-
-            string message;
-            if (string.IsNullOrEmpty(ex.Message) && processRunConfiguration.Out is StringWriter stringOutputWriter) {
-                message = stringOutputWriter.ToString();
-            } else {
-                message = ex.Message;
-            }
-            throw new ShellCommandExecutionException(ex.ExitCode, $"\n{AddLineNumbers(script)}\n\nExit code:\n{ex.ExitCode}\n\nError:\n{message}", ex); // TODO formalize error handling
-        } catch (Exception) {
-            relayOutputCts.Cancel();
-
             throw;
         }
 
