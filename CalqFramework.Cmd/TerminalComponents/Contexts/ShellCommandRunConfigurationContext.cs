@@ -2,8 +2,8 @@
 using CalqFramework.Cmd.SystemProcess;
 
 namespace CalqFramework.Cmd.TerminalComponents.Contexts {
-    public class ProcessRunConfigurationContext : IProcessRunConfiguration {
-        private readonly IProcessRunConfiguration _defaultProcessRunConfiguration;
+    public class ProcessStartConfigurationContext : IShellCommandRunConfiguration {
+        private readonly IProcessStartConfiguration _defaultProcessStartConfiguration;
 
         private readonly AsyncLocal<IShellWorkerErrorHandler> _localErrorHandler;
         private readonly AsyncLocal<TextReader> _localIn;
@@ -11,8 +11,8 @@ namespace CalqFramework.Cmd.TerminalComponents.Contexts {
         private readonly AsyncLocal<TextWriter> _localOut;
         private readonly AsyncLocal<string> _localWorkingDirectory;
 
-        public ProcessRunConfigurationContext() {
-            _defaultProcessRunConfiguration = new ProcessRunConfiguration();
+        public ProcessStartConfigurationContext() {
+            _defaultProcessStartConfiguration = new ProcessStartConfiguration();
 
             _localIn = new AsyncLocal<TextReader>();
             _localInWriter = new AsyncLocal<TextWriter>();
@@ -23,7 +23,7 @@ namespace CalqFramework.Cmd.TerminalComponents.Contexts {
 
         public IShellWorkerErrorHandler ErrorHandler {
             get {
-                _localErrorHandler.Value ??= _defaultProcessRunConfiguration.ErrorHandler;
+                _localErrorHandler.Value ??= _defaultProcessStartConfiguration.ErrorHandler;
                 return _localErrorHandler.Value!;
             }
             set => _localErrorHandler.Value = value;
@@ -31,7 +31,7 @@ namespace CalqFramework.Cmd.TerminalComponents.Contexts {
 
         public TextReader In {
             get {
-                _localIn.Value ??= _defaultProcessRunConfiguration.In;
+                _localIn.Value ??= _defaultProcessStartConfiguration.In;
                 return _localIn.Value!;
             }
             set => _localIn.Value = value;
@@ -39,7 +39,7 @@ namespace CalqFramework.Cmd.TerminalComponents.Contexts {
 
         public TextWriter InWriter {
             get {
-                _localInWriter.Value ??= _defaultProcessRunConfiguration.InWriter;
+                _localInWriter.Value ??= _defaultProcessStartConfiguration.InWriter;
                 return _localInWriter.Value!;
             }
             set => _localInWriter.Value = value;
@@ -47,7 +47,7 @@ namespace CalqFramework.Cmd.TerminalComponents.Contexts {
 
         public TextWriter Out {
             get {
-                _localOut.Value ??= _defaultProcessRunConfiguration.Out;
+                _localOut.Value ??= Console.Out;
                 return _localOut.Value!;
             }
             set => _localOut.Value = value;
@@ -56,7 +56,7 @@ namespace CalqFramework.Cmd.TerminalComponents.Contexts {
 
         public string WorkingDirectory {
             get {
-                _localWorkingDirectory.Value ??= _defaultProcessRunConfiguration.WorkingDirectory;
+                _localWorkingDirectory.Value ??= _defaultProcessStartConfiguration.WorkingDirectory;
                 return _localWorkingDirectory.Value!;
             }
             set => _localWorkingDirectory.Value = value;

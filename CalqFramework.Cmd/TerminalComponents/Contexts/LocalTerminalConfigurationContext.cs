@@ -30,7 +30,7 @@ namespace CalqFramework.Cmd.TerminalComponents.Contexts {
             set => _localShellCommandPostprocessor.Value = value;
         }
 
-        public ProcessRunConfigurationContext ProcessRunConfiguration { get; } = new ProcessRunConfigurationContext();
+        public ShellCommandRunConfigurationContext ShellCommandRunConfiguration { get; } = new ShellCommandRunConfigurationContext();
 
         public IShell Shell {
             get {
