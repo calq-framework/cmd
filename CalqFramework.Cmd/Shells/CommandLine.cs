@@ -7,7 +7,7 @@ public class CommandLine : ShellBase {
         return hostPath;
     }
 
-    internal override ShellWorkerBase CreateShellWorker(string script, IProcessStartConfiguration processStartConfiguration, ShellWorkerBase? pipedWorker, CancellationToken cancellationToken = default) {
+    public override ShellWorkerBase CreateShellWorker(string script, IProcessStartConfiguration processStartConfiguration, ShellWorkerBase? pipedWorker, CancellationToken cancellationToken = default) {
         return new CommandLineWorker(script, processStartConfiguration, cancellationToken) {
             PipedWorker = pipedWorker
         };

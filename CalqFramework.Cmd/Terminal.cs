@@ -38,44 +38,44 @@ public static class Terminal {
     public static void RUN(string script, TimeSpan? timeout = null) {
         LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
-        LocalTerminal.Shell.Run(script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration), cancellationTokenSource.Token);
-    }
-
-    public static void RUN(string script, TextWriter outputWriter, TimeSpan? timeout = null) {
-        LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
-        var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
-        LocalTerminal.Shell.Run(script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { Out = outputWriter }, cancellationTokenSource.Token);
+        new ShellCommand(LocalTerminal.Shell, script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration)).Run(LocalTerminal.ProcessRunConfiguration.Out, cancellationTokenSource.Token);
     }
 
     public static void RUN(string script, TextReader inputReader, TimeSpan? timeout = null) {
         LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
-        LocalTerminal.Shell.Run(script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader }, cancellationTokenSource.Token);
+        new ShellCommand(LocalTerminal.Shell, script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader }).Run(LocalTerminal.ProcessRunConfiguration.Out, cancellationTokenSource.Token);
+    }
+
+    public static void RUN(string script, TextWriter outputWriter, TimeSpan? timeout = null) {
+        LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
+        var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
+        new ShellCommand(LocalTerminal.Shell, script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration)).Run(outputWriter, cancellationTokenSource.Token);
     }
 
     public static void RUN(string script, TextReader inputReader, TextWriter outputWriter, TimeSpan? timeout = null) {
         LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
-        LocalTerminal.Shell.Run(script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader, Out = outputWriter }, cancellationTokenSource.Token);
+        new ShellCommand(LocalTerminal.Shell, script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader }).Run(outputWriter, cancellationTokenSource.Token);
     }
 
     public static async Task RUNAsync(string script, CancellationToken cancellationToken = default) {
         LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
-        await LocalTerminal.Shell.RunAsync(script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration), cancellationToken);
+        await new ShellCommand(LocalTerminal.Shell, script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration)).RunAsync(LocalTerminal.ProcessRunConfiguration.Out, cancellationToken);
     }
 
     public static async Task RUNAsync(string script, TextReader inputReader, CancellationToken cancellationToken = default) {
         LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
-        await LocalTerminal.Shell.RunAsync(script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader }, cancellationToken);
+        await new ShellCommand(LocalTerminal.Shell, script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader }).RunAsync(LocalTerminal.ProcessRunConfiguration.Out, cancellationToken);
     }
 
     public static async Task RUNAsync(string script, TextWriter outputWriter, CancellationToken cancellationToken = default) {
         LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
-        await LocalTerminal.Shell.RunAsync(script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { Out = outputWriter }, cancellationToken);
+        await new ShellCommand(LocalTerminal.Shell, script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration)).RunAsync(outputWriter, cancellationToken);
     }
 
     public static async Task RUNAsync(string script, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
         LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ProcessRunConfiguration);
-        await LocalTerminal.Shell.RunAsync(script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader, Out = outputWriter }, cancellationToken);
+        await new ShellCommand(LocalTerminal.Shell, script, new ProcessRunConfiguration(LocalTerminal.ProcessRunConfiguration) { In = inputReader }).RunAsync(outputWriter, cancellationToken);
     }
 }

@@ -36,18 +36,20 @@ namespace CalqFramework.Cmd {
         }
 
         public async Task<string> GetOutputAsync(CancellationToken cancellationToken = default) {
-            TextReader inputReader;
-            ShellWorkerBase? pipedProcess = null;
-            if (PipedShellCommand != null) {
-                pipedProcess = PipedShellCommand.Start();
-                inputReader = pipedProcess.StandardOutput;
-            } else {
-                inputReader = ProcessRunConfiguration.In;
-            }
-            var outWriter = new StringWriter();
-            await Shell.RunAsync(Script, new ProcessRunConfiguration(ProcessRunConfiguration) { In = inputReader, Out = outWriter }, pipedProcess, cancellationToken);
-            var output = outWriter.ToString();
+            using var worker = Start(cancellationToken);
+            var outputWriter = new StringWriter();
+            await RunAsync(outputWriter, worker, cancellationToken);
+            var output = outputWriter.ToString();
             return ShellCommandPostprocessor.ProcessOutput(output);
+        }
+
+        public void Run(TextWriter outputWriter, CancellationToken cancellationToken = default) {
+            RunAsync(outputWriter, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+
+        public async Task RunAsync(TextWriter outputWriter, CancellationToken cancellationToken = default) {
+            using var worker = Start(cancellationToken);
+            await RunAsync(outputWriter, worker, cancellationToken);
         }
 
         public ShellWorkerBase Start(CancellationToken cancellationToken = default) {
@@ -59,11 +61,29 @@ namespace CalqFramework.Cmd {
             } else {
                 inputReader = ProcessRunConfiguration.In;
             }
-            return Shell.Start(Script, new ProcessRunConfiguration(ProcessRunConfiguration) { In = inputReader }, pipedProcess, cancellationToken);
+
+            var worker = Shell.CreateShellWorker(Script, new ProcessRunConfiguration(ProcessRunConfiguration) { In = inputReader }, pipedProcess, cancellationToken);
+            return worker;
         }
 
         public override string ToString() {
             return GetOutput();
+        }
+
+        private async Task RunAsync(TextWriter outputWriter, ShellWorkerBase worker, CancellationToken cancellationToken = default) {
+            var relayOutputCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var relayOutputTask = StreamUtils.RelayStream(worker.StandardOutput, outputWriter, relayOutputCts.Token);
+
+            try {
+                await worker.WaitForSuccess();
+            } catch {
+                relayOutputCts.Cancel();
+                throw;
+            }
+
+            await relayOutputTask;
+
+            cancellationToken.ThrowIfCancellationRequested();
         }
     }
 }
