@@ -1,8 +1,6 @@
-﻿using CalqFramework.Cmd.SystemProcess;
-
-namespace CalqFramework.Cmd.Shell {
+﻿namespace CalqFramework.Cmd.Shell {
     public class CommandLineWorker : ShellWorkerBase {
-        public CommandLineWorker(string script, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) : base(script, processStartConfiguration, cancellationToken) {
+        public CommandLineWorker(string script, IShellCommandStartConfiguration shellCommandStartConfiguration, CancellationToken cancellationToken = default) : base(script, shellCommandStartConfiguration, cancellationToken) {
         }
 
         internal override ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script) {

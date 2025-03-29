@@ -1,5 +1,4 @@
 ﻿using CalqFramework.Cmd.Shell;
-using CalqFramework.Cmd.SystemProcess;
 
 namespace CalqFramework.Cmd.Shells;
 public class CommandLine : ShellBase {
@@ -7,8 +6,8 @@ public class CommandLine : ShellBase {
         return hostPath;
     }
 
-    public override ShellWorkerBase CreateShellWorker(string script, IProcessStartConfiguration processStartConfiguration, ShellWorkerBase? pipedWorker, CancellationToken cancellationToken = default) {
-        return new CommandLineWorker(script, processStartConfiguration, cancellationToken) {
+    public override ShellWorkerBase CreateShellWorker(string script, IShellCommandStartConfiguration shellCommandStartConfiguration, ShellWorkerBase? pipedWorker, CancellationToken cancellationToken = default) {
+        return new CommandLineWorker(script, shellCommandStartConfiguration, cancellationToken) {
             PipedWorker = pipedWorker
         };
     }

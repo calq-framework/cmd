@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.SystemProcess {
+﻿namespace CalqFramework.Cmd.Shell {
     public class ProcessExecutionInfo {
         public ProcessExecutionInfo(string fileName, string arguments) {
             FileName = fileName;

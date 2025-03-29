@@ -1,7 +1,5 @@
-﻿using CalqFramework.Cmd.Shell;
-
-namespace CalqFramework.Cmd.SystemProcess {
-    public interface IProcessStartConfiguration {
+﻿namespace CalqFramework.Cmd.Shell {
+    public interface IShellCommandStartConfiguration {
         IShellWorkerErrorHandler ErrorHandler { get; }
         TextReader In { get; }
         TextWriter InWriter { get; }
