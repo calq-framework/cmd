@@ -1,10 +1,9 @@
-﻿using CalqFramework.Cmd.SystemProcess;
-using System.Text;
+﻿using System.Text;
 using System.Text.RegularExpressions;
 
 namespace CalqFramework.Cmd.Shell {
     public class BashWorker : ShellWorkerBase {
-        public BashWorker(string script, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) : base(script, processStartConfiguration, cancellationToken) {
+        public BashWorker(string script, IShellCommandStartConfiguration shellCommandStartConfiguration, CancellationToken cancellationToken = default) : base(script, shellCommandStartConfiguration, cancellationToken) {
         }
 
         internal bool IsUsingWSL => CalqFramework.Cmd.Shells.Bash.IsRunningBashOnWSL;

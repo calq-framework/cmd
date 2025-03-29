@@ -1,5 +1,4 @@
-﻿using CalqFramework.Cmd.SystemProcess;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace CalqFramework.Cmd.Shell {
     public abstract class ShellWorkerBase : IDisposable {
@@ -9,16 +8,16 @@ namespace CalqFramework.Cmd.Shell {
 
         private Task RelayInputTask;
 
-        public ShellWorkerBase(string script, IProcessStartConfiguration processStartConfiguration, CancellationToken cancellationToken = default) {
+        public ShellWorkerBase(string script, IShellCommandStartConfiguration shellCommandStartConfiguration, CancellationToken cancellationToken = default) {
             Script = script;
 
-            var processExecutionInfo = GetProcessExecutionInfo(processStartConfiguration.WorkingDirectory, script);
+            var processExecutionInfo = GetProcessExecutionInfo(shellCommandStartConfiguration.WorkingDirectory, script);
 
-            ProcessStartConfiguration = processStartConfiguration;
+            ShellCommandStartConfiguration = shellCommandStartConfiguration;
 
             _process = new AutoTerminateProcess() {
                 StartInfo = new ProcessStartInfo {
-                    WorkingDirectory = processStartConfiguration.WorkingDirectory,
+                    WorkingDirectory = shellCommandStartConfiguration.WorkingDirectory,
                     FileName = processExecutionInfo.FileName,
                     RedirectStandardInput = true, // TODO false when null input
                     RedirectStandardOutput = true,
@@ -38,14 +37,14 @@ namespace CalqFramework.Cmd.Shell {
 
             _process.Start();
 
-            RelayInputTask = Task.Run(async () => await StreamUtils.RelayInput(_process.StandardInput, processStartConfiguration.In, processStartConfiguration.InWriter, cancellationToken)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
+            RelayInputTask = Task.Run(async () => await StreamUtils.RelayInput(_process.StandardInput, shellCommandStartConfiguration.In, shellCommandStartConfiguration.InWriter, cancellationToken)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
         }
 
         public ShellWorkerBase? PipedWorker { get; init; }
 
         public TextReader StandardOutput { get => _process.StandardOutput; }
         public string Script { get; }
-        private IProcessStartConfiguration ProcessStartConfiguration { get; }
+        private IShellCommandStartConfiguration ShellCommandStartConfiguration { get; }
 
         public void Dispose() {
             if (!_disposed) {
@@ -73,7 +72,7 @@ namespace CalqFramework.Cmd.Shell {
                 output = outputWriter.ToString();
             }
 
-            ProcessStartConfiguration.ErrorHandler.AssertSuccess(Script, _process.ExitCode, errorMessage, output);
+            ShellCommandStartConfiguration.ErrorHandler.AssertSuccess(Script, _process.ExitCode, errorMessage, output);
         }
 
         internal abstract ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script);

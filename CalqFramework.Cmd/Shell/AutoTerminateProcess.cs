@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 
-namespace CalqFramework.Cmd.SystemProcess {
+namespace CalqFramework.Cmd.Shell {
     public class AutoTerminateProcess : Process {
         private static ConcurrentDictionary<Process, byte> _allProcesses = new();
         private bool _disposed;

@@ -1,12 +1,11 @@
 ﻿using CalqFramework.Cmd.Shell;
-using CalqFramework.Cmd.SystemProcess;
 
 namespace CalqFramework.Cmd.Shells;
 public class Bash : ShellBase {
 
     static Bash() {
         if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
-            using var worker = new CommandLineWorker(@"bash -c ""uname -s""", new ProcessStartConfiguration() { In = TextReader.Null });
+            using var worker = new CommandLineWorker(@"bash -c ""uname -s""", new ShellCommandStartConfiguration() { In = TextReader.Null });
             IsRunningBashOnWSL = worker.StandardOutput.ReadToEnd().TrimEnd() switch {
                 "Linux" => true,
                 "Darwin" => true,
@@ -27,8 +26,8 @@ public class Bash : ShellBase {
         return hostPath;
     }
 
-    public override ShellWorkerBase CreateShellWorker(string script, IProcessStartConfiguration processStartConfiguration, ShellWorkerBase? pipedWorker, CancellationToken cancellationToken = default) {
-        return new BashWorker(script, processStartConfiguration, cancellationToken) {
+    public override ShellWorkerBase CreateShellWorker(string script, IShellCommandStartConfiguration shellCommandStartConfiguration, ShellWorkerBase? pipedWorker, CancellationToken cancellationToken = default) {
+        return new BashWorker(script, shellCommandStartConfiguration, cancellationToken) {
             PipedWorker = pipedWorker
         };
     }
