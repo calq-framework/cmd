@@ -7,15 +7,15 @@ namespace CalqFramework.Cmd {
 
     [DebuggerDisplay("{Script}")]
     public class ShellCommand {
-        public ShellCommand(IShell shell, string script, IProcessRunConfiguration processRunConfiguration) { // TODO change to IProcessStartConfiguration
+        public ShellCommand(IShell shell, string script, IProcessStartConfiguration processStartConfiguration) {
             Shell = shell;
             Script = script;
-            ProcessRunConfiguration = processRunConfiguration;
+            ProcessStartConfiguration = processStartConfiguration;
         }
 
         public IShellCommandPostprocessor ShellCommandPostprocessor { get; init; } = new ShellCommandPostprocessor();
         private ShellCommand? PipedShellCommand { get; init; }
-        private IProcessRunConfiguration ProcessRunConfiguration { get; }
+        private IProcessStartConfiguration ProcessStartConfiguration { get; }
         private string Script { get; }
         private IShell Shell { get; }
 
@@ -24,7 +24,7 @@ namespace CalqFramework.Cmd {
         }
 
         public static ShellCommand operator |(ShellCommand a, ShellCommand b) {
-            var c = new ShellCommand(b.Shell, b.Script, b.ProcessRunConfiguration) {
+            var c = new ShellCommand(b.Shell, b.Script, b.ProcessStartConfiguration) {
                 PipedShellCommand = a
             };
 
@@ -59,10 +59,10 @@ namespace CalqFramework.Cmd {
                 pipedProcess = PipedShellCommand.Start();
                 inputReader = pipedProcess.StandardOutput;
             } else {
-                inputReader = ProcessRunConfiguration.In;
+                inputReader = ProcessStartConfiguration.In;
             }
 
-            var worker = Shell.CreateShellWorker(Script, new ProcessRunConfiguration(ProcessRunConfiguration) { In = inputReader }, pipedProcess, cancellationToken);
+            var worker = Shell.CreateShellWorker(Script, new ProcessStartConfiguration(ProcessStartConfiguration) { In = inputReader }, pipedProcess, cancellationToken);
             return worker;
         }
 

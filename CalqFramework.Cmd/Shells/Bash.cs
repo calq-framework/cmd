@@ -6,7 +6,7 @@ public class Bash : ShellBase {
 
     static Bash() {
         if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
-            using var worker = new CommandLineWorker(@"bash -c ""uname -s""", new ProcessRunConfiguration() { In = TextReader.Null });
+            using var worker = new CommandLineWorker(@"bash -c ""uname -s""", new ProcessStartConfiguration() { In = TextReader.Null });
             IsRunningBashOnWSL = worker.StandardOutput.ReadToEnd().TrimEnd() switch {
                 "Linux" => true,
                 "Darwin" => true,
