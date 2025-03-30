@@ -3,6 +3,6 @@
         IShellCommandPostprocessor Postprocessor { get; }
 
         string MapToInternalPath(string hostPath);
-        ShellWorkerBase CreateShellWorker(string script, IShellCommandStartConfiguration shellCommandStartConfiguration, ShellWorkerBase? pipedWorker, CancellationToken cancellationToken = default);
+        ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, CancellationToken cancellationToken = default);
     }
 }

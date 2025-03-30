@@ -8,16 +8,22 @@ namespace CalqFramework.Cmd.Shell {
 
         private Task RelayInputTask;
 
-        public ShellWorkerBase(string script, IShellCommandStartConfiguration shellCommandStartConfiguration, CancellationToken cancellationToken = default) {
-            Script = script;
+        public ShellWorkerBase(ShellCommand shellCommand, CancellationToken cancellationToken = default) {
+            ShellCommand = shellCommand;
 
-            var processExecutionInfo = GetProcessExecutionInfo(shellCommandStartConfiguration.WorkingDirectory, script);
+            TextReader inputReader;
+            if (ShellCommand.PipedShellCommand != null) {
+                PipedWorker = ShellCommand.PipedShellCommand.Shell.CreateShellWorker(ShellCommand.PipedShellCommand);
+                inputReader = PipedWorker.StandardOutput;
+            } else {
+                inputReader = ShellCommand.ShellCommandStartConfiguration.In;
+            }
 
-            ShellCommandStartConfiguration = shellCommandStartConfiguration;
+            var processExecutionInfo = GetProcessExecutionInfo(ShellCommand.ShellCommandStartConfiguration.WorkingDirectory, ShellCommand.Script);
 
             _process = new AutoTerminateProcess() {
                 StartInfo = new ProcessStartInfo {
-                    WorkingDirectory = shellCommandStartConfiguration.WorkingDirectory,
+                    WorkingDirectory = ShellCommand.ShellCommandStartConfiguration.WorkingDirectory,
                     FileName = processExecutionInfo.FileName,
                     RedirectStandardInput = true, // TODO false when null input
                     RedirectStandardOutput = true,
@@ -37,14 +43,14 @@ namespace CalqFramework.Cmd.Shell {
 
             _process.Start();
 
-            RelayInputTask = Task.Run(async () => await StreamUtils.RelayInput(_process.StandardInput, shellCommandStartConfiguration.In, shellCommandStartConfiguration.InWriter, cancellationToken)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
+            RelayInputTask = Task.Run(async () => await StreamUtils.RelayInput(_process.StandardInput, inputReader, ShellCommand.ShellCommandStartConfiguration.InWriter, cancellationToken)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
         }
 
-        public ShellWorkerBase? PipedWorker { get; init; }
+        public ShellWorkerBase? PipedWorker { get; }
+
+        public ShellCommand ShellCommand { get; }
 
         public TextReader StandardOutput { get => _process.StandardOutput; }
-        public string Script { get; }
-        private IShellCommandStartConfiguration ShellCommandStartConfiguration { get; }
 
         public void Dispose() {
             if (!_disposed) {
@@ -72,7 +78,7 @@ namespace CalqFramework.Cmd.Shell {
                 output = outputWriter.ToString();
             }
 
-            ShellCommandStartConfiguration.ErrorHandler.AssertSuccess(Script, _process.ExitCode, errorMessage, output);
+            ShellCommand.ShellCommandStartConfiguration.ErrorHandler.AssertSuccess(ShellCommand.Script, _process.ExitCode, errorMessage, output);
         }
 
         internal abstract ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script);

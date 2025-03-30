@@ -6,9 +6,7 @@ public class CommandLine : ShellBase {
         return hostPath;
     }
 
-    public override ShellWorkerBase CreateShellWorker(string script, IShellCommandStartConfiguration shellCommandStartConfiguration, ShellWorkerBase? pipedWorker, CancellationToken cancellationToken = default) {
-        return new CommandLineWorker(script, shellCommandStartConfiguration, cancellationToken) {
-            PipedWorker = pipedWorker
-        };
+    public override ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, CancellationToken cancellationToken = default) {
+        return new CommandLineWorker(shellCommand, cancellationToken);
     }
 }

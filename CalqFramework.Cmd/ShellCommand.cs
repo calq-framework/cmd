@@ -9,10 +9,10 @@ namespace CalqFramework.Cmd {
             Shell = shell;
             Script = script;
         }
-        private ShellCommand? PipedShellCommand { get; init; }
+        public ShellCommand? PipedShellCommand { get; private init; }
         public IShellCommandStartConfiguration ShellCommandStartConfiguration { get; init; } = new ShellCommandStartConfiguration();
-        private string Script { get; }
-        private IShell Shell { get; }
+        public string Script { get; }
+        public IShell Shell { get; }
 
         public static implicit operator string(ShellCommand obj) {
             return obj.GetOutput();
@@ -49,16 +49,7 @@ namespace CalqFramework.Cmd {
         }
 
         public ShellWorkerBase Start(CancellationToken cancellationToken = default) {
-            TextReader inputReader;
-            ShellWorkerBase? pipedProcess = null;
-            if (PipedShellCommand != null) {
-                pipedProcess = PipedShellCommand.Start();
-                inputReader = pipedProcess.StandardOutput;
-            } else {
-                inputReader = ShellCommandStartConfiguration.In;
-            }
-
-            var worker = Shell.CreateShellWorker(Script, new ShellCommandStartConfiguration(ShellCommandStartConfiguration) { In = inputReader }, pipedProcess, cancellationToken);
+            var worker = Shell.CreateShellWorker(this, cancellationToken);
             return worker;
         }
 
