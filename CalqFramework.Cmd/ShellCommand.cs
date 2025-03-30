@@ -9,10 +9,14 @@ namespace CalqFramework.Cmd {
             Shell = shell;
             Script = script;
         }
+
+        public TextReader In { get; init; } = Console.In;
+        public TextWriter InInterceptor { get; init; } = Console.Out;
         public ShellCommand? PipedShellCommand { get; private init; }
         public string Script { get; }
         public IShell Shell { get; }
-        public IShellCommandStartConfiguration ShellCommandStartConfiguration { get; init; } = new ShellCommandStartConfiguration();
+        public string WorkingDirectory { get; init; } = Environment.CurrentDirectory;
+
 
         public static implicit operator string(ShellCommand obj) {
             return obj.Evaluate();
@@ -20,7 +24,9 @@ namespace CalqFramework.Cmd {
 
         public static ShellCommand operator |(ShellCommand a, ShellCommand b) {
             var c = new ShellCommand(b.Shell, b.Script) {
-                ShellCommandStartConfiguration = b.ShellCommandStartConfiguration,
+                In = b.In,
+                InInterceptor = b.InInterceptor,
+                WorkingDirectory = b.WorkingDirectory,
                 PipedShellCommand = a
             };
 
