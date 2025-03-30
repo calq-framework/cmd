@@ -1,5 +1,4 @@
 ﻿using CalqFramework.Cmd.Shell;
-using CalqFramework.Cmd.TerminalComponents.ShellCommandComponents;
 using System.Diagnostics;
 
 namespace CalqFramework.Cmd {
@@ -10,8 +9,6 @@ namespace CalqFramework.Cmd {
             Shell = shell;
             Script = script;
         }
-
-        public IShellCommandPostprocessor ShellCommandPostprocessor { get; init; } = new ShellCommandPostprocessor();
         private ShellCommand? PipedShellCommand { get; init; }
         public IShellCommandStartConfiguration ShellCommandStartConfiguration { get; init; } = new ShellCommandStartConfiguration();
         private string Script { get; }
@@ -39,7 +36,7 @@ namespace CalqFramework.Cmd {
             var outputWriter = new StringWriter();
             await RunAsync(outputWriter, worker, cancellationToken);
             var output = outputWriter.ToString();
-            return ShellCommandPostprocessor.ProcessOutput(output);
+            return Shell.Postprocessor.ProcessOutput(output);
         }
 
         public void Run(TextWriter outputWriter, CancellationToken cancellationToken = default) {

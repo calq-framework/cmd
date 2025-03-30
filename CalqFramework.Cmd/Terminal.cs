@@ -17,8 +17,7 @@ public static class Terminal {
         return new ShellCommand(LocalTerminal.Shell, script) {
             ShellCommandStartConfiguration = new ShellCommandStartConfiguration(LocalTerminal.ShellCommandRunConfiguration) {
                 In = inputReader
-            },
-            ShellCommandPostprocessor = LocalTerminal.ShellCommandPostprocessor
+            }
         }.GetOutput();
     }
 
@@ -31,8 +30,7 @@ public static class Terminal {
         return new ShellCommand(LocalTerminal.Shell, script) {
             ShellCommandStartConfiguration = new ShellCommandStartConfiguration(LocalTerminal.ShellCommandRunConfiguration) {
                 In = inputReader
-            },
-            ShellCommandPostprocessor = LocalTerminal.ShellCommandPostprocessor
+            }
         }.GetOutputAsync();
     }
 
@@ -45,8 +43,7 @@ public static class Terminal {
         return new ShellCommand(LocalTerminal.Shell, script) {
             ShellCommandStartConfiguration = new ShellCommandStartConfiguration(LocalTerminal.ShellCommandRunConfiguration) {
                 In = inputReader
-            },
-            ShellCommandPostprocessor = LocalTerminal.ShellCommandPostprocessor
+            }
         };
     }
 
