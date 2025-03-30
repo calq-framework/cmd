@@ -5,7 +5,11 @@ public class Bash : ShellBase {
 
     static Bash() {
         if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
-            using var worker = new CommandLineWorker(@"bash -c ""uname -s""", new ShellCommandStartConfiguration() { In = TextReader.Null });
+            var shell = new CommandLine();
+            var command = new ShellCommand(shell, @"bash -c ""uname -s""") {
+                ShellCommandStartConfiguration = new ShellCommandStartConfiguration() { In = TextReader.Null }
+            };
+            using var worker = command.Start();
             IsRunningBashOnWSL = worker.StandardOutput.ReadToEnd().TrimEnd() switch {
                 "Linux" => true,
                 "Darwin" => true,
@@ -26,9 +30,7 @@ public class Bash : ShellBase {
         return hostPath;
     }
 
-    public override ShellWorkerBase CreateShellWorker(string script, IShellCommandStartConfiguration shellCommandStartConfiguration, ShellWorkerBase? pipedWorker, CancellationToken cancellationToken = default) {
-        return new BashWorker(script, shellCommandStartConfiguration, cancellationToken) {
-            PipedWorker = pipedWorker
-        };
+    public override ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, CancellationToken cancellationToken = default) {
+        return new BashWorker(shellCommand, cancellationToken);
     }
 }
