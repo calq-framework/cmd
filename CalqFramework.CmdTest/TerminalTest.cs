@@ -17,12 +17,12 @@ public class TerminalTest {
 
     [Fact]
     public async Task WorkingDirectory_WhenChangedInTask_RevertsToOriginal() {
-        var currentDirectory = LocalTerminal.ShellCommandRunConfiguration.WorkingDirectory;
+        var currentDirectory = LocalTerminal.WorkingDirectory;
         await Task.Run(() => {
             CD("changed");
-            Assert.NotEqual(currentDirectory, LocalTerminal.ShellCommandRunConfiguration.WorkingDirectory);
+            Assert.NotEqual(currentDirectory, LocalTerminal.WorkingDirectory);
         });
-        Assert.Equal(currentDirectory, LocalTerminal.ShellCommandRunConfiguration.WorkingDirectory);
+        Assert.Equal(currentDirectory, LocalTerminal.WorkingDirectory);
     }
 
     [Fact]
@@ -39,8 +39,8 @@ public class TerminalTest {
         var writer = new StringWriter();
         var input = "hello world\n";
 
-        LocalTerminal.ShellCommandRunConfiguration.In = new StringReader(input);
-        LocalTerminal.ShellCommandRunConfiguration.Out = writer;
+        LocalTerminal.In = new StringReader(input);
+        LocalTerminal.Out = writer;
         LocalTerminal.Shell = new Bash();
 
         RUN("sleep 1; read -r input; echo $input");
@@ -57,8 +57,8 @@ public class TerminalTest {
         }
 
         var writer = new StringWriter();
-        LocalTerminal.ShellCommandRunConfiguration.In = new StringReader(expectedOutput);
-        LocalTerminal.ShellCommandRunConfiguration.Out = writer;
+        LocalTerminal.In = new StringReader(expectedOutput);
+        LocalTerminal.Out = writer;
         LocalTerminal.Shell = new Bash();
 
         var output = CMD("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
@@ -76,8 +76,8 @@ public class TerminalTest {
         }
 
         var writer = new StringWriter();
-        LocalTerminal.ShellCommandRunConfiguration.In = new StringReader(expectedOutput);
-        LocalTerminal.ShellCommandRunConfiguration.Out = writer;
+        LocalTerminal.In = new StringReader(expectedOutput);
+        LocalTerminal.Out = writer;
         LocalTerminal.Shell = new Bash();
 
         RUN("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");

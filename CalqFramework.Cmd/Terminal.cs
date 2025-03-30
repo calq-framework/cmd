@@ -1,11 +1,11 @@
-﻿using CalqFramework.Cmd.Shell;
-using CalqFramework.Cmd.TerminalComponents.Contexts;
+﻿using CalqFramework.Cmd.TerminalComponents;
+
 namespace CalqFramework.Cmd;
 public static class Terminal {
     public static LocalTerminalConfigurationContext LocalTerminal { get; } = new LocalTerminalConfigurationContext();
 
     public static void CD(string path) {
-        LocalTerminal.ShellCommandRunConfiguration.WorkingDirectory = Path.GetFullPath(Path.Combine(LocalTerminal.ShellCommandRunConfiguration.WorkingDirectory, path));
+        LocalTerminal.WorkingDirectory = Path.GetFullPath(Path.Combine(LocalTerminal.WorkingDirectory, path));
     }
 
     public static string CMD(string script, TimeSpan? timeout = null) {
@@ -31,44 +31,44 @@ public static class Terminal {
 
     public static ShellCommand CMDV(string script, TextReader inputReader) {
         return new ShellCommand(LocalTerminal.Shell, script) {
-            ShellCommandStartConfiguration = new ShellCommandStartConfiguration(LocalTerminal.ShellCommandRunConfiguration) {
-                In = inputReader
-            }
+            In = inputReader
         };
     }
 
     public static void RUN(string script, TimeSpan? timeout = null) {
-        RUN(script, LocalTerminal.ShellCommandRunConfiguration.In, LocalTerminal.ShellCommandRunConfiguration.Out, timeout);
+        RUN(script, LocalTerminal.In, LocalTerminal.Out, timeout);
     }
 
     public static void RUN(string script, TextReader inputReader, TimeSpan? timeout = null) {
-        RUN(script, inputReader, LocalTerminal.ShellCommandRunConfiguration.Out, timeout);
+        RUN(script, inputReader, LocalTerminal.Out, timeout);
     }
 
     public static void RUN(string script, TextWriter outputWriter, TimeSpan? timeout = null) {
-        RUN(script, LocalTerminal.ShellCommandRunConfiguration.In, outputWriter, timeout);
+        RUN(script, LocalTerminal.In, outputWriter, timeout);
     }
 
     public static void RUN(string script, TextReader inputReader, TextWriter outputWriter, TimeSpan? timeout = null) {
-        LocalTerminal.TerminalLogger.LogRun(script, LocalTerminal.ShellCommandRunConfiguration);
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
-        CMDV(script, inputReader).Run(outputWriter, cancellationTokenSource.Token);
+        var cmd = CMDV(script, inputReader);
+        LocalTerminal.TerminalLogger.LogRun(cmd, outputWriter);
+        cmd.Run(outputWriter, cancellationTokenSource.Token);
     }
 
     public static async Task RUNAsync(string script, CancellationToken cancellationToken = default) {
-        await RUNAsync(script, LocalTerminal.ShellCommandRunConfiguration.In, LocalTerminal.ShellCommandRunConfiguration.Out, cancellationToken);
+        await RUNAsync(script, LocalTerminal.In, LocalTerminal.Out, cancellationToken);
     }
 
     public static async Task RUNAsync(string script, TextReader inputReader, CancellationToken cancellationToken = default) {
-        await RUNAsync(script, inputReader, LocalTerminal.ShellCommandRunConfiguration.Out, cancellationToken);
+        await RUNAsync(script, inputReader, LocalTerminal.Out, cancellationToken);
     }
 
     public static async Task RUNAsync(string script, TextWriter outputWriter, CancellationToken cancellationToken = default) {
-        await RUNAsync(script, LocalTerminal.ShellCommandRunConfiguration.In, outputWriter, cancellationToken);
+        await RUNAsync(script, LocalTerminal.In, outputWriter, cancellationToken);
     }
 
     public static async Task RUNAsync(string script, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
-        LocalTerminal.TerminalLogger.LogRun(script, LocalTerminal.ShellCommandRunConfiguration);
-        await CMDV(script, inputReader).RunAsync(outputWriter, cancellationToken);
+        var cmd = CMDV(script, inputReader);
+        LocalTerminal.TerminalLogger.LogRun(cmd, outputWriter);
+        await cmd.RunAsync(outputWriter, cancellationToken);
     }
 }

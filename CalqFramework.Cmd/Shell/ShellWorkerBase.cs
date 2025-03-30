@@ -16,14 +16,14 @@ namespace CalqFramework.Cmd.Shell {
                 PipedWorker = ShellCommand.PipedShellCommand.Shell.CreateShellWorker(ShellCommand.PipedShellCommand);
                 inputReader = PipedWorker.StandardOutput;
             } else {
-                inputReader = ShellCommand.ShellCommandStartConfiguration.In;
+                inputReader = ShellCommand.In;
             }
 
-            var processExecutionInfo = GetProcessExecutionInfo(ShellCommand.ShellCommandStartConfiguration.WorkingDirectory, ShellCommand.Script);
+            var processExecutionInfo = GetProcessExecutionInfo(ShellCommand.WorkingDirectory, ShellCommand.Script);
 
             _process = new AutoTerminateProcess() {
                 StartInfo = new ProcessStartInfo {
-                    WorkingDirectory = ShellCommand.ShellCommandStartConfiguration.WorkingDirectory,
+                    WorkingDirectory = ShellCommand.WorkingDirectory,
                     FileName = processExecutionInfo.FileName,
                     RedirectStandardInput = true, // TODO false when null input
                     RedirectStandardOutput = true,
@@ -43,7 +43,7 @@ namespace CalqFramework.Cmd.Shell {
 
             _process.Start();
 
-            RelayInputTask = Task.Run(async () => await StreamUtils.RelayInput(_process.StandardInput, inputReader, ShellCommand.ShellCommandStartConfiguration.InInterceptor, cancellationToken)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
+            RelayInputTask = Task.Run(async () => await StreamUtils.RelayInput(_process.StandardInput, inputReader, ShellCommand.InInterceptor, cancellationToken)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
         }
 
         public ShellWorkerBase? PipedWorker { get; }

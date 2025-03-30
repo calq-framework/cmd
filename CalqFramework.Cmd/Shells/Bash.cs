@@ -7,7 +7,7 @@ public class Bash : ShellBase {
         if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
             var shell = new CommandLine();
             var command = new ShellCommand(shell, @"bash -c ""uname -s""") {
-                ShellCommandStartConfiguration = new ShellCommandStartConfiguration() { In = TextReader.Null }
+                In = TextReader.Null
             };
             using var worker = command.Start();
             IsRunningBashOnWSL = worker.StandardOutput.ReadToEnd().TrimEnd() switch {
