@@ -78,7 +78,7 @@ namespace CalqFramework.Cmd.Shell {
                 output = outputWriter.ToString();
             }
 
-            ShellCommand.ShellCommandStartConfiguration.ErrorHandler.AssertSuccess(ShellCommand.Script, _process.ExitCode, errorMessage, output);
+            ShellCommand.Shell.ErrorHandler.AssertSuccess(ShellCommand.Script, _process.ExitCode, errorMessage, output);
         }
 
         internal abstract ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script);
