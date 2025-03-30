@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.TerminalComponents.ShellCommandComponents {
+﻿namespace CalqFramework.Cmd.Shell {
     public interface IShellCommandPostprocessor {
         string ProcessOutput(string output);
     }
