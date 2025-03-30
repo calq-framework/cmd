@@ -2,21 +2,12 @@
 
 namespace CalqFramework.Cmd.TerminalComponents.Contexts {
     public class ShellCommandRunConfigurationContext : IShellCommandRunConfiguration {
-        private readonly IShellCommandStartConfiguration _defaultShellCommandStartConfiguration;
+        private readonly IShellCommandStartConfiguration _defaultShellCommandStartConfiguration = new ShellCommandStartConfiguration();
 
-        private readonly AsyncLocal<TextReader> _localIn;
-        private readonly AsyncLocal<TextWriter> _localInWriter;
-        private readonly AsyncLocal<TextWriter> _localOut;
-        private readonly AsyncLocal<string> _localWorkingDirectory;
-
-        public ShellCommandRunConfigurationContext() {
-            _defaultShellCommandStartConfiguration = new ShellCommandStartConfiguration();
-
-            _localIn = new AsyncLocal<TextReader>();
-            _localInWriter = new AsyncLocal<TextWriter>();
-            _localOut = new AsyncLocal<TextWriter>();
-            _localWorkingDirectory = new AsyncLocal<string>();
-        }
+        private readonly AsyncLocal<TextReader> _localIn = new();
+        private readonly AsyncLocal<TextWriter> _localInWriter = new();
+        private readonly AsyncLocal<TextWriter> _localOut = new();
+        private readonly AsyncLocal<string> _localWorkingDirectory = new();
 
         public TextReader In {
             get {
@@ -26,9 +17,9 @@ namespace CalqFramework.Cmd.TerminalComponents.Contexts {
             set => _localIn.Value = value;
         }
 
-        public TextWriter InWriter {
+        public TextWriter InInterceptor {
             get {
-                _localInWriter.Value ??= _defaultShellCommandStartConfiguration.InWriter;
+                _localInWriter.Value ??= _defaultShellCommandStartConfiguration.InInterceptor;
                 return _localInWriter.Value!;
             }
             set => _localInWriter.Value = value;

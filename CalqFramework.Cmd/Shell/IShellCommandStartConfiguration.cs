@@ -1,7 +1,7 @@
 ﻿namespace CalqFramework.Cmd.Shell {
     public interface IShellCommandStartConfiguration {
         TextReader In { get; }
-        TextWriter InWriter { get; }
+        TextWriter InInterceptor { get; }
         string WorkingDirectory { get; }
     }
 }

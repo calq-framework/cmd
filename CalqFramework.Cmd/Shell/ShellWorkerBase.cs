@@ -43,7 +43,7 @@ namespace CalqFramework.Cmd.Shell {
 
             _process.Start();
 
-            RelayInputTask = Task.Run(async () => await StreamUtils.RelayInput(_process.StandardInput, inputReader, ShellCommand.ShellCommandStartConfiguration.InWriter, cancellationToken)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
+            RelayInputTask = Task.Run(async () => await StreamUtils.RelayInput(_process.StandardInput, inputReader, ShellCommand.ShellCommandStartConfiguration.InInterceptor, cancellationToken)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
         }
 
         public ShellWorkerBase? PipedWorker { get; }

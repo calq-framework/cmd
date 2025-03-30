@@ -10,12 +10,12 @@ namespace CalqFramework.Cmd {
             Script = script;
         }
         public ShellCommand? PipedShellCommand { get; private init; }
-        public IShellCommandStartConfiguration ShellCommandStartConfiguration { get; init; } = new ShellCommandStartConfiguration();
         public string Script { get; }
         public IShell Shell { get; }
+        public IShellCommandStartConfiguration ShellCommandStartConfiguration { get; init; } = new ShellCommandStartConfiguration();
 
         public static implicit operator string(ShellCommand obj) {
-            return obj.GetOutput();
+            return obj.Evaluate();
         }
 
         public static ShellCommand operator |(ShellCommand a, ShellCommand b) {
@@ -27,11 +27,11 @@ namespace CalqFramework.Cmd {
             return c;
         }
 
-        public string GetOutput(CancellationToken cancellationToken = default) {
-            return GetOutputAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+        public string Evaluate(CancellationToken cancellationToken = default) {
+            return EvaluateAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        public async Task<string> GetOutputAsync(CancellationToken cancellationToken = default) {
+        public async Task<string> EvaluateAsync(CancellationToken cancellationToken = default) {
             using var worker = Start(cancellationToken);
             var outputWriter = new StringWriter();
             await RunAsync(outputWriter, worker, cancellationToken);
@@ -54,7 +54,7 @@ namespace CalqFramework.Cmd {
         }
 
         public override string ToString() {
-            return GetOutput();
+            return Evaluate();
         }
 
         private async Task RunAsync(TextWriter outputWriter, ShellWorkerBase worker, CancellationToken cancellationToken = default) {

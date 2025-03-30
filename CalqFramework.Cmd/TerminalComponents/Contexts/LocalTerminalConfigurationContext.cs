@@ -3,25 +3,14 @@ using CalqFramework.Cmd.Shells;
 
 namespace CalqFramework.Cmd.TerminalComponents.Contexts {
     public class LocalTerminalConfigurationContext {
-        private readonly IShell _defaultShell;
-        private readonly ITerminalLogger _defaultTerminalLogger;
-
-        private readonly AsyncLocal<IShell> _localShell;
-        private readonly AsyncLocal<ITerminalLogger> _localTerminalLogger;
-
-        public LocalTerminalConfigurationContext() {
-            _defaultShell = new CommandLine();
-            _defaultTerminalLogger = new TerminalLogger();
-
-            _localShell = new AsyncLocal<IShell>();
-            _localTerminalLogger = new AsyncLocal<ITerminalLogger>();
-        }
+        private readonly AsyncLocal<IShell> _localShell = new();
+        private readonly AsyncLocal<ITerminalLogger> _localTerminalLogger = new();
 
         public ShellCommandRunConfigurationContext ShellCommandRunConfiguration { get; } = new ShellCommandRunConfigurationContext();
 
         public IShell Shell {
             get {
-                _localShell.Value ??= _defaultShell;
+                _localShell.Value ??= new CommandLine();
                 return _localShell.Value!;
             }
             set => _localShell.Value = value;
@@ -29,7 +18,7 @@ namespace CalqFramework.Cmd.TerminalComponents.Contexts {
 
         public ITerminalLogger TerminalLogger {
             get {
-                _localTerminalLogger.Value ??= _defaultTerminalLogger;
+                _localTerminalLogger.Value ??= new TerminalLogger();
                 return _localTerminalLogger.Value!;
             }
             set => _localTerminalLogger.Value = value;
