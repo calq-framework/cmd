@@ -14,32 +14,22 @@ public static class Terminal {
 
     public static string CMD(string script, TextReader inputReader, TimeSpan? timeout = null) {
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
-        return new ShellCommand(LocalTerminal.Shell, script) {
-            ShellCommandStartConfiguration = new ShellCommandStartConfiguration(LocalTerminal.ShellCommandRunConfiguration) {
-                In = inputReader
-            }
-        }.GetOutput();
+        return CMDV(script, inputReader).Evaluate(cancellationTokenSource.Token);
     }
 
-    public static Task<string> CMDAsync(string script, TimeSpan? timeout = null) {
-        return CMDAsync(script, TextReader.Null, timeout);
+    public static Task<string> CMDAsync(string script, CancellationToken cancellationToken = default) {
+        return CMDAsync(script, TextReader.Null, cancellationToken);
     }
 
-    public static Task<string> CMDAsync(string script, TextReader inputReader, TimeSpan? timeout = null) {
-        var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
-        return new ShellCommand(LocalTerminal.Shell, script) {
-            ShellCommandStartConfiguration = new ShellCommandStartConfiguration(LocalTerminal.ShellCommandRunConfiguration) {
-                In = inputReader
-            }
-        }.GetOutputAsync();
+    public static Task<string> CMDAsync(string script, TextReader inputReader, CancellationToken cancellationToken = default) {
+        return CMDV(script, inputReader).EvaluateAsync(cancellationToken);
     }
 
-    public static ShellCommand CMDV(string script, TimeSpan? timeout = null) {
-        return CMDV(script, TextReader.Null, timeout);
+    public static ShellCommand CMDV(string script) {
+        return CMDV(script, TextReader.Null);
     }
 
-    public static ShellCommand CMDV(string script, TextReader inputReader, TimeSpan? timeout = null) {
-        var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
+    public static ShellCommand CMDV(string script, TextReader inputReader) {
         return new ShellCommand(LocalTerminal.Shell, script) {
             ShellCommandStartConfiguration = new ShellCommandStartConfiguration(LocalTerminal.ShellCommandRunConfiguration) {
                 In = inputReader
@@ -60,13 +50,9 @@ public static class Terminal {
     }
 
     public static void RUN(string script, TextReader inputReader, TextWriter outputWriter, TimeSpan? timeout = null) {
-        LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ShellCommandRunConfiguration);
+        LocalTerminal.TerminalLogger.LogRun(script, LocalTerminal.ShellCommandRunConfiguration);
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
-        new ShellCommand(LocalTerminal.Shell, script) {
-            ShellCommandStartConfiguration = new ShellCommandStartConfiguration(LocalTerminal.ShellCommandRunConfiguration) {
-                In = inputReader
-            }
-        }.Run(outputWriter, cancellationTokenSource.Token);
+        CMDV(script, inputReader).Run(outputWriter, cancellationTokenSource.Token);
     }
 
     public static async Task RUNAsync(string script, CancellationToken cancellationToken = default) {
@@ -82,11 +68,7 @@ public static class Terminal {
     }
 
     public static async Task RUNAsync(string script, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
-        LocalTerminal.TerminalLogger.Log(script, LocalTerminal.ShellCommandRunConfiguration);
-        await new ShellCommand(LocalTerminal.Shell, script) {
-            ShellCommandStartConfiguration = new ShellCommandStartConfiguration(LocalTerminal.ShellCommandRunConfiguration) {
-                In = inputReader
-            }
-        }.RunAsync(outputWriter, cancellationToken);
+        LocalTerminal.TerminalLogger.LogRun(script, LocalTerminal.ShellCommandRunConfiguration);
+        await CMDV(script, inputReader).RunAsync(outputWriter, cancellationToken);
     }
 }
