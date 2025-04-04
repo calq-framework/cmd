@@ -6,9 +6,7 @@ public class Bash : ShellBase {
     static Bash() {
         if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
             var shell = new CommandLine();
-            var command = new ShellCommand(shell, @"bash -c ""uname -s""") {
-                In = TextReader.Null
-            };
+            var command = new ShellCommand(shell, @"bash -c ""uname -s""");
             using var worker = command.Start();
             IsRunningBashOnWSL = worker.StandardOutput.ReadToEnd().TrimEnd() switch {
                 "Linux" => true,
@@ -32,5 +30,9 @@ public class Bash : ShellBase {
 
     public override ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, CancellationToken cancellationToken = default) {
         return new BashWorker(shellCommand, cancellationToken);
+    }
+
+    public override ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, TextReader inputReader, CancellationToken cancellationToken = default) {
+        return new BashWorker(shellCommand, inputReader, cancellationToken);
     }
 }

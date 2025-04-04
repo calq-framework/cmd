@@ -6,6 +6,9 @@ namespace CalqFramework.Cmd.Shell {
         public BashWorker(ShellCommand shellCommand, CancellationToken cancellationToken = default) : base(shellCommand, cancellationToken) {
         }
 
+        public BashWorker(ShellCommand shellCommand, TextReader inputReader, CancellationToken cancellationToken = default) : base(shellCommand, inputReader, cancellationToken) {
+        }
+
         internal bool IsUsingWSL => CalqFramework.Cmd.Shells.Bash.IsRunningBashOnWSL;
 
         internal override ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script) {

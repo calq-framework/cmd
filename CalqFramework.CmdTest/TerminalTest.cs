@@ -39,9 +39,10 @@ public class TerminalTest {
         var writer = new StringWriter();
         var input = "hello world\n";
 
-        LocalTerminal.In = new StringReader(input);
         LocalTerminal.Out = writer;
-        LocalTerminal.Shell = new Bash();
+        LocalTerminal.Shell = new Bash() {
+            In = new StringReader(input)
+        };
 
         RUN("sleep 1; read -r input; echo $input");
         var output = writer.ToString();
@@ -57,9 +58,10 @@ public class TerminalTest {
         }
 
         var writer = new StringWriter();
-        LocalTerminal.In = new StringReader(expectedOutput);
         LocalTerminal.Out = writer;
-        LocalTerminal.Shell = new Bash();
+        LocalTerminal.Shell = new Bash() {
+            In = new StringReader(expectedOutput)
+        };
 
         var output = CMD("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
         var writerOutput = writer.ToString();
@@ -76,9 +78,10 @@ public class TerminalTest {
         }
 
         var writer = new StringWriter();
-        LocalTerminal.In = new StringReader(expectedOutput);
         LocalTerminal.Out = writer;
-        LocalTerminal.Shell = new Bash();
+        LocalTerminal.Shell = new Bash() {
+            In = new StringReader(expectedOutput)
+        };
 
         RUN("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
         var writerOutput = writer.ToString();

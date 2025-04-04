@@ -3,28 +3,10 @@ using CalqFramework.Cmd.Shells;
 
 namespace CalqFramework.Cmd.TerminalComponents {
     public class LocalTerminalConfigurationContext {
-        private readonly AsyncLocal<TextReader> _localIn = new();
-        private readonly AsyncLocal<TextWriter> _localInWriter = new();
         private readonly AsyncLocal<TextWriter> _localOut = new();
         private readonly AsyncLocal<IShell> _localShell = new();
         private readonly AsyncLocal<ITerminalLogger> _localTerminalLogger = new();
         private readonly AsyncLocal<string> _localWorkingDirectory = new();
-
-        public TextReader In {
-            get {
-                _localIn.Value ??= Console.In;
-                return _localIn.Value!;
-            }
-            set => _localIn.Value = value;
-        }
-
-        public TextWriter InInterceptor {
-            get {
-                _localInWriter.Value ??= Console.Out;
-                return _localInWriter.Value!;
-            }
-            set => _localInWriter.Value = value;
-        }
 
         public TextWriter Out {
             get {
