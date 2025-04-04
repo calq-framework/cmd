@@ -8,15 +8,12 @@ namespace CalqFramework.Cmd.Shell {
 
         private Task RelayInputTask;
 
-        public ShellWorkerBase(ShellCommand shellCommand, CancellationToken cancellationToken = default) {
+        public ShellWorkerBase(ShellCommand shellCommand, TextReader inputReader, CancellationToken cancellationToken = default) {
             ShellCommand = shellCommand;
 
-            TextReader inputReader;
             if (ShellCommand.PipedShellCommand != null) {
                 PipedWorker = ShellCommand.PipedShellCommand.Shell.CreateShellWorker(ShellCommand.PipedShellCommand);
                 inputReader = PipedWorker.StandardOutput;
-            } else {
-                inputReader = ShellCommand.In;
             }
 
             var processExecutionInfo = GetProcessExecutionInfo(ShellCommand.WorkingDirectory, ShellCommand.Script);
@@ -43,7 +40,10 @@ namespace CalqFramework.Cmd.Shell {
 
             _process.Start();
 
-            RelayInputTask = Task.Run(async () => await StreamUtils.RelayInput(_process.StandardInput, inputReader, ShellCommand.InInterceptor, cancellationToken)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
+            RelayInputTask = Task.Run(async () => await StreamUtils.RelayInput(_process.StandardInput, inputReader, ShellCommand.Shell.InInterceptor, cancellationToken)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
+        }
+
+        public ShellWorkerBase(ShellCommand shellCommand, CancellationToken cancellationToken = default) : this(shellCommand, shellCommand.Shell.In, cancellationToken) {
         }
 
         public ShellWorkerBase? PipedWorker { get; }

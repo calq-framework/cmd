@@ -14,7 +14,7 @@ public static class Terminal {
 
     public static string CMD(string script, TextReader inputReader, TimeSpan? timeout = null) {
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
-        return CMDV(script, inputReader).Evaluate(cancellationTokenSource.Token);
+        return CMDV(script).Evaluate(inputReader, cancellationTokenSource.Token);
     }
 
     public static Task<string> CMDAsync(string script, CancellationToken cancellationToken = default) {
@@ -22,21 +22,15 @@ public static class Terminal {
     }
 
     public static Task<string> CMDAsync(string script, TextReader inputReader, CancellationToken cancellationToken = default) {
-        return CMDV(script, inputReader).EvaluateAsync(cancellationToken);
+        return CMDV(script).EvaluateAsync(inputReader, cancellationToken);
     }
 
     public static ShellCommand CMDV(string script) {
-        return CMDV(script, TextReader.Null);
-    }
-
-    public static ShellCommand CMDV(string script, TextReader inputReader) {
-        return new ShellCommand(LocalTerminal.Shell, script) {
-            In = inputReader
-        };
+        return new ShellCommand(LocalTerminal.Shell, script);
     }
 
     public static void RUN(string script, TimeSpan? timeout = null) {
-        RUN(script, LocalTerminal.In, LocalTerminal.Out, timeout);
+        RUN(script, LocalTerminal.Shell.In, LocalTerminal.Out, timeout);
     }
 
     public static void RUN(string script, TextReader inputReader, TimeSpan? timeout = null) {
@@ -44,18 +38,18 @@ public static class Terminal {
     }
 
     public static void RUN(string script, TextWriter outputWriter, TimeSpan? timeout = null) {
-        RUN(script, LocalTerminal.In, outputWriter, timeout);
+        RUN(script, LocalTerminal.Shell.In, outputWriter, timeout);
     }
 
     public static void RUN(string script, TextReader inputReader, TextWriter outputWriter, TimeSpan? timeout = null) {
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
-        var cmd = CMDV(script, inputReader);
+        var cmd = CMDV(script);
         LocalTerminal.TerminalLogger.LogRun(cmd, outputWriter);
-        cmd.Run(outputWriter, cancellationTokenSource.Token);
+        cmd.Run(inputReader, outputWriter, cancellationTokenSource.Token);
     }
 
     public static async Task RUNAsync(string script, CancellationToken cancellationToken = default) {
-        await RUNAsync(script, LocalTerminal.In, LocalTerminal.Out, cancellationToken);
+        await RUNAsync(script, LocalTerminal.Shell.In, LocalTerminal.Out, cancellationToken);
     }
 
     public static async Task RUNAsync(string script, TextReader inputReader, CancellationToken cancellationToken = default) {
@@ -63,12 +57,12 @@ public static class Terminal {
     }
 
     public static async Task RUNAsync(string script, TextWriter outputWriter, CancellationToken cancellationToken = default) {
-        await RUNAsync(script, LocalTerminal.In, outputWriter, cancellationToken);
+        await RUNAsync(script, LocalTerminal.Shell.In, outputWriter, cancellationToken);
     }
 
     public static async Task RUNAsync(string script, TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
-        var cmd = CMDV(script, inputReader);
+        var cmd = CMDV(script);
         LocalTerminal.TerminalLogger.LogRun(cmd, outputWriter);
-        await cmd.RunAsync(outputWriter, cancellationToken);
+        await cmd.RunAsync(inputReader, outputWriter, cancellationToken);
     }
 }

@@ -1,10 +1,12 @@
 ﻿namespace CalqFramework.Cmd.Shell {
     public interface IShell {
-        public IShellWorkerErrorHandler ErrorHandler { get; }
+        IShellWorkerErrorHandler ErrorHandler { get; }
+        TextReader In { get; }
+        TextWriter InInterceptor { get; }
         IShellCommandPostprocessor Postprocessor { get; }
 
         ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, CancellationToken cancellationToken = default);
-
+        ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, TextReader inputReader, CancellationToken cancellationToken = default);
         string MapToInternalPath(string hostPath);
     }
 }
