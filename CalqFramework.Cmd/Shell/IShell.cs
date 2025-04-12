@@ -2,7 +2,6 @@
     public interface IShell {
         IShellWorkerErrorHandler ErrorHandler { get; }
         TextReader In { get; }
-        TextWriter InInterceptor { get; }
         IShellCommandPostprocessor Postprocessor { get; }
 
         ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, CancellationToken cancellationToken = default);
