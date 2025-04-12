@@ -1,10 +1,7 @@
 ﻿
 namespace CalqFramework.Cmd.Shell {
     public class CommandLineWorker : ShellWorkerBase {
-        public CommandLineWorker(ShellCommand shellCommand, CancellationToken cancellationToken = default) : base(shellCommand, cancellationToken) {
-        }
-
-        public CommandLineWorker(ShellCommand shellCommand, TextReader inputReader, CancellationToken cancellationToken = default) : base(shellCommand, inputReader, cancellationToken) {
+        public CommandLineWorker(ShellCommand shellCommand, TextReader? inputReader, CancellationToken cancellationToken = default) : base(shellCommand, inputReader, cancellationToken) {
         }
 
         internal override ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script) {
