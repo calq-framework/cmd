@@ -28,11 +28,7 @@ public class Bash : ShellBase {
         return hostPath;
     }
 
-    public override ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, CancellationToken cancellationToken = default) {
-        return new BashWorker(shellCommand, cancellationToken);
-    }
-
-    public override ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, TextReader inputReader, CancellationToken cancellationToken = default) {
+    public override ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, TextReader? inputReader, CancellationToken cancellationToken = default) {
         return new BashWorker(shellCommand, inputReader, cancellationToken);
     }
 }

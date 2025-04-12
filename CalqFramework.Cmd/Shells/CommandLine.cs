@@ -6,11 +6,7 @@ public class CommandLine : ShellBase {
         return hostPath;
     }
 
-    public override ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, CancellationToken cancellationToken = default) {
-        return new CommandLineWorker(shellCommand, cancellationToken);
-    }
-
-    public override ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, TextReader inputReader, CancellationToken cancellationToken = default) {
+    public override ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, TextReader? inputReader, CancellationToken cancellationToken = default) {
         return new CommandLineWorker(shellCommand, inputReader, cancellationToken);
     }
 }

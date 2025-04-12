@@ -35,41 +35,53 @@ namespace CalqFramework.Cmd {
             return EvaluateAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        public string Evaluate(TextReader inputReader, CancellationToken cancellationToken = default) {
+        public string Evaluate(TextReader? inputReader, CancellationToken cancellationToken = default) {
             return EvaluateAsync(inputReader).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        public async Task<string> EvaluateAsync(TextReader inputReader, CancellationToken cancellationToken = default) {
+        public async Task<string> EvaluateAsync(TextReader? inputReader, CancellationToken cancellationToken = default) {
             using var worker = Start(inputReader, cancellationToken);
-            var outputWriter = new StringWriter();
-            await RunAsync(outputWriter, worker, cancellationToken);
-            var output = outputWriter.ToString();
+            var output = await worker.StandardOutput.ReadToEndAsync();
+
+            await worker.WaitForSuccess(output);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             return Shell.Postprocessor.ProcessOutput(output);
         }
 
         public async Task<string> EvaluateAsync(CancellationToken cancellationToken = default) {
-            using var worker = Start(cancellationToken);
-            var outputWriter = new StringWriter();
-            await RunAsync(outputWriter, worker, cancellationToken);
-            var output = outputWriter.ToString();
-            return Shell.Postprocessor.ProcessOutput(output);
+            return await EvaluateAsync(null, cancellationToken);
         }
 
         public void Run(TextWriter outputWriter, CancellationToken cancellationToken = default) {
             RunAsync(outputWriter, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        public void Run(TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
+        public void Run(TextReader? inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
             RunAsync(inputReader, outputWriter, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         public async Task RunAsync(TextWriter outputWriter, CancellationToken cancellationToken = default) {
-            using var worker = Start(cancellationToken);
-            await RunAsync(outputWriter, worker, cancellationToken);
+            await RunAsync(Shell.In, outputWriter, cancellationToken);
         }
-        public async Task RunAsync(TextReader inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
+
+        public async Task RunAsync(TextReader? inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
             using var worker = Start(inputReader, cancellationToken);
-            await RunAsync(outputWriter, worker, cancellationToken);
+
+            var relayOutputCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var relayOutputTask = StreamUtils.RelayStream(worker.StandardOutput, outputWriter, relayOutputCts.Token);
+
+            await relayOutputTask;
+
+            try {
+                await worker.WaitForSuccess(outputWriter.ToString());
+            } catch {
+                relayOutputCts.Cancel();
+                throw;
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
         }
 
         public ShellWorkerBase Start(CancellationToken cancellationToken = default) {
@@ -77,29 +89,13 @@ namespace CalqFramework.Cmd {
             return worker;
         }
 
-        public ShellWorkerBase Start(TextReader inputReader, CancellationToken cancellationToken = default) {
+        public ShellWorkerBase Start(TextReader? inputReader, CancellationToken cancellationToken = default) {
             var worker = Shell.CreateShellWorker(this, inputReader, cancellationToken);
             return worker;
         }
 
         public override string ToString() {
             return Evaluate();
-        }
-
-        private async Task RunAsync(TextWriter outputWriter, ShellWorkerBase worker, CancellationToken cancellationToken = default) {
-            var relayOutputCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            var relayOutputTask = StreamUtils.RelayStream(worker.StandardOutput, outputWriter, relayOutputCts.Token);
-
-            try {
-                await worker.WaitForSuccess();
-            } catch {
-                relayOutputCts.Cancel();
-                throw;
-            }
-
-            await relayOutputTask;
-
-            cancellationToken.ThrowIfCancellationRequested();
         }
     }
 }
