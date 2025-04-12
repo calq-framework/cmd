@@ -4,8 +4,16 @@ namespace CalqFramework.Cmd;
 public static class Terminal {
     public static LocalTerminalConfigurationContext LocalTerminal { get; } = new LocalTerminalConfigurationContext();
 
+    public static string PWD {
+        get {
+            ShellCommand.LocalWorkingDirectory.Value ??= Environment.CurrentDirectory;
+            return ShellCommand.LocalWorkingDirectory.Value!;
+        }
+        private set => ShellCommand.LocalWorkingDirectory.Value = value;
+    }
+
     public static void CD(string path) {
-        LocalTerminal.WorkingDirectory = Path.GetFullPath(Path.Combine(LocalTerminal.WorkingDirectory, path));
+        PWD = Path.GetFullPath(Path.Combine(PWD, path));
     }
 
     public static string CMD(string script, TimeSpan? timeout = null) {
