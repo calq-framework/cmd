@@ -17,12 +17,12 @@ public class TerminalTest {
 
     [Fact]
     public async Task WorkingDirectory_WhenChangedInTask_RevertsToOriginal() {
-        var currentDirectory = LocalTerminal.WorkingDirectory;
+        var currentDirectory = PWD;
         await Task.Run(() => {
             CD("changed");
-            Assert.NotEqual(currentDirectory, LocalTerminal.WorkingDirectory);
+            Assert.NotEqual(currentDirectory, PWD);
         });
-        Assert.Equal(currentDirectory, LocalTerminal.WorkingDirectory);
+        Assert.Equal(currentDirectory, PWD);
     }
 
     [Fact]

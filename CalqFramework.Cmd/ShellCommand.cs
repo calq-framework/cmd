@@ -5,16 +5,18 @@ namespace CalqFramework.Cmd {
 
     [DebuggerDisplay("{Script}")]
     public class ShellCommand {
+        public static AsyncLocal<string> LocalWorkingDirectory = new();
+
         public ShellCommand(IShell shell, string script) {
             Shell = shell;
             Script = script;
+            WorkingDirectory = LocalWorkingDirectory.Value ?? Environment.CurrentDirectory;
         }
 
         public ShellCommand? PipedShellCommand { get; private init; }
         public string Script { get; }
         public IShell Shell { get; }
-        public string WorkingDirectory { get; init; } = Environment.CurrentDirectory;
-
+        public string WorkingDirectory { get; init; }
 
         public static implicit operator string(ShellCommand obj) {
             return obj.Evaluate();
