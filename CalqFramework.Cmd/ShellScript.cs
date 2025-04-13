@@ -84,12 +84,12 @@ namespace CalqFramework.Cmd {
             cancellationToken.ThrowIfCancellationRequested();
         }
 
-        public ShellWorkerBase Start(CancellationToken cancellationToken = default) {
+        public IShellWorker Start(CancellationToken cancellationToken = default) {
             var worker = Shell.CreateShellWorker(this, cancellationToken);
             return worker;
         }
 
-        public ShellWorkerBase Start(TextReader? inputReader, CancellationToken cancellationToken = default) {
+        public IShellWorker Start(TextReader? inputReader, CancellationToken cancellationToken = default) {
             var worker = Shell.CreateShellWorker(this, inputReader, cancellationToken);
             return worker;
         }

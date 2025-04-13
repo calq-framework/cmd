@@ -4,8 +4,8 @@
         TextReader? In { get; }
         IShellScriptPostprocessor Postprocessor { get; }
 
-        ShellWorkerBase CreateShellWorker(ShellScript shellScript, CancellationToken cancellationToken = default);
-        ShellWorkerBase CreateShellWorker(ShellScript shellScript, TextReader? inputReader, CancellationToken cancellationToken = default);
+        IShellWorker CreateShellWorker(ShellScript shellScript, CancellationToken cancellationToken = default);
+        IShellWorker CreateShellWorker(ShellScript shellScript, TextReader? inputReader, CancellationToken cancellationToken = default);
         string MapToInternalPath(string hostPath);
     }
 }
