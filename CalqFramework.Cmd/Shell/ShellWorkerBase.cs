@@ -8,20 +8,20 @@ namespace CalqFramework.Cmd.Shell {
 
         private Task? RelayInputTask;
 
-        public ShellWorkerBase(ShellCommand shellCommand, TextReader? inputReader, CancellationToken cancellationToken = default) {
-            ShellCommand = shellCommand;
+        public ShellWorkerBase(ShellScript shellScript, TextReader? inputReader, CancellationToken cancellationToken = default) {
+            ShellScript = shellScript;
 
-            if (ShellCommand.PipedShellCommand != null) {
-                PipedWorker = ShellCommand.PipedShellCommand.Shell.CreateShellWorker(ShellCommand.PipedShellCommand);
+            if (ShellScript.PipedShellScript != null) {
+                PipedWorker = ShellScript.PipedShellScript.Shell.CreateShellWorker(ShellScript.PipedShellScript);
                 inputReader = PipedWorker.StandardOutput;
             }
 
-            var processExecutionInfo = GetProcessExecutionInfo(ShellCommand.WorkingDirectory, ShellCommand.Script);
+            var processExecutionInfo = GetProcessExecutionInfo(ShellScript.WorkingDirectory, ShellScript.Script);
 
             var redirectInput = inputReader != null ? true : false;
             _process = new AutoTerminateProcess() {
                 StartInfo = new ProcessStartInfo {
-                    WorkingDirectory = ShellCommand.WorkingDirectory,
+                    WorkingDirectory = ShellScript.WorkingDirectory,
                     FileName = processExecutionInfo.FileName,
                     RedirectStandardInput = redirectInput,
                     RedirectStandardOutput = true,
@@ -48,7 +48,7 @@ namespace CalqFramework.Cmd.Shell {
 
         public ShellWorkerBase? PipedWorker { get; }
 
-        public ShellCommand ShellCommand { get; }
+        public ShellScript ShellScript { get; }
 
         public TextReader StandardOutput { get => _process.StandardOutput; }
 
@@ -76,7 +76,7 @@ namespace CalqFramework.Cmd.Shell {
 
             var errorMessage = await _process.StandardError.ReadToEndAsync();
 
-            ShellCommand.Shell.ErrorHandler.AssertSuccess(ShellCommand.Script, _process.ExitCode, errorMessage, output);
+            ShellScript.Shell.ErrorHandler.AssertSuccess(ShellScript.Script, _process.ExitCode, errorMessage, output);
         }
 
         internal abstract ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script);

@@ -4,28 +4,28 @@ using System.Diagnostics;
 namespace CalqFramework.Cmd {
 
     [DebuggerDisplay("{Script}")]
-    public class ShellCommand {
+    public class ShellScript {
         public static AsyncLocal<string> LocalWorkingDirectory = new();
 
-        public ShellCommand(IShell shell, string script) {
+        public ShellScript(IShell shell, string script) {
             Shell = shell;
             Script = script;
             WorkingDirectory = LocalWorkingDirectory.Value ?? Environment.CurrentDirectory;
         }
 
-        public ShellCommand? PipedShellCommand { get; private init; }
+        public ShellScript? PipedShellScript { get; private init; }
         public string Script { get; }
         public IShell Shell { get; }
         public string WorkingDirectory { get; init; }
 
-        public static implicit operator string(ShellCommand obj) {
+        public static implicit operator string(ShellScript obj) {
             return obj.Evaluate();
         }
 
-        public static ShellCommand operator |(ShellCommand a, ShellCommand b) {
-            var c = new ShellCommand(b.Shell, b.Script) {
+        public static ShellScript operator |(ShellScript a, ShellScript b) {
+            var c = new ShellScript(b.Shell, b.Script) {
                 WorkingDirectory = b.WorkingDirectory,
-                PipedShellCommand = a
+                PipedShellScript = a
             };
 
             return c;

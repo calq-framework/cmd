@@ -1,11 +1,11 @@
 ﻿namespace CalqFramework.Cmd.TerminalComponents {
     internal class TerminalLogger : ITerminalLogger {
-        public void LogRun(ShellCommand shellCommand, TextWriter outputWriter) {
-            outputWriter.WriteLine($"\nDIR: {shellCommand.WorkingDirectory}");
-            if (!shellCommand.Script.Contains('\n')) {
-                outputWriter.WriteLine($"RUN: {shellCommand.Script}");
+        public void LogRun(ShellScript shellScript, TextWriter outputWriter) {
+            outputWriter.WriteLine($"\nDIR: {shellScript.WorkingDirectory}");
+            if (!shellScript.Script.Contains('\n')) {
+                outputWriter.WriteLine($"RUN: {shellScript.Script}");
             } else {
-                outputWriter.WriteLine($"RUN:\n{shellCommand.Script}");
+                outputWriter.WriteLine($"RUN:\n{shellScript.Script}");
             }
         }
     }

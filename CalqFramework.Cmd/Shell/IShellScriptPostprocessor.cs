@@ -1,5 +1,5 @@
 ﻿namespace CalqFramework.Cmd.Shell {
-    public interface IShellCommandPostprocessor {
+    public interface IShellScriptPostprocessor {
         string ProcessOutput(string output);
     }
 }
