@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 
 namespace CalqFramework.Cmd.Shell {
-    public class BashWorker : ShellWorkerBase {
+    public class BashWorker : ProcessWorkerBase {
         public BashWorker(ShellScript shellScript, TextReader? inputReader, CancellationToken cancellationToken = default) : base(shellScript, inputReader, cancellationToken) {
         }
 
