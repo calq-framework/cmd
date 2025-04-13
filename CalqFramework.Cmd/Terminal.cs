@@ -6,10 +6,10 @@ public static class Terminal {
 
     public static string PWD {
         get {
-            ShellCommand.LocalWorkingDirectory.Value ??= Environment.CurrentDirectory;
-            return ShellCommand.LocalWorkingDirectory.Value!;
+            ShellScript.LocalWorkingDirectory.Value ??= Environment.CurrentDirectory;
+            return ShellScript.LocalWorkingDirectory.Value!;
         }
-        private set => ShellCommand.LocalWorkingDirectory.Value = value;
+        private set => ShellScript.LocalWorkingDirectory.Value = value;
     }
 
     public static void CD(string path) {
@@ -34,8 +34,8 @@ public static class Terminal {
         return CMDV(script).EvaluateAsync(inputReader, cancellationToken);
     }
 
-    public static ShellCommand CMDV(string script) {
-        return new ShellCommand(LocalTerminal.Shell, script);
+    public static ShellScript CMDV(string script) {
+        return new ShellScript(LocalTerminal.Shell, script);
     }
 
     public static void RUN(string script, TimeSpan? timeout = null) {

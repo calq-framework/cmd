@@ -3,12 +3,12 @@
 public abstract class ShellBase : IShell {
     public IShellWorkerErrorHandler ErrorHandler { get; init; } = new ShellWorkerErrorHandler();
     public TextReader? In { get; init; } = Console.In;
-    public IShellCommandPostprocessor Postprocessor { get; init; } = new ShellCommandPostprocessor();
+    public IShellScriptPostprocessor Postprocessor { get; init; } = new ShellScriptPostprocessor();
 
-    public ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, CancellationToken cancellationToken = default) {
-        return CreateShellWorker(shellCommand, this.In, cancellationToken);
+    public ShellWorkerBase CreateShellWorker(ShellScript shellScript, CancellationToken cancellationToken = default) {
+        return CreateShellWorker(shellScript, this.In, cancellationToken);
     }
 
-    public abstract ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, TextReader? inputReader, CancellationToken cancellationToken = default);
+    public abstract ShellWorkerBase CreateShellWorker(ShellScript shellScript, TextReader? inputReader, CancellationToken cancellationToken = default);
     public abstract string MapToInternalPath(string hostPath);
 }

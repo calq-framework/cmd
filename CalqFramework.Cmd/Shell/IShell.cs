@@ -2,10 +2,10 @@
     public interface IShell {
         IShellWorkerErrorHandler ErrorHandler { get; }
         TextReader? In { get; }
-        IShellCommandPostprocessor Postprocessor { get; }
+        IShellScriptPostprocessor Postprocessor { get; }
 
-        ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, CancellationToken cancellationToken = default);
-        ShellWorkerBase CreateShellWorker(ShellCommand shellCommand, TextReader? inputReader, CancellationToken cancellationToken = default);
+        ShellWorkerBase CreateShellWorker(ShellScript shellScript, CancellationToken cancellationToken = default);
+        ShellWorkerBase CreateShellWorker(ShellScript shellScript, TextReader? inputReader, CancellationToken cancellationToken = default);
         string MapToInternalPath(string hostPath);
     }
 }

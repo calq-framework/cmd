@@ -10,7 +10,7 @@
 
             // stderr might contain diagnostics/info instead of error errorMessage so don't throw just because not empty
             if (exitCode != 0) {
-                throw new ShellCommandExecutionException(exitCode, $"\n{AddLineNumbers(script)}\n\nExit code:\n{exitCode}\n\nError:\n{error}");
+                throw new ShellScriptExecutionException(exitCode, $"\n{AddLineNumbers(script)}\n\nExit code:\n{exitCode}\n\nError:\n{error}");
             }
         }
     }

@@ -59,9 +59,7 @@ public class TerminalTest {
 
         var writer = new StringWriter();
         LocalTerminal.Out = writer;
-        LocalTerminal.Shell = new Bash() {
-            In = new StringReader(expectedOutput)
-        };
+        LocalTerminal.Shell = new Bash();
 
         var output = CMD("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
         var writerOutput = writer.ToString();
@@ -79,9 +77,7 @@ public class TerminalTest {
 
         var writer = new StringWriter();
         LocalTerminal.Out = writer;
-        LocalTerminal.Shell = new Bash() {
-            In = new StringReader(expectedOutput)
-        };
+        LocalTerminal.Shell = new Bash();
 
         RUN("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
         var writerOutput = writer.ToString();
@@ -147,7 +143,7 @@ public class TerminalTest {
         LocalTerminal.Shell = new Bash();
         var echoText = "hello world";
 
-        Assert.Throws<ShellCommandExecutionException>(() => {
+        Assert.Throws<ShellScriptExecutionException>(() => {
             string output = CMDV($"echo {echoText}") | CMDV("cat; exit 1;") | CMDV("cat");
         });
     }
