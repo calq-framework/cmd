@@ -112,12 +112,12 @@ public class TerminalTest {
     }
 
     [Fact]
-    public void CommandStart_AfterGarbageCollection_ReturnsCorrectly() {
+    public async void CommandStart_AfterGarbageCollection_ReturnsCorrectly() {
         LocalTerminal.Shell = new Bash();
         var input = "hello world";
 
         var command = CMDV($"sleep 2; echo {input}");
-        using var proc = command.Start();
+        using var proc = await command.Start();
         GC.Collect();
         GC.WaitForPendingFinalizers();
         var output = proc.StandardOutput.ReadLine();
@@ -146,5 +146,47 @@ public class TerminalTest {
         Assert.Throws<ShellScriptExecutionException>(() => {
             string output = CMDV($"echo {echoText}") | CMDV("cat; exit 1;") | CMDV("cat");
         });
+    }
+
+    [Fact]
+    public async void HttpShell_EvalPython_ReturnsCorrectly() {
+        LocalTerminal.Shell = new Bash();
+        var pythonScript = CMDV(@"python <<EOF
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+class Handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        try:
+            script_param = self.headers.get('Script')
+            if script_param:
+                result = str(eval(script_param))
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(result.encode())
+            else:
+                self.send_response(400)
+                self.send_header('Content-Type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(b'Missing Script header')
+        except Exception as e:
+            print(""Error during eval:"", e)
+            self.send_response(500)
+            self.send_header('Content-Type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(f""Error: {e}"".encode())
+
+HTTPServer(('', 8000), Handler).serve_forever()
+");
+        using var serverWorker = await pythonScript.Start();
+
+
+        var httpClient = new HttpClient();
+        httpClient.BaseAddress = new Uri("http://127.0.0.1:8000");
+        LocalTerminal.Shell = new HttpShell(httpClient);
+
+        var echo = CMD("sum([8, 16, 32])");
+
+        Assert.Equal((8 + 16 + 32).ToString(), echo);
     }
 }

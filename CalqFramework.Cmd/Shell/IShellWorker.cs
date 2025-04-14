@@ -5,6 +5,8 @@ namespace CalqFramework.Cmd.Shell {
         ShellScript ShellScript { get; }
         TextReader StandardOutput { get; }
 
+        Task Start();
+
         Task WaitForSuccess(string? output = null);
     }
 }
