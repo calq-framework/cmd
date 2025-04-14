@@ -5,19 +5,26 @@
 
         public ShellWorkerBase(ShellScript shellScript, TextReader? inputReader, CancellationToken cancellationToken = default) {
             ShellScript = shellScript;
+            InputReader = inputReader;
 
             if (ShellScript.PipedShellScript != null) {
                 PipedWorker = ShellScript.PipedShellScript.Shell.CreateShellWorker(ShellScript.PipedShellScript);
-                inputReader = PipedWorker.StandardOutput;
             }
 
             RelayInputTaskAbortCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        }
 
-            var redirectInput = inputReader != null ? true : false;
-            var workerInput = Initialize(shellScript, redirectInput);
+        public async Task Start() {
+            if (PipedWorker != null) {
+                await PipedWorker.Start();
+                InputReader = PipedWorker.StandardOutput;
+            }
+
+            var redirectInput = InputReader != null ? true : false;
+            var workerInput = await Initialize(ShellScript, redirectInput);
 
             if (redirectInput) {
-                _relayInputTask = Task.Run(async () => await StreamUtils.RelayInput(workerInput, inputReader!, RelayInputTaskAbortCts.Token)).WaitAsync(RelayInputTaskAbortCts.Token); // input reading may lock thread
+                _relayInputTask = Task.Run(async () => await StreamUtils.RelayInput(workerInput!, InputReader!, RelayInputTaskAbortCts.Token)).WaitAsync(RelayInputTaskAbortCts.Token); // input reading may lock thread
             }
         }
 
@@ -28,7 +35,7 @@
         public IShellWorker? PipedWorker { get; }
 
         public ShellScript ShellScript { get; }
-
+        public TextReader? InputReader { get; private set; }
         public abstract TextReader StandardOutput { get; }
 
         protected abstract int CompletionCode { get; }
@@ -68,11 +75,7 @@
 
         protected abstract Task<string> ReadErrorMessageAsync();
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns>input reader</returns>
-        protected abstract TextWriter? Initialize(ShellScript shellScript, bool redirectInput);
+        protected abstract Task<TextWriter?> Initialize(ShellScript shellScript, bool redirectInput);
         protected abstract Task WaitForCompletionAsync();
     }
 }

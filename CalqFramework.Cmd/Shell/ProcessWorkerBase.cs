@@ -26,7 +26,7 @@ namespace CalqFramework.Cmd.Shell {
             return await _process.StandardError.ReadToEndAsync();
         }
 
-        protected override TextWriter? Initialize(ShellScript shellScript, bool redirectInput) {
+        protected override async Task<TextWriter?> Initialize(ShellScript shellScript, bool redirectInput) {
             var processExecutionInfo = GetProcessExecutionInfo(ShellScript.WorkingDirectory, ShellScript.Script);
 
             _process = new AutoTerminateProcess() {
