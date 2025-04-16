@@ -17,7 +17,7 @@
         public async Task Start() {
             if (PipedWorker != null) {
                 await PipedWorker.Start();
-                InputStream = PipedWorker.StandardOutput.BaseStream;
+                InputStream = PipedWorker.StandardOutput;
             }
 
             var redirectInput = InputStream != null ? true : false;
@@ -36,7 +36,7 @@
 
         public ShellScript ShellScript { get; }
         public Stream? InputStream { get; private set; }
-        public abstract StreamReader StandardOutput { get; }
+        public abstract Stream StandardOutput { get; }
 
         protected abstract int CompletionCode { get; }
 

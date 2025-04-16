@@ -12,7 +12,7 @@ public class HttpShellWorker : ShellWorkerBase {
         HttpClient = httpClient;
     }
 
-    public override StreamReader StandardOutput => new StreamReader(_content!);
+    public override Stream StandardOutput => _content!;
 
     protected override int CompletionCode => (int)(_response?.StatusCode ?? 0);
     private HttpStatusCode? StatusCode => _response!.StatusCode; // TODO separate error handler
@@ -34,18 +34,7 @@ public class HttpShellWorker : ShellWorkerBase {
 
         request.Method = HttpMethod.Post;
         if (redirectInput) {
-            //request.Content = new TextReaderHttpContent(InputStream!);
-            //request.Content = new StringContent(InputStream.ReadToEnd()!);
-            //request.Content = new StreamContent(new StringStream("hello world"));
-
-            //string test = "hello world";
-
-            // convert string to stream
-
             request.Content = new StreamContent(InputStream!);
-            //request.Content = new StreamContent(Console.OpenStandardInput());
-        } else {
-            request.Content = new StringContent("");
         }
 
         _response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, RelayInputTaskAbortCts.Token);

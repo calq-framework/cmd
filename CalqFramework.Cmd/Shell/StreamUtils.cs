@@ -82,8 +82,8 @@ namespace CalqFramework.Cmd.Shell {
             }
         }
 
-        public static async Task RelayStream(TextReader reader, TextWriter writer, CancellationToken cancellationToken) {
-            var bufferArray = new char[4096];
+        public static async Task RelayStream(Stream reader, Stream writer, CancellationToken cancellationToken) {
+            var bufferArray = new byte[4096];
 
             while (!cancellationToken.IsCancellationRequested) {
                 bool isRead = false;

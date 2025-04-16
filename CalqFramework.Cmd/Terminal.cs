@@ -46,15 +46,11 @@ public static class Terminal {
         RUN(script, inputStream, LocalTerminal.Out, timeout);
     }
 
-    public static void RUN(string script, TextWriter outputWriter, TimeSpan? timeout = null) {
-        RUN(script, null, outputWriter, timeout);
-    }
-
-    public static void RUN(string script, Stream? inputStream, TextWriter outputWriter, TimeSpan? timeout = null) {
+    public static void RUN(string script, Stream? inputStream, Stream outputStream, TimeSpan? timeout = null) {
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
         var cmd = CMDV(script);
-        LocalTerminal.TerminalLogger.LogRun(cmd, outputWriter);
-        cmd.Run(inputStream, outputWriter, cancellationTokenSource.Token);
+        LocalTerminal.TerminalLogger.LogRun(cmd);
+        cmd.Run(inputStream, outputStream, cancellationTokenSource.Token);
     }
 
     public static async Task RUNAsync(string script, CancellationToken cancellationToken = default) {
@@ -65,13 +61,9 @@ public static class Terminal {
         await RUNAsync(script, inputStream, LocalTerminal.Out, cancellationToken);
     }
 
-    public static async Task RUNAsync(string script, TextWriter outputWriter, CancellationToken cancellationToken = default) {
-        await RUNAsync(script, LocalTerminal.Shell.In, outputWriter, cancellationToken);
-    }
-
-    public static async Task RUNAsync(string script, Stream? inputStream, TextWriter outputWriter, CancellationToken cancellationToken = default) {
+    public static async Task RUNAsync(string script, Stream? inputStream, Stream outputStream, CancellationToken cancellationToken = default) {
         var cmd = CMDV(script);
-        LocalTerminal.TerminalLogger.LogRun(cmd, outputWriter);
-        await cmd.RunAsync(inputStream, outputWriter, cancellationToken);
+        LocalTerminal.TerminalLogger.LogRun(cmd);
+        await cmd.RunAsync(inputStream, outputStream, cancellationToken);
     }
 }
