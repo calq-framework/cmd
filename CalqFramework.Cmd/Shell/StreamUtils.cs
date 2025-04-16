@@ -49,7 +49,7 @@ namespace CalqFramework.Cmd.Shell {
             return Console.IsInputRedirected || IsStandardInputStream(reader) == false;
         }
 
-        public static async Task RelayInput(TextWriter processInput, TextReader inputReader, CancellationToken cancellationToken) {
+        public static async Task RelayInput(TextWriter processInput, StreamReader inputReader, CancellationToken cancellationToken) {
             var isInputRedirected = IsInputRedirected(inputReader);
             if (isInputRedirected == false) {
                 while (!cancellationToken.IsCancellationRequested) {

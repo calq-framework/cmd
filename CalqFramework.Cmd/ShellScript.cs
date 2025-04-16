@@ -35,12 +35,12 @@ namespace CalqFramework.Cmd {
             return EvaluateAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        public string Evaluate(TextReader? inputReader, CancellationToken cancellationToken = default) {
-            return EvaluateAsync(inputReader).ConfigureAwait(false).GetAwaiter().GetResult();
+        public string Evaluate(Stream? inputStream, CancellationToken cancellationToken = default) {
+            return EvaluateAsync(inputStream).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        public async Task<string> EvaluateAsync(TextReader? inputReader, CancellationToken cancellationToken = default) {
-            using var worker = await Start(inputReader, cancellationToken);
+        public async Task<string> EvaluateAsync(Stream? inputStream, CancellationToken cancellationToken = default) {
+            using var worker = await Start(inputStream, cancellationToken);
             var output = await worker.StandardOutput.ReadToEndAsync();
 
             await worker.WaitForSuccess(output);
@@ -58,16 +58,16 @@ namespace CalqFramework.Cmd {
             RunAsync(outputWriter, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        public void Run(TextReader? inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
-            RunAsync(inputReader, outputWriter, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
+        public void Run(Stream? inputStream, TextWriter outputWriter, CancellationToken cancellationToken = default) {
+            RunAsync(inputStream, outputWriter, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         public async Task RunAsync(TextWriter outputWriter, CancellationToken cancellationToken = default) {
             await RunAsync(Shell.In, outputWriter, cancellationToken);
         }
 
-        public async Task RunAsync(TextReader? inputReader, TextWriter outputWriter, CancellationToken cancellationToken = default) {
-            using var worker = await Start(inputReader, cancellationToken);
+        public async Task RunAsync(Stream? inputStream, TextWriter outputWriter, CancellationToken cancellationToken = default) {
+            using var worker = await Start(inputStream, cancellationToken);
 
             var relayOutputCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var relayOutputTask = StreamUtils.RelayStream(worker.StandardOutput, outputWriter, relayOutputCts.Token);
@@ -90,8 +90,8 @@ namespace CalqFramework.Cmd {
             return worker;
         }
 
-        public async Task<IShellWorker> Start(TextReader? inputReader, CancellationToken cancellationToken = default) {
-            var worker = Shell.CreateShellWorker(this, inputReader, cancellationToken);
+        public async Task<IShellWorker> Start(Stream? inputStream, CancellationToken cancellationToken = default) {
+            var worker = Shell.CreateShellWorker(this, inputStream, cancellationToken);
             await worker.Start();
             return worker;
         }

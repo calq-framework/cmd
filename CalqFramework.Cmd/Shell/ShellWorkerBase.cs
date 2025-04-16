@@ -3,9 +3,9 @@
         private bool _disposed;
         private Task? _relayInputTask;
 
-        public ShellWorkerBase(ShellScript shellScript, TextReader? inputReader, CancellationToken cancellationToken = default) {
+        public ShellWorkerBase(ShellScript shellScript, Stream? inputStream, CancellationToken cancellationToken = default) {
             ShellScript = shellScript;
-            InputReader = inputReader;
+            InputStream = inputStream;
 
             if (ShellScript.PipedShellScript != null) {
                 PipedWorker = ShellScript.PipedShellScript.Shell.CreateShellWorker(ShellScript.PipedShellScript);
@@ -17,14 +17,14 @@
         public async Task Start() {
             if (PipedWorker != null) {
                 await PipedWorker.Start();
-                InputReader = PipedWorker.StandardOutput;
+                InputStream = PipedWorker.StandardOutput.BaseStream;
             }
 
-            var redirectInput = InputReader != null ? true : false;
+            var redirectInput = InputStream != null ? true : false;
             var workerInput = await Initialize(ShellScript, redirectInput);
 
-            if (redirectInput) {
-                _relayInputTask = Task.Run(async () => await StreamUtils.RelayInput(workerInput!, InputReader!, RelayInputTaskAbortCts.Token)).WaitAsync(RelayInputTaskAbortCts.Token); // input reading may lock thread
+            if (workerInput != null) {
+                _relayInputTask = Task.Run(async () => await StreamUtils.RelayInput(workerInput!, new StreamReader(InputStream!), RelayInputTaskAbortCts.Token)).WaitAsync(RelayInputTaskAbortCts.Token); // input reading may lock thread
             }
         }
 
@@ -35,8 +35,8 @@
         public IShellWorker? PipedWorker { get; }
 
         public ShellScript ShellScript { get; }
-        public TextReader? InputReader { get; private set; }
-        public abstract TextReader StandardOutput { get; }
+        public Stream? InputStream { get; private set; }
+        public abstract StreamReader StandardOutput { get; }
 
         protected abstract int CompletionCode { get; }
 

@@ -8,11 +8,11 @@ public class HttpShellWorker : ShellWorkerBase {
 
     private HttpResponseMessage? _response;
     private HttpClient HttpClient;
-    public HttpShellWorker(HttpClient httpClient, ShellScript shellScript, TextReader? inputReader, CancellationToken cancellationToken = default) : base(shellScript, inputReader, cancellationToken) {
+    public HttpShellWorker(HttpClient httpClient, ShellScript shellScript, Stream? inputStream, CancellationToken cancellationToken = default) : base(shellScript, inputStream, cancellationToken) {
         HttpClient = httpClient;
     }
 
-    public override TextReader StandardOutput => new StreamReader(_content!);
+    public override StreamReader StandardOutput => new StreamReader(_content!);
 
     protected override int CompletionCode => (int)(_response?.StatusCode ?? 0);
     private HttpStatusCode? StatusCode => _response!.StatusCode; // TODO separate error handler
@@ -34,7 +34,16 @@ public class HttpShellWorker : ShellWorkerBase {
 
         request.Method = HttpMethod.Post;
         if (redirectInput) {
-            request.Content = new StringContent(""); // FIXME
+            //request.Content = new TextReaderHttpContent(InputStream!);
+            //request.Content = new StringContent(InputStream.ReadToEnd()!);
+            //request.Content = new StreamContent(new StringStream("hello world"));
+
+            //string test = "hello world";
+
+            // convert string to stream
+
+            request.Content = new StreamContent(InputStream!);
+            //request.Content = new StreamContent(Console.OpenStandardInput());
         } else {
             request.Content = new StringContent("");
         }
