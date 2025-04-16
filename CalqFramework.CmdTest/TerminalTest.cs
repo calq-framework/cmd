@@ -1,9 +1,16 @@
 using CalqFramework.Cmd.Shells;
+using System.Text;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.CmdTest;
 
 public class TerminalTest {
+    private Stream GetStream(string input) {
+        byte[] byteArray = Encoding.ASCII.GetBytes(input);
+        MemoryStream stream = new MemoryStream(byteArray);
+        return stream;
+    }
+
     [Fact]
     public async Task Shell_WhenChangedInTask_RevertsToOriginal() {
         LocalTerminal.Shell = new CommandLine();
@@ -41,7 +48,7 @@ public class TerminalTest {
 
         LocalTerminal.Out = writer;
         LocalTerminal.Shell = new Bash() {
-            In = new StringReader(input)
+            In = GetStream(input)
         };
 
         RUN("sleep 1; read -r input; echo $input");
@@ -177,6 +184,7 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(f""Error: {e}"".encode())
 
 HTTPServer(('', 8000), Handler).serve_forever()
+EOF
 ");
         using var serverWorker = await pythonScript.Start();
 
@@ -188,5 +196,49 @@ HTTPServer(('', 8000), Handler).serve_forever()
         var echo = CMD("sum([8, 16, 32])");
 
         Assert.Equal((8 + 16 + 32).ToString(), echo);
+    }
+
+    [Fact]
+    public async void HttpShell_EchoContentBody_ReturnsCorrectly() {
+        LocalTerminal.Shell = new Bash();
+        var pythonScript = CMDV(@"python <<EOF
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+class Handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_body = self.rfile.read(content_length).decode('utf-8')
+
+            print(""Received POST body:"")
+            print(post_body)
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(post_body.encode())
+        except Exception as e:
+            print(""Error reading POST body:"", e)
+            self.send_response(500)
+            self.send_header('Content-Type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(f""Error: {e}"".encode())
+
+HTTPServer(('', 8001), Handler).serve_forever()
+EOF
+    ");
+        using var serverWorker = await pythonScript.Start();
+
+
+        var httpClient = new HttpClient();
+        httpClient.BaseAddress = new Uri("http://127.0.0.1:8001");
+        var input = "hello world";
+        LocalTerminal.Shell = new HttpShell(httpClient) {
+            In = GetStream(input)
+        };
+
+        var echo = CMD("", LocalTerminal.Shell.In);
+
+        Assert.Equal(input, echo);
     }
 }

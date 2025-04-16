@@ -6,10 +6,10 @@ namespace CalqFramework.Cmd.Shell {
 
         private AutoTerminateProcess _process = null!; // initialized via Initialize
 
-        public ProcessWorkerBase(ShellScript shellScript, TextReader? inputReader, CancellationToken cancellationToken = default) : base(shellScript, inputReader, cancellationToken) {
+        public ProcessWorkerBase(ShellScript shellScript, Stream? inputStream, CancellationToken cancellationToken = default) : base(shellScript, inputStream, cancellationToken) {
         }
 
-        public override TextReader StandardOutput { get => _process.StandardOutput; }
+        public override StreamReader StandardOutput { get => _process.StandardOutput; }
 
         protected override int CompletionCode => _process.ExitCode;
 

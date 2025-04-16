@@ -13,7 +13,7 @@ public class HttpShell : ShellBase {
         return hostPath;
     }
 
-    public override IShellWorker CreateShellWorker(ShellScript shellScript, TextReader? inputReader, CancellationToken cancellationToken = default) {
-        return new HttpShellWorker(HttpClient, shellScript, inputReader, cancellationToken);
+    public override IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream, CancellationToken cancellationToken = default) {
+        return new HttpShellWorker(HttpClient, shellScript, inputStream, cancellationToken);
     }
 }
