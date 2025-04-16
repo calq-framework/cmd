@@ -9,7 +9,7 @@ namespace CalqFramework.Cmd.Shell {
         public ProcessWorkerBase(ShellScript shellScript, Stream? inputStream, CancellationToken cancellationToken = default) : base(shellScript, inputStream, cancellationToken) {
         }
 
-        public override StreamReader StandardOutput { get => _process.StandardOutput; }
+        public override Stream StandardOutput { get => _process.StandardOutput.BaseStream; }
 
         protected override int CompletionCode => _process.ExitCode;
 

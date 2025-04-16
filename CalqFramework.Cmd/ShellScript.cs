@@ -41,7 +41,8 @@ namespace CalqFramework.Cmd {
 
         public async Task<string> EvaluateAsync(Stream? inputStream, CancellationToken cancellationToken = default) {
             using var worker = await Start(inputStream, cancellationToken);
-            var output = await worker.StandardOutput.ReadToEndAsync();
+            using var reader = new StreamReader(worker.StandardOutput);
+            var output = await reader.ReadToEndAsync();
 
             await worker.WaitForSuccess(output);
 
@@ -54,28 +55,28 @@ namespace CalqFramework.Cmd {
             return await EvaluateAsync(null, cancellationToken);
         }
 
-        public void Run(TextWriter outputWriter, CancellationToken cancellationToken = default) {
-            RunAsync(outputWriter, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
+        public void Run(Stream outputStream, CancellationToken cancellationToken = default) {
+            RunAsync(outputStream, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        public void Run(Stream? inputStream, TextWriter outputWriter, CancellationToken cancellationToken = default) {
-            RunAsync(inputStream, outputWriter, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
+        public void Run(Stream? inputStream, Stream outputStream, CancellationToken cancellationToken = default) {
+            RunAsync(inputStream, outputStream, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        public async Task RunAsync(TextWriter outputWriter, CancellationToken cancellationToken = default) {
-            await RunAsync(Shell.In, outputWriter, cancellationToken);
+        public async Task RunAsync(Stream outputStream, CancellationToken cancellationToken = default) {
+            await RunAsync(Shell.In, outputStream, cancellationToken);
         }
 
-        public async Task RunAsync(Stream? inputStream, TextWriter outputWriter, CancellationToken cancellationToken = default) {
+        public async Task RunAsync(Stream? inputStream, Stream outputStream, CancellationToken cancellationToken = default) {
             using var worker = await Start(inputStream, cancellationToken);
 
             var relayOutputCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            var relayOutputTask = StreamUtils.RelayStream(worker.StandardOutput, outputWriter, relayOutputCts.Token);
+            var relayOutputTask = StreamUtils.RelayStream(worker.StandardOutput, outputStream, relayOutputCts.Token);
 
             await relayOutputTask;
 
             try {
-                await worker.WaitForSuccess(outputWriter.ToString());
+                await worker.WaitForSuccess(outputStream.ToString());
             } catch {
                 relayOutputCts.Cancel();
                 throw;

@@ -8,7 +8,8 @@ public class Bash : ShellBase {
             var shell = new CommandLine();
             var script = new ShellScript(shell, @"bash -c ""uname -s""");
             using var worker = script.Start().ConfigureAwait(false).GetAwaiter().GetResult();
-            IsRunningBashOnWSL = worker.StandardOutput.ReadToEnd().TrimEnd() switch {
+            using var reader = new StreamReader(worker.StandardOutput);
+            IsRunningBashOnWSL = reader.ReadToEnd().TrimEnd() switch {
                 "Linux" => true,
                 "Darwin" => true,
                 _ => false

@@ -3,7 +3,7 @@ namespace CalqFramework.Cmd.Shell {
     public interface IShellWorker : IDisposable {
         IShellWorker? PipedWorker { get; }
         ShellScript ShellScript { get; }
-        StreamReader StandardOutput { get; }
+        Stream StandardOutput { get; }
 
         Task Start();
 

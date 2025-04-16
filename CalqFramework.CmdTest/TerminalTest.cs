@@ -11,6 +11,12 @@ public class TerminalTest {
         return stream;
     }
 
+    private string ReadString(Stream writer) {
+        writer.Position = 0;
+        using StreamReader reader = new StreamReader(writer);
+        return reader.ReadToEnd();
+    }
+
     [Fact]
     public async Task Shell_WhenChangedInTask_RevertsToOriginal() {
         LocalTerminal.Shell = new CommandLine();
@@ -43,7 +49,7 @@ public class TerminalTest {
 
     [Fact]
     public void Bash_ReadInput_EchosCorrectly() {
-        var writer = new StringWriter();
+        var writer = new MemoryStream();
         var input = "hello world\n";
 
         LocalTerminal.Out = writer;
@@ -52,9 +58,9 @@ public class TerminalTest {
         };
 
         RUN("sleep 1; read -r input; echo $input");
-        var output = writer.ToString();
+        var output = ReadString(writer);
 
-        Assert.Equal(input, string.Join("\n", output.Split('\n').Skip(3))); // skip log output
+        Assert.Equal(input, output);
     }
 
     [Fact]
@@ -64,12 +70,12 @@ public class TerminalTest {
             expectedOutput += "1234567890";
         }
 
-        var writer = new StringWriter();
+        var writer = new MemoryStream();
         LocalTerminal.Out = writer;
         LocalTerminal.Shell = new Bash();
 
         var output = CMD("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
-        var writerOutput = writer.ToString();
+        var writerOutput = ReadString(writer);
 
         Assert.Equal(expectedOutput, output);
         Assert.Empty(writerOutput);
@@ -82,14 +88,14 @@ public class TerminalTest {
             expectedOutput += "1234567890";
         }
 
-        var writer = new StringWriter();
+        var writer = new MemoryStream();
         LocalTerminal.Out = writer;
         LocalTerminal.Shell = new Bash();
 
         RUN("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
-        var writerOutput = writer.ToString();
+        var writerOutput = ReadString(writer);
 
-        Assert.Equal(expectedOutput, string.Join("\n", writerOutput.Split('\n').Skip(3))); // skip log output
+        Assert.Equal(expectedOutput, writerOutput);
     }
 
     [Fact]
@@ -127,7 +133,8 @@ public class TerminalTest {
         using var proc = await command.Start();
         GC.Collect();
         GC.WaitForPendingFinalizers();
-        var output = proc.StandardOutput.ReadLine();
+        using var reader = new StreamReader(proc.StandardOutput);
+        var output = reader.ReadLine();
 
         Assert.Equal(input, output);
     }
