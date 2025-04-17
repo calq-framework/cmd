@@ -5,8 +5,8 @@ namespace CalqFramework.Cmd.Shell {
         ShellScript ShellScript { get; }
         Stream StandardOutput { get; }
 
-        Task Start();
+        Task StartAsync(CancellationToken cancellationToken = default);
 
-        Task WaitForSuccess(string? output = null);
+        Task WaitForSuccessAsync(string? output = null, CancellationToken cancellationToken = default);
     }
 }
