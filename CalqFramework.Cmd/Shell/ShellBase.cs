@@ -5,10 +5,10 @@ public abstract class ShellBase : IShell {
     public Stream? In { get; init; } = Console.OpenStandardInput();
     public IShellScriptPostprocessor Postprocessor { get; init; } = new ShellScriptPostprocessor();
 
-    public IShellWorker CreateShellWorker(ShellScript shellScript, CancellationToken cancellationToken = default) {
-        return CreateShellWorker(shellScript, this.In, cancellationToken);
+    public IShellWorker CreateShellWorker(ShellScript shellScript) {
+        return CreateShellWorker(shellScript, this.In);
     }
 
-    public abstract IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream, CancellationToken cancellationToken = default);
+    public abstract IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream);
     public abstract string MapToInternalPath(string hostPath);
 }

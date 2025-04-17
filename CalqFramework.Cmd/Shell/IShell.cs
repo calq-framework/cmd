@@ -4,8 +4,8 @@
         Stream? In { get; }
         IShellScriptPostprocessor Postprocessor { get; }
 
-        IShellWorker CreateShellWorker(ShellScript shellScript, CancellationToken cancellationToken = default);
-        IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream, CancellationToken cancellationToken = default);
+        IShellWorker CreateShellWorker(ShellScript shellScript);
+        IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream);
         string MapToInternalPath(string hostPath);
     }
 }

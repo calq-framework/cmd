@@ -29,7 +29,7 @@ public class Bash : ShellBase {
         return hostPath;
     }
 
-    public override ProcessWorkerBase CreateShellWorker(ShellScript shellScript, Stream? inputStream, CancellationToken cancellationToken = default) {
-        return new BashWorker(shellScript, inputStream, cancellationToken);
+    public override ProcessWorkerBase CreateShellWorker(ShellScript shellScript, Stream? inputStream) {
+        return new BashWorker(shellScript, inputStream);
     }
 }

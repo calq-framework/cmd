@@ -44,7 +44,7 @@ namespace CalqFramework.Cmd {
             using var reader = new StreamReader(worker.StandardOutput);
             var output = await reader.ReadToEndAsync();
 
-            await worker.WaitForSuccess(output);
+            await worker.WaitForSuccessAsync(output);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -76,7 +76,7 @@ namespace CalqFramework.Cmd {
             await relayOutputTask;
 
             try {
-                await worker.WaitForSuccess(outputStream.ToString());
+                await worker.WaitForSuccessAsync(outputStream.ToString());
             } catch {
                 relayOutputCts.Cancel();
                 throw;
@@ -86,14 +86,14 @@ namespace CalqFramework.Cmd {
         }
 
         public async Task<IShellWorker> Start(CancellationToken cancellationToken = default) {
-            var worker = Shell.CreateShellWorker(this, cancellationToken);
-            await worker.Start();
+            var worker = Shell.CreateShellWorker(this);
+            await worker.StartAsync(cancellationToken);
             return worker;
         }
 
         public async Task<IShellWorker> Start(Stream? inputStream, CancellationToken cancellationToken = default) {
-            var worker = Shell.CreateShellWorker(this, inputStream, cancellationToken);
-            await worker.Start();
+            var worker = Shell.CreateShellWorker(this, inputStream);
+            await worker.StartAsync(cancellationToken);
             return worker;
         }
 

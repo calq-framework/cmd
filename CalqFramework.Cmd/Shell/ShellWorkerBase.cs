@@ -1,30 +1,13 @@
 ﻿namespace CalqFramework.Cmd.Shell {
     public abstract class ShellWorkerBase : IShellWorker {
         private bool _disposed;
-        private Task? _relayInputTask;
 
-        public ShellWorkerBase(ShellScript shellScript, Stream? inputStream, CancellationToken cancellationToken = default) {
+        public ShellWorkerBase(ShellScript shellScript, Stream? inputStream) {
             ShellScript = shellScript;
             InputStream = inputStream;
 
             if (ShellScript.PipedShellScript != null) {
                 PipedWorker = ShellScript.PipedShellScript.Shell.CreateShellWorker(ShellScript.PipedShellScript);
-            }
-
-            RelayInputTaskAbortCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        }
-
-        public async Task Start() {
-            if (PipedWorker != null) {
-                await PipedWorker.Start();
-                InputStream = PipedWorker.StandardOutput;
-            }
-
-            var redirectInput = InputStream != null ? true : false;
-            var workerInput = await Initialize(ShellScript, redirectInput);
-
-            if (workerInput != null) {
-                _relayInputTask = Task.Run(async () => await StreamUtils.RelayInput(workerInput!, new StreamReader(InputStream!), RelayInputTaskAbortCts.Token)).WaitAsync(RelayInputTaskAbortCts.Token); // input reading may lock thread
             }
         }
 
@@ -32,32 +15,35 @@
             Dispose(false);
         }
 
+        public Stream? InputStream { get; private set; }
+
         public IShellWorker? PipedWorker { get; }
 
         public ShellScript ShellScript { get; }
-        public Stream? InputStream { get; private set; }
+
         public abstract Stream StandardOutput { get; }
 
         protected abstract int CompletionCode { get; }
-
-        protected CancellationTokenSource RelayInputTaskAbortCts { get; private set; }
 
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        public async Task WaitForSuccess(string? output = null) {
+        public async Task StartAsync(CancellationToken cancellationToken = default) {
             if (PipedWorker != null) {
-                await PipedWorker.WaitForSuccess();
+                await PipedWorker.StartAsync();
+                InputStream = PipedWorker.StandardOutput;
+            }
+
+            var redirectInput = InputStream != null ? true : false;
+            await InitializeAsync(ShellScript, redirectInput, cancellationToken);
+        }
+        public async Task WaitForSuccessAsync(string? output = null, CancellationToken cancellationToken = default) {
+            if (PipedWorker != null) {
+                await PipedWorker.WaitForSuccessAsync();
             }
             await WaitForCompletionAsync();
-
-            try {
-                if (_relayInputTask != null) {
-                    await _relayInputTask;
-                }
-            } catch (TaskCanceledException) { } // triggered by relayInputTaskAbortCts which should be ignored
 
 
             var errorMessage = await ReadErrorMessageAsync();
@@ -73,9 +59,9 @@
             }
         }
 
-        protected abstract Task<string> ReadErrorMessageAsync();
+        protected abstract Task InitializeAsync(ShellScript shellScript, bool redirectInput, CancellationToken cancellationToken = default);
 
-        protected abstract Task<TextWriter?> Initialize(ShellScript shellScript, bool redirectInput);
+        protected abstract Task<string> ReadErrorMessageAsync();
         protected abstract Task WaitForCompletionAsync();
     }
 }

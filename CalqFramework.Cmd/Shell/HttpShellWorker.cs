@@ -8,7 +8,7 @@ public class HttpShellWorker : ShellWorkerBase {
 
     private HttpResponseMessage? _response;
     private HttpClient HttpClient;
-    public HttpShellWorker(HttpClient httpClient, ShellScript shellScript, Stream? inputStream, CancellationToken cancellationToken = default) : base(shellScript, inputStream, cancellationToken) {
+    public HttpShellWorker(HttpClient httpClient, ShellScript shellScript, Stream? inputStream) : base(shellScript, inputStream) {
         HttpClient = httpClient;
     }
 
@@ -28,7 +28,7 @@ public class HttpShellWorker : ShellWorkerBase {
         base.Dispose(disposing);
     }
 
-    protected override async Task<TextWriter?> Initialize(ShellScript shellScript, bool redirectInput) {
+    protected override async Task InitializeAsync(ShellScript shellScript, bool redirectInput, CancellationToken cancellationToken = default) {
         var request = new HttpRequestMessage();
         request.Headers.Add("Script", shellScript.Script);
 
@@ -37,11 +37,9 @@ public class HttpShellWorker : ShellWorkerBase {
             request.Content = new StreamContent(InputStream!);
         }
 
-        _response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, RelayInputTaskAbortCts.Token);
+        _response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
-        _content = await _response.Content.ReadAsStreamAsync();
-
-        return null;
+        _content = await _response.Content.ReadAsStreamAsync(cancellationToken);
     }
 
     protected override async Task<string> ReadErrorMessageAsync() {
