@@ -30,6 +30,7 @@ public class HttpShellWorker : ShellWorkerBase {
 
     protected override async Task InitializeAsync(ShellScript shellScript, bool redirectInput, CancellationToken cancellationToken = default) {
         var request = new HttpRequestMessage();
+        request.Version = new Version(2, 0);
         request.Headers.Add("Script", shellScript.Script);
 
         request.Method = HttpMethod.Post;
