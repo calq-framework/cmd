@@ -11,7 +11,7 @@ namespace CalqFramework.Cmd.Shell {
         public ProcessWorkerBase(ShellScript shellScript, Stream? inputStream) : base(shellScript, inputStream) {
         }
 
-        public override Stream StandardOutput { get => _process.StandardOutput.BaseStream; }
+        public override Stream StandardOutput { get => new ProcessStream(_process); }
 
         protected override int CompletionCode => _process.ExitCode;
         internal abstract ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script);
