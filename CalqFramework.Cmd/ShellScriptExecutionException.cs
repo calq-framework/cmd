@@ -1,11 +1,11 @@
 ﻿namespace CalqFramework.Cmd;
 public class ShellScriptExecutionException : Exception {
-    public int ExitCode { get; }
+    public long ErrorCode { get; }
 
-    public ShellScriptExecutionException(int exitCode, string? message) : this(exitCode, message, null) {
+    public ShellScriptExecutionException(long errorCode, string? message) : this(errorCode, message, null) {
     }
 
-    public ShellScriptExecutionException(int exitCode, string? message, Exception? innerException) : base(message, innerException) {
-        ExitCode = exitCode;
+    public ShellScriptExecutionException(long errorCode, string? message, Exception? innerException) : base(message, innerException) {
+        ErrorCode = errorCode;
     }
 }

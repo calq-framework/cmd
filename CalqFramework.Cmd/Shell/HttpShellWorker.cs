@@ -3,7 +3,7 @@ using CalqFramework.Cmd.Shell;
 using System.Net;
 
 public class HttpShellWorker : ShellWorkerBase {
-    private Stream? _content;
+    private ExecutionOutputStream? _executionOutputStream;
     private bool _disposed;
 
     private HttpResponseMessage? _response;
@@ -12,7 +12,7 @@ public class HttpShellWorker : ShellWorkerBase {
         HttpClient = httpClient;
     }
 
-    public override Stream StandardOutput => _content!;
+    public override ExecutionOutputStream StandardOutput => _executionOutputStream!;
 
     protected override int CompletionCode => (int)(_response?.StatusCode ?? 0);
     private HttpStatusCode? StatusCode => _response!.StatusCode; // TODO separate error handler
@@ -21,7 +21,7 @@ public class HttpShellWorker : ShellWorkerBase {
         if (!_disposed) {
             if (disposing) {
                 _response?.Dispose();
-                _content?.Dispose();
+                _executionOutputStream?.Dispose();
             }
             _disposed = true;
         }
@@ -40,7 +40,8 @@ public class HttpShellWorker : ShellWorkerBase {
 
         _response = await HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
-        _content = await _response.Content.ReadAsStreamAsync(cancellationToken);
+        var responseContentStream = await _response.Content.ReadAsStreamAsync(cancellationToken);
+        _executionOutputStream = new HttpShellOutputStream(responseContentStream);
     }
 
     protected override async Task<string> ReadErrorMessageAsync() {
