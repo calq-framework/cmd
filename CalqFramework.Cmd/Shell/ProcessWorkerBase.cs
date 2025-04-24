@@ -6,12 +6,10 @@ namespace CalqFramework.Cmd.Shell {
         private AutoTerminateProcess _process = null!;
         private Task? _relayInputTask;
 
-        // initialized via InitializeAsync
-
         public ProcessWorkerBase(ShellScript shellScript, Stream? inputStream) : base(shellScript, inputStream) {
         }
 
-        public override Stream StandardOutput { get => new ProcessStream(_process); }
+        public override ExecutionOutputStream StandardOutput { get => new ProcessOutputStream(_process); }
 
         protected override int CompletionCode => _process.ExitCode;
         internal abstract ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script);

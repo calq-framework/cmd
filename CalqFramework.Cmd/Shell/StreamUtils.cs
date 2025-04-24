@@ -69,7 +69,14 @@ namespace CalqFramework.Cmd.Shell {
                 var buffer = new char[1];
 
                 while (!cancellationToken.IsCancellationRequested) {
-                    var bytesRead = await inputReader.ReadAsync(buffer, cancellationToken);
+                    int bytesRead = 0;
+                    try {
+                        bytesRead = await inputReader.ReadAsync(buffer, cancellationToken);
+                    } catch {
+                        processInput.Close(); // in case input stream reached EOF close input stream to signal EOF to the process
+                        throw;
+                    }
+
                     var keyChar = buffer[0];
                     if (bytesRead == 0 || keyChar == '\uffff') { // '\uffff' == -1
                         processInput.Close(); // in case input stream reached EOF close input stream to signal EOF to the process

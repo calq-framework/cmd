@@ -21,7 +21,7 @@
 
         public ShellScript ShellScript { get; }
 
-        public abstract Stream StandardOutput { get; }
+        public abstract ExecutionOutputStream StandardOutput { get; }
 
         protected abstract int CompletionCode { get; }
 

@@ -359,7 +359,7 @@ EOF");
         using var requestWorker = await echo.StartAsync();
         var reader = new StreamReader(requestWorker.StandardOutput);
         var output = "";
-        Assert.Throws<HttpProtocolException>(() => {
+        Assert.Throws<ShellScriptExecutionException>(() => {
             output += reader.ReadLine() + '\n'; // ok
             output += reader.ReadLine() + '\n'; // ok
             output += reader.ReadLine() + '\n'; // throws
