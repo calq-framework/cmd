@@ -12,14 +12,14 @@ namespace CalqFramework.Cmd.Shell {
 
         protected override Stream InnerStream => _innerStream;
 
-        public override long GetErrorCode() {
+        protected override Error GetError() {
             _process.WaitForExit();
-            return _process.ExitCode;
+            return new Error(_process.ExitCode, null);
         }
 
-        public override async Task<long> GetErrorCodeAsync() {
+        protected override async Task<Error> GetErrorAsync() {
             await _process.WaitForExitAsync();
-            return _process.ExitCode;
+            return new Error(_process.ExitCode, null);
         }
 
         protected override int TryRead(byte[] buffer, int offset, int count) {

@@ -1,5 +1,7 @@
 ﻿namespace CalqFramework.Cmd.Shell {
     public abstract class ExecutionOutputStream : Stream {
+        protected readonly record struct Error(long? ErrorCode, Exception? Exception);
+
         public override bool CanRead => InnerStream.CanRead;
 
         public override bool CanSeek => InnerStream.CanSeek;
@@ -16,18 +18,25 @@
             InnerStream.Flush();
         }
 
-        public abstract long GetErrorCode();
+        protected abstract Error GetError();
 
-        public abstract Task<long> GetErrorCodeAsync();
+        protected abstract Task<Error> GetErrorAsync();
 
         public override int Read(byte[] buffer, int offset, int count) {
-            int bytesRead = TryRead(buffer, offset, count);
+            int bytesRead;
+            try {
+                bytesRead = TryRead(buffer, offset, count);
+            } catch (OperationCanceledException) {
+                throw;
+            } catch (Exception ex) {
+                throw new ShellScriptExecutionException(null, $"Error code: {null}", ex);
+            }
 
             if (bytesRead == 0) {
-                var errorCode = GetErrorCode();
+                var error = GetError();
 
-                if (errorCode != 0) {
-                    throw new ShellScriptExecutionException(errorCode, $"Error code: {errorCode}");
+                if (error.ErrorCode != 0) {
+                    throw new ShellScriptExecutionException(error.ErrorCode, $"Error code: {error.ErrorCode}", error.Exception);
                 }
             }
 
@@ -35,13 +44,20 @@
         }
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) {
-            int bytesRead = await TryReadAsync(buffer, offset, count, cancellationToken);
+            int bytesRead;
+            try {
+                bytesRead = await TryReadAsync(buffer, offset, count, cancellationToken);
+            } catch (OperationCanceledException) {
+                throw;
+            } catch (Exception ex) {
+                throw new ShellScriptExecutionException(null, $"Error code: {null}", ex);
+            }
 
             if (bytesRead == 0) {
-                var errorCode = await GetErrorCodeAsync();
+                var error = await GetErrorAsync();
 
-                if (errorCode != 0) {
-                    throw new ShellScriptExecutionException(errorCode, $"Error code: {errorCode}");
+                if (error.ErrorCode != 0) {
+                    throw new ShellScriptExecutionException(error.ErrorCode, $"Error code: {error.ErrorCode}", error.Exception);
                 }
             }
 

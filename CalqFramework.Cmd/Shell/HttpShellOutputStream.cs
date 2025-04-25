@@ -2,7 +2,7 @@
 namespace CalqFramework.Cmd.Shell {
     public class HttpShellOutputStream : ExecutionOutputStream {
         private readonly Stream _innerStream;
-        private long _errorCode = 0;
+        private Error _error = new Error(0, null);
 
         public HttpShellOutputStream(Stream responseContentStream) {
             _innerStream = responseContentStream;
@@ -10,12 +10,12 @@ namespace CalqFramework.Cmd.Shell {
 
         protected override Stream InnerStream => _innerStream;
 
-        public override long GetErrorCode() {
-            return _errorCode;
+        protected override Error GetError() {
+            return _error;
         }
 
-        public override Task<long> GetErrorCodeAsync() {
-            return Task.FromResult(_errorCode);
+        protected override Task<Error> GetErrorAsync() {
+            return Task.FromResult(_error);
         }
 
         protected override int TryRead(byte[] buffer, int offset, int count) {
@@ -23,7 +23,7 @@ namespace CalqFramework.Cmd.Shell {
                 int bytesRead = _innerStream.Read(buffer, offset, count);
                 return bytesRead;
             } catch (HttpProtocolException ex) {
-                _errorCode = ex.ErrorCode;
+                _error = new Error(ex.ErrorCode, ex);
                 return 0;
             }
         }
@@ -33,7 +33,7 @@ namespace CalqFramework.Cmd.Shell {
                 int bytesRead = await _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
                 return bytesRead;
             } catch (HttpProtocolException ex) {
-                _errorCode = ex.ErrorCode;
+                _error = new Error(ex.ErrorCode, ex);
                 return 0;
             }
         }
