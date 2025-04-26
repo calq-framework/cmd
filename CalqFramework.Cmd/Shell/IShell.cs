@@ -1,6 +1,6 @@
 ﻿namespace CalqFramework.Cmd.Shell {
     public interface IShell {
-        IShellWorkerErrorHandler ErrorHandler { get; }
+        IShellScriptExceptionFactory ExceptionFactory { get; }
         Stream? In { get; }
         IShellScriptPostprocessor Postprocessor { get; }
 

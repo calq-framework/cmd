@@ -4,14 +4,13 @@ namespace CalqFramework.Cmd.Shell {
     public abstract class ProcessWorkerBase : ShellWorkerBase {
         private bool _disposed;
         private AutoTerminateProcess _process = null!;
-        private Task? _relayInputTask;
+        private ProcessOutputStream? _processOutputStream;
 
         public ProcessWorkerBase(ShellScript shellScript, Stream? inputStream) : base(shellScript, inputStream) {
         }
 
-        public override ExecutionOutputStream StandardOutput { get => new ProcessOutputStream(_process); }
+        public override ShellWorkerOutputStream StandardOutput { get => _processOutputStream!; }
 
-        protected override int CompletionCode => _process.ExitCode;
         internal abstract ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script);
 
         protected override void Dispose(bool disposing) {
@@ -23,14 +22,14 @@ namespace CalqFramework.Cmd.Shell {
             base.Dispose(disposing);
         }
 
-        protected override async Task InitializeAsync(ShellScript shellScript, bool redirectInput, CancellationToken cancellationToken = default) {
+        protected override Task InitializeAsync(ShellScript shellScript, CancellationToken cancellationToken = default) {
             var processExecutionInfo = GetProcessExecutionInfo(ShellScript.WorkingDirectory, ShellScript.Script);
 
             _process = new AutoTerminateProcess() {
                 StartInfo = new ProcessStartInfo {
                     WorkingDirectory = ShellScript.WorkingDirectory,
                     FileName = processExecutionInfo.FileName,
-                    RedirectStandardInput = redirectInput,
+                    RedirectStandardInput = InputStream != null,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
@@ -48,22 +47,18 @@ namespace CalqFramework.Cmd.Shell {
 
             _process.Start();
 
-            if (redirectInput) {
-                _relayInputTask = Task.Run(async () => await StreamUtils.RelayInput(_process.StandardInput!, new StreamReader(InputStream!), relayInputTaskAbortCts.Token)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
+            var relayInputTask = Task.CompletedTask;
+            if (InputStream != null) {
+                relayInputTask = Task.Run(async () => await StreamUtils.RelayInput(_process.StandardInput!, new StreamReader(InputStream!), relayInputTaskAbortCts.Token)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
             }
+
+            _processOutputStream = new ProcessOutputStream(_process, relayInputTask);
+
+            return Task.CompletedTask;
         }
 
-        protected override async Task<string> ReadErrorMessageAsync() {
-            return await _process.StandardError.ReadToEndAsync();
-        }
-        protected override async Task WaitForCompletionAsync() {
-            await _process.WaitForExitAsync();
-
-            try {
-                if (_relayInputTask != null) {
-                    await _relayInputTask;
-                }
-            } catch (TaskCanceledException) { } // triggered by relayInputTaskAbortCts which should be ignored
+        public override async Task<string> ReadErrorMessageAsync(CancellationToken cancellationToken = default) {
+            return await _process.StandardError.ReadToEndAsync(cancellationToken);
         }
     }
 }

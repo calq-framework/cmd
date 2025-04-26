@@ -3,10 +3,12 @@ namespace CalqFramework.Cmd.Shell {
     public interface IShellWorker : IDisposable {
         IShellWorker? PipedWorker { get; }
         ShellScript ShellScript { get; }
-        ExecutionOutputStream StandardOutput { get; }
+        ShellWorkerOutputStream StandardOutput { get; }
+
+        Task EnsurePipeIsCompletedAsync(CancellationToken cancellationToken = default);
+
+        Task<string> ReadErrorMessageAsync(CancellationToken cancellationToken = default);
 
         Task StartAsync(CancellationToken cancellationToken = default);
-
-        Task WaitForSuccessAsync(string? output = null, CancellationToken cancellationToken = default);
     }
 }

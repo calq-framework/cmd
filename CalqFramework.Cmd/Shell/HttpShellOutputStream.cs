@@ -1,6 +1,6 @@
 ﻿
 namespace CalqFramework.Cmd.Shell {
-    public class HttpShellOutputStream : ExecutionOutputStream {
+    public class HttpShellOutputStream : ShellWorkerOutputStream {
         private readonly Stream _innerStream;
         private Error _error = new Error(0, null);
 

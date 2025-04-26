@@ -1,7 +1,7 @@
 ﻿namespace CalqFramework.Cmd.Shell;
 
 public abstract class ShellBase : IShell {
-    public IShellWorkerErrorHandler ErrorHandler { get; init; } = new ShellWorkerErrorHandler();
+    public IShellScriptExceptionFactory ExceptionFactory { get; init; } = new ShellScriptExceptionFactory();
     public Stream? In { get; init; } = Console.OpenStandardInput();
     public IShellScriptPostprocessor Postprocessor { get; init; } = new ShellScriptPostprocessor();
 
