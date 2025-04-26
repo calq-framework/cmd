@@ -5,10 +5,6 @@
         public ShellWorkerBase(ShellScript shellScript, Stream? inputStream) {
             ShellScript = shellScript;
             InputStream = inputStream;
-
-            if (ShellScript.PipedShellScript != null) {
-                PipedWorker = ShellScript.PipedShellScript.Shell.CreateShellWorker(ShellScript.PipedShellScript);
-            }
         }
 
         ~ShellWorkerBase() {
@@ -17,13 +13,11 @@
 
         public Stream? InputStream { get; private set; }
 
-        public IShellWorker? PipedWorker { get; }
+        public IShellWorker? PipedWorker { get; private set; }
 
         public ShellScript ShellScript { get; }
 
-        public abstract ExecutionOutputStream StandardOutput { get; }
-
-        protected abstract int CompletionCode { get; }
+        public abstract ShellWorkerOutputStream StandardOutput { get; }
 
         public void Dispose() {
             Dispose(true);
@@ -31,24 +25,18 @@
         }
 
         public async Task StartAsync(CancellationToken cancellationToken = default) {
-            if (PipedWorker != null) {
-                await PipedWorker.StartAsync();
+            if (ShellScript.PipedShellScript != null) {
+                PipedWorker = await ShellScript.PipedShellScript.StartAsync(cancellationToken);
                 InputStream = PipedWorker.StandardOutput;
             }
 
-            var redirectInput = InputStream != null ? true : false;
-            await InitializeAsync(ShellScript, redirectInput, cancellationToken);
+            await InitializeAsync(ShellScript, cancellationToken);
         }
-        public async Task WaitForSuccessAsync(string? output = null, CancellationToken cancellationToken = default) {
+        public async Task EnsurePipeIsCompletedAsync(CancellationToken cancellationToken = default) {
+            await EnsureStandardOutputIsReadToEndAsync();
             if (PipedWorker != null) {
-                await PipedWorker.WaitForSuccessAsync();
+                await PipedWorker.EnsurePipeIsCompletedAsync();
             }
-            await WaitForCompletionAsync();
-
-
-            var errorMessage = await ReadErrorMessageAsync();
-
-            ShellScript.Shell.ErrorHandler.AssertSuccess(ShellScript.Script, CompletionCode, errorMessage, output);
         }
 
         protected virtual void Dispose(bool disposing) {
@@ -59,9 +47,11 @@
             }
         }
 
-        protected abstract Task InitializeAsync(ShellScript shellScript, bool redirectInput, CancellationToken cancellationToken = default);
+        protected abstract Task InitializeAsync(ShellScript shellScript, CancellationToken cancellationToken = default);
 
-        protected abstract Task<string> ReadErrorMessageAsync();
-        protected abstract Task WaitForCompletionAsync();
+        public abstract Task<string> ReadErrorMessageAsync(CancellationToken cancellationToken = default);
+        private async Task EnsureStandardOutputIsReadToEndAsync(CancellationToken cancellationToken = default) {
+            await StreamUtils.RelayStream(StandardOutput, Stream.Null, cancellationToken);
+        }
     }
 }

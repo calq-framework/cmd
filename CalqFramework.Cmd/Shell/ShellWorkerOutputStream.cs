@@ -1,5 +1,6 @@
 ﻿namespace CalqFramework.Cmd.Shell {
-    public abstract class ExecutionOutputStream : Stream {
+    // INFO throwing with only ErrorCode is OK, stderr might contain diagnostics/info instead of error errorMessage so don't throw just because not empty
+    public abstract class ShellWorkerOutputStream : Stream {
         protected readonly record struct Error(long? ErrorCode, Exception? Exception);
 
         public override bool CanRead => InnerStream.CanRead;
@@ -29,14 +30,14 @@
             } catch (OperationCanceledException) {
                 throw;
             } catch (Exception ex) {
-                throw new ShellScriptExecutionException(null, $"Error code: {null}", ex);
+                throw new ShellWorkerException(null, $"Error code: {null}", ex);
             }
 
             if (bytesRead == 0) {
                 var error = GetError();
 
                 if (error.ErrorCode != 0) {
-                    throw new ShellScriptExecutionException(error.ErrorCode, $"Error code: {error.ErrorCode}", error.Exception);
+                    throw new ShellWorkerException(error.ErrorCode, $"Error code: {error.ErrorCode}", error.Exception);
                 }
             }
 
@@ -50,14 +51,14 @@
             } catch (OperationCanceledException) {
                 throw;
             } catch (Exception ex) {
-                throw new ShellScriptExecutionException(null, $"Error code: {null}", ex);
+                throw new ShellWorkerException(null, $"Error code: {null}", ex);
             }
 
             if (bytesRead == 0) {
                 var error = await GetErrorAsync();
 
                 if (error.ErrorCode != 0) {
-                    throw new ShellScriptExecutionException(error.ErrorCode, $"Error code: {error.ErrorCode}", error.Exception);
+                    throw new ShellWorkerException(error.ErrorCode, $"Error code: {error.ErrorCode}", error.Exception);
                 }
             }
 

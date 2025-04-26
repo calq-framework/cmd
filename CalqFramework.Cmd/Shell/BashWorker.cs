@@ -29,7 +29,7 @@ namespace CalqFramework.Cmd.Shell {
             }
             trappedScript.Append($"trap '' exit\n");
 
-            var scriptBytes = Encoding.UTF8.GetBytes(script);
+            var scriptBytes = Encoding.UTF8.GetBytes(script.ToString()); // FIXME line split regex pattern doesnt handle <<EOF
             var scriptBase64 = Convert.ToBase64String(scriptBytes);
             var evalCommand = $"eval \"\"$(echo \"{scriptBase64}\" | base64 -d)\"\"";
 

@@ -1,5 +1,6 @@
 ﻿using CalqFramework.Cmd.Shell;
 using System.Diagnostics;
+using System.Text;
 
 namespace CalqFramework.Cmd {
 
@@ -42,13 +43,25 @@ namespace CalqFramework.Cmd {
         public async Task<string> EvaluateAsync(Stream? inputStream, CancellationToken cancellationToken = default) {
             using var worker = await StartAsync(inputStream, cancellationToken);
             using var reader = new StreamReader(worker.StandardOutput);
-            var output = await reader.ReadToEndAsync();
 
-            await worker.WaitForSuccessAsync(output);
+            var sb = new StringBuilder();
+            char[] buffer = new char[4096];
+            try {
+                while (true) {
+                    int charsRead = await reader.ReadAsync(buffer, 0, buffer.Length);
+                    if (charsRead == 0) {
+                        break;
+                    }
+                    sb.Append(buffer, 0, charsRead);
+                }
+                await worker.EnsurePipeIsCompletedAsync(cancellationToken);
+            } catch (ShellWorkerException ex) {
+                throw await Shell.ExceptionFactory.CreateAsync(this, worker, ex, sb.ToString(), cancellationToken);
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            return Shell.Postprocessor.ProcessOutput(output);
+            return Shell.Postprocessor.ProcessOutput(sb.ToString());
         }
 
         public async Task<string> EvaluateAsync(CancellationToken cancellationToken = default) {
@@ -69,17 +82,13 @@ namespace CalqFramework.Cmd {
 
         public async Task RunAsync(Stream? inputStream, Stream outputStream, CancellationToken cancellationToken = default) {
             using var worker = await StartAsync(inputStream, cancellationToken);
-
             var relayOutputCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            var relayOutputTask = StreamUtils.RelayStream(worker.StandardOutput, outputStream, relayOutputCts.Token);
-
-            await relayOutputTask;
 
             try {
-                await worker.WaitForSuccessAsync(outputStream.ToString());
-            } catch {
-                relayOutputCts.Cancel();
-                throw;
+                await StreamUtils.RelayStream(worker.StandardOutput, outputStream, relayOutputCts.Token);
+                await worker.EnsurePipeIsCompletedAsync(cancellationToken);
+            } catch (ShellWorkerException ex) {
+                throw await Shell.ExceptionFactory.CreateAsync(this, worker, ex, null, cancellationToken);
             }
 
             cancellationToken.ThrowIfCancellationRequested();

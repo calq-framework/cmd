@@ -157,7 +157,7 @@ public class TerminalTest {
         LocalTerminal.Shell = new Bash();
         var echoText = "hello world";
 
-        Assert.Throws<ShellScriptExecutionException>(() => {
+        Assert.Throws<ShellScriptException>(() => {
             string output = CMDV($"echo {echoText}") | CMDV("cat; exit 1;") | CMDV("cat");
         });
     }
@@ -253,7 +253,6 @@ EOF
         LocalTerminal.Shell = new Bash();
         CMD(@"openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj ""/CN=localhost""");
         var pythonScript = CMDV(@"python <<EOF
-# h2_tls_stream_chunks.py
 import ssl
 import socket
 import h2.connection
@@ -359,7 +358,7 @@ EOF");
         using var requestWorker = await echo.StartAsync();
         var reader = new StreamReader(requestWorker.StandardOutput);
         var output = "";
-        Assert.Throws<ShellScriptExecutionException>(() => {
+        Assert.Throws<ShellWorkerException>(() => {
             output += reader.ReadLine() + '\n'; // ok
             output += reader.ReadLine() + '\n'; // ok
             output += reader.ReadLine() + '\n'; // throws

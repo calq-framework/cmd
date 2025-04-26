@@ -4,7 +4,6 @@ namespace CalqFramework.Cmd.Shells;
 public class HttpShell : ShellBase {
     public HttpShell(HttpClient httpClient) {
         HttpClient = httpClient;
-        ErrorHandler = new HttpShellWorkerErrorHandler();
     }
 
     public HttpClient HttpClient { get; }
