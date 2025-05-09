@@ -1,4 +1,5 @@
-﻿using CalqFramework.Cmd.Shells;
+﻿using CalqFramework.Cmd.Python;
+using CalqFramework.Cmd.Shells;
 using System.Text;
 using static CalqFramework.Cmd.Terminal;
 
@@ -23,7 +24,7 @@ public class PythonTestTest {
         var writer = new MemoryStream();
         LocalTerminal.Out = writer;
 
-        var pythonServer = new PythonServer("./python_cli_tool.py");
+        var pythonServer = new PythonServer("./test_tool.py");
         await pythonServer.StartAsync();
         LocalTerminal.Shell = new Python(pythonServer) {
             In = GetStream(input)

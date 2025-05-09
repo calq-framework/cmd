@@ -11,10 +11,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="python\python_server.py\**" />
+    <EmbeddedResource Remove="python\python_server.py\**" />
+    <None Remove="python\python_server.py\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Python\server.py" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Python\test_tool.py">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿using CalqFramework.Cmd.Shell;
 
-namespace CalqFramework.Cmd.Shells {
+namespace CalqFramework.Cmd.Python {
     public interface IPythonServer {
         Uri Uri { get; }
 
