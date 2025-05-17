@@ -93,34 +93,12 @@ namespace CalqFramework.Cmd.Shell {
             var bufferArray = new byte[4096];
 
             while (!cancellationToken.IsCancellationRequested) {
-                bool isRead = false;
-                int bytesRead = 0;
-                try {
-                    Array.Clear(bufferArray);
-                    var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(20));
-                    bytesRead = await reader.ReadAsync(bufferArray, cancellationTokenSource.Token);
-                    isRead = true;
-                } catch (OperationCanceledException) {
-                    isRead = false;
-                    bytesRead = Array.IndexOf(bufferArray, '\0');
-                    if (bytesRead > 0) {
-                        await writer.WriteAsync(bufferArray, 0, bytesRead);
-                        await writer.FlushAsync();
-                        continue;
-                    }
-                }
-
-                if (isRead && bytesRead == 0) {
+                int bytesRead = await reader.ReadAsync(bufferArray, cancellationToken);
+                if (bytesRead == 0) {
                     break;
                 }
-
-                if (bytesRead > 0) {
-                    await writer.WriteAsync(bufferArray, 0, bytesRead);
-                }
-
-                await Task.Delay(1);
+                await writer.WriteAsync(bufferArray, 0, bytesRead);
             }
-
             await writer.FlushAsync();
         }
     }
