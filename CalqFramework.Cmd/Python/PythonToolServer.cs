@@ -5,18 +5,32 @@ using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.Python;
 public class PythonToolServer : IPythonToolServer {
-    public PythonToolServer(string scriptPath) {
-        ScriptPath = scriptPath;
+    private int? _port;
+    private bool _started;
+
+    public PythonToolServer(string toolScriptPath) {
+        ToolScriptPath = toolScriptPath;
     }
 
-    public string ScriptPath { get; }
-    public Uri Uri { get; } = new Uri("https://localhost:8443");
+    public int Port {
+        get => !_started ? throw new InvalidOperationException("Server hasn't started yet.") : (int)_port!;
+        init => _port = value;
+    }
 
+    public string ToolScriptPath { get; }
     public IShell Shell { get; init; } = new Bash();
 
+    public Uri Uri {
+        get => !_started ? throw new InvalidOperationException("Server hasn't started yet.") : new Uri($"https://localhost:{Port}");
+    }
+
     public async Task<IShellWorker> StartAsync(CancellationToken cancellationToken = default) {
-        var scriptDir = Path.GetDirectoryName(Path.GetFullPath(ScriptPath))!;
-        var scriptFileNameWithoutExtension = Path.GetFileNameWithoutExtension(ScriptPath);
+        if (_started) {
+            throw new InvalidOperationException("Server has already started.");
+        }
+
+        var scriptDir = Path.GetDirectoryName(Path.GetFullPath(ToolScriptPath))!;
+        var scriptFileNameWithoutExtension = Path.GetFileNameWithoutExtension(ToolScriptPath);
 
         LocalTerminal.Shell = Shell;
         var scriptDirWihinShell = LocalTerminal.Shell.MapToInternalPath(scriptDir);
@@ -33,10 +47,24 @@ public class PythonToolServer : IPythonToolServer {
         pythonServerScript = pythonServerScript.Replace("sys.path.append('./')", $"sys.path.append('{scriptDir}')");
         pythonServerScript = pythonServerScript.Replace("test_tool", scriptFileNameWithoutExtension);
 
+        _port ??= GetAvailablePort();
+        pythonServerScript = pythonServerScript.Replace("8443", _port.ToString());
+
         var cmd = CMDV(@$"python <<EOF
 {pythonServerScript}
 EOF");
 
-        return await cmd.StartAsync(cancellationToken);
+        var worker = await cmd.StartAsync(cancellationToken);
+        _started = true;
+
+        return worker;
+    }
+
+    int GetAvailablePort() {
+        var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        return port;
     }
 }
