@@ -1,8 +1,8 @@
 ﻿using CalqFramework.Cmd.Shell;
 
 namespace CalqFramework.Cmd.Shells;
-public class HttpShell : ShellBase {
-    public HttpShell(HttpClient httpClient) {
+public class HttpTool : ShellBase {
+    public HttpTool(HttpClient httpClient) {
         HttpClient = httpClient;
     }
 
@@ -13,6 +13,6 @@ public class HttpShell : ShellBase {
     }
 
     public override IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream) {
-        return new HttpShellWorker(HttpClient, shellScript, inputStream);
+        return new HttpToolWorker(HttpClient, shellScript, inputStream);
     }
 }

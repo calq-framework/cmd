@@ -15,8 +15,8 @@ namespace CalqFramework.Cmd {
         }
 
         public ShellScript? PipedShellScript { get; private init; }
-        public string Script { get; }
-        public IShell Shell { get; }
+        public string Script { get; internal set; } // setter should be only accessed by Shells.Tool
+        public IShell Shell { get; internal set; } // setter should be only accessed by Shells.Tool
         public string WorkingDirectory { get; init; }
 
         public static implicit operator string(ShellScript obj) {
