@@ -5,7 +5,7 @@ using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.CmdTest;
 
-public class PythonTestTest {
+public class PythonTest {
     private Stream GetStream(string input) {
         byte[] byteArray = Encoding.ASCII.GetBytes(input);
         MemoryStream stream = new MemoryStream(byteArray);
