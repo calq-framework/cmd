@@ -5,7 +5,7 @@ using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.CmdTest;
 
-public class PythonTest {
+public class PythonToolTest {
     private Stream GetStream(string input) {
         byte[] byteArray = Encoding.ASCII.GetBytes(input);
         MemoryStream stream = new MemoryStream(byteArray);
@@ -19,14 +19,14 @@ public class PythonTest {
     }
 
     [Fact]
-    public async Task Python_ReadInput_EchosCorrectly() {
+    public async Task PythonTool_ReadInput_EchosCorrectly() {
         var input = "hello world\nhello world\n";
         var writer = new MemoryStream();
         LocalTerminal.Out = writer;
 
-        var pythonServer = new PythonServer("./test_tool.py");
+        var pythonServer = new PythonToolServer("./test_tool.py");
         await pythonServer.StartAsync();
-        LocalTerminal.Shell = new Python(pythonServer) {
+        LocalTerminal.Shell = new PythonTool(pythonServer) {
             In = GetStream(input)
         };
 

@@ -2,9 +2,9 @@
 using CalqFramework.Cmd.Shell;
 
 namespace CalqFramework.Cmd.Shells;
-public class Python : ShellBase {
+public class PythonTool : ShellBase {
 
-    public Python(IPythonServer pythonServer) {
+    public PythonTool(IPythonToolServer pythonServer) {
         var handler = new HttpClientHandler {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         };
@@ -17,7 +17,7 @@ public class Python : ShellBase {
     public HttpClient HttpClient { get; }
 
     public override IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream) {
-        return new HttpShellWorker(HttpClient, shellScript, inputStream);
+        return new HttpToolWorker(HttpClient, shellScript, inputStream);
     }
 
     public override string MapToInternalPath(string hostPath) {

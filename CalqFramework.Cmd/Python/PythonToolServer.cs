@@ -4,8 +4,8 @@ using System.Reflection;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.Python;
-public class PythonServer : IPythonServer {
-    public PythonServer(string scriptPath) {
+public class PythonToolServer : IPythonToolServer {
+    public PythonToolServer(string scriptPath) {
         ScriptPath = scriptPath;
     }
 

@@ -2,13 +2,13 @@
 using CalqFramework.Cmd.Shell;
 using System.Net;
 
-public class HttpShellWorker : ShellWorkerBase {
+public class HttpToolWorker : ShellWorkerBase {
     private ShellWorkerOutputStream? _executionOutputStream;
     private bool _disposed;
 
     private HttpResponseMessage? _response;
     private HttpClient _httpClient;
-    public HttpShellWorker(HttpClient httpClient, ShellScript shellScript, Stream? inputStream) : base(shellScript, inputStream) {
+    public HttpToolWorker(HttpClient httpClient, ShellScript shellScript, Stream? inputStream) : base(shellScript, inputStream) {
         _httpClient = httpClient;
     }
 
@@ -40,7 +40,7 @@ public class HttpShellWorker : ShellWorkerBase {
         _response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
         var responseContentStream = await _response.Content.ReadAsStreamAsync(cancellationToken);
-        _executionOutputStream = new HttpShellOutputStream(responseContentStream);
+        _executionOutputStream = new HttpToolOutputStream(responseContentStream);
     }
 
     public override async Task<string> ReadErrorMessageAsync(CancellationToken cancellationToken = default) {

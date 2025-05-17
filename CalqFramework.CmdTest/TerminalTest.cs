@@ -163,7 +163,7 @@ public class TerminalTest {
     }
 
     [Fact]
-    public async void HttpShell_EvalPython_ReturnsCorrectly() {
+    public async void HttpTool_EvalPython_ReturnsCorrectly() {
         LocalTerminal.Shell = new Bash();
         var pythonScript = CMDV(@"python <<EOF
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -197,7 +197,7 @@ EOF
 
         var httpClient = new HttpClient();
         httpClient.BaseAddress = new Uri("http://127.0.0.1:8000");
-        LocalTerminal.Shell = new HttpShell(httpClient);
+        LocalTerminal.Shell = new HttpTool(httpClient);
 
         var echo = CMD("sum([8, 16, 32])");
 
@@ -205,7 +205,7 @@ EOF
     }
 
     [Fact]
-    public async void HttpShell_EchoContentBody_ReturnsCorrectly() {
+    public async void HttpTool_EchoContentBody_ReturnsCorrectly() {
         LocalTerminal.Shell = new Bash();
         var pythonScript = CMDV(@"python <<EOF
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -239,7 +239,7 @@ EOF
         var httpClient = new HttpClient();
         httpClient.BaseAddress = new Uri("http://127.0.0.1:8001");
         var input = "hello world";
-        LocalTerminal.Shell = new HttpShell(httpClient) {
+        LocalTerminal.Shell = new HttpTool(httpClient) {
             In = GetStream(input)
         };
 
@@ -249,7 +249,7 @@ EOF
     }
 
     [Fact]
-    public async void HttpShell_MidStreamError_Throws() {
+    public async void HttpTool_MidStreamError_Throws() {
         LocalTerminal.Shell = new Bash();
         CMD(@"openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj ""/CN=localhost""");
         var pythonScript = CMDV(@"python <<EOF
@@ -350,7 +350,7 @@ EOF");
 
         var inputBeforeReset = "hello\nworld\n";
         var input = inputBeforeReset + "should not be streamed back\n";
-        LocalTerminal.Shell = new HttpShell(httpClient) {
+        LocalTerminal.Shell = new HttpTool(httpClient) {
             In = GetStream(input)
         };
 

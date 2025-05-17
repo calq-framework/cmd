@@ -1,10 +1,10 @@
 ﻿
 namespace CalqFramework.Cmd.Shell {
-    public class HttpShellOutputStream : ShellWorkerOutputStream {
+    public class HttpToolOutputStream : ShellWorkerOutputStream {
         private readonly Stream _innerStream;
         private Error _error = new Error(0, null);
 
-        public HttpShellOutputStream(Stream responseContentStream) {
+        public HttpToolOutputStream(Stream responseContentStream) {
             _innerStream = responseContentStream;
         }
 
