@@ -1,6 +1,6 @@
-﻿using CalqFramework.Cmd.Python;
+﻿using System.Text;
+using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shells;
-using System.Text;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.CmdTest;
@@ -9,7 +9,7 @@ public class PythonToolTest {
 
     [Fact]
     public async Task PythonTool_ReadInput_EchosCorrectly() {
-        var input = "hello world\nhello world\n";
+        string input = "hello world\nhello world\n";
         var writer = new MemoryStream();
         LocalTerminal.Out = writer;
 
@@ -21,19 +21,19 @@ public class PythonToolTest {
 
         RUN("test");
 
-        var output = ReadString(writer);
+        string output = ReadString(writer);
         Assert.Equal(input, output);
     }
 
-    private Stream GetStream(string input) {
+    private static Stream GetStream(string input) {
         byte[] byteArray = Encoding.ASCII.GetBytes(input);
-        MemoryStream stream = new MemoryStream(byteArray);
+        MemoryStream stream = new(byteArray);
         return stream;
     }
 
-    private string ReadString(Stream writer) {
+    private static string ReadString(Stream writer) {
         writer.Position = 0;
-        using StreamReader reader = new StreamReader(writer);
+        using StreamReader reader = new(writer);
         return reader.ReadToEnd();
     }
 }

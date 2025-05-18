@@ -1,6 +1,6 @@
-﻿using Microsoft.Win32;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.Win32;
 
 namespace CalqFramework.Cmd.Shell {
 #pragma warning disable CA1416 // Validate platform compatibility
@@ -11,8 +11,8 @@ namespace CalqFramework.Cmd.Shell {
             const string wslPrefix = @"\\wsl$\";
 
             if (windowsPath.StartsWith(wslPrefix, StringComparison.OrdinalIgnoreCase)) {
-                var remainder = windowsPath.Substring(wslPrefix.Length);
-                var index = remainder.IndexOf('\\');
+                string remainder = windowsPath.Substring(wslPrefix.Length);
+                int index = remainder.IndexOf('\\');
 
                 if (index >= 0) {
                     return remainder.Substring(index).Replace('\\', '/');
@@ -22,15 +22,15 @@ namespace CalqFramework.Cmd.Shell {
             }
 
             if (windowsPath.Length >= 2 && windowsPath[1] == ':') {
-                var drive = windowsPath.Substring(0, 2);
-                var uncPath = GetUncPathFromDrive(drive);
+                string drive = windowsPath.Substring(0, 2);
+                string? uncPath = GetUncPathFromDrive(drive);
 
                 if (uncPath != null && uncPath.StartsWith(wslPrefix, StringComparison.OrdinalIgnoreCase)) {
-                    var relativePath = windowsPath;
+                    string relativePath = windowsPath;
                     return WindowsToWslPath(uncPath + relativePath);
                 } else {
-                    var driveLetter = char.ToLower(windowsPath[0]);
-                    var pathWithoutDrive = windowsPath.Substring(2).Replace('\\', '/');
+                    char driveLetter = char.ToLower(windowsPath[0]);
+                    string pathWithoutDrive = windowsPath.Substring(2).Replace('\\', '/');
                     return $"/mnt/{driveLetter}{pathWithoutDrive}";
                 }
             }
@@ -39,9 +39,9 @@ namespace CalqFramework.Cmd.Shell {
         }
 
         private static string? GetUncPathFromDrive(string driveLetter) {
-            var maxPathSize = 256;
+            int maxPathSize = 256;
             var sb = new StringBuilder(maxPathSize);
-            var result = WNetGetConnection(driveLetter, sb, ref maxPathSize);
+            int result = WNetGetConnection(driveLetter, sb, ref maxPathSize);
 
             if (result == 0) {
                 return sb.ToString();
@@ -57,67 +57,63 @@ namespace CalqFramework.Cmd.Shell {
 
             if (wslPath.StartsWith("/mnt/", StringComparison.Ordinal)) {
                 // Split "/mnt/c/foo/bar" → ["c","foo","bar"]
-                var parts = wslPath
+                string[] parts = wslPath
                     .Substring("/mnt/".Length)
-                    .Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                    .Split(['/'], StringSplitOptions.RemoveEmptyEntries);
 
                 if (parts.Length == 0) {
                     throw new ArgumentException($"Invalid WSL mount syntax: '{wslPath}'", nameof(wslPath));
                 }
 
-                var drivePart = parts[0];
+                string drivePart = parts[0];
                 if (drivePart.Length != 1 || !char.IsLetter(drivePart[0])) {
                     throw new ArgumentException($"Invalid drive letter '{drivePart}' in WSL path.", nameof(wslPath));
                 }
 
                 // Upper-case the drive letter for Windows style
-                var drive = char.ToUpperInvariant(drivePart[0]) + ":";
+                string drive = char.ToUpperInvariant(drivePart[0]) + ":";
 
                 // Build the full Windows path
-                var tailSegments = parts.Skip(1).ToArray();
+                string[] tailSegments = [.. parts.Skip(1)];
 
                 if (tailSegments.Length == 0) {
                     // e.g. "/mnt/c" → "C:\"
                     return drive + Path.DirectorySeparatorChar;
                 } else {
                     // ["C:", "Users", "foo"] → "C:\Users\foo"
-                    return Path.Combine(new[] { drive }.Concat(tailSegments).ToArray());
+                    return Path.Combine([drive, .. tailSegments]);
                 }
             } else {
                 // Non-/mnt paths go via the UNC \\wsl$\ distribution share
-                var distro = GetDefaultWslDistributionName();
-                if (distro == null) {
-                    throw new ArgumentException("Could not determine default WSL distribution name.", nameof(wslPath));
-                }
-
-                var segments = wslPath
+                string? distro = GetDefaultWslDistributionName() ?? throw new ArgumentException("Could not determine default WSL distribution name.", nameof(wslPath));
+                string[] segments = wslPath
                     .TrimStart('/')
-                    .Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                    .Split(['/'], StringSplitOptions.RemoveEmptyEntries);
 
-                var root = $@"\\wsl$\{distro}";
+                string root = $@"\\wsl$\{distro}";
 
                 if (segments.Length == 0) {
                     // e.g. "/" → "\\wsl$\Ubuntu\"
                     return root + Path.DirectorySeparatorChar;
                 } else {
                     // ["\\wsl$\Ubuntu", "home", "user"] → "\\wsl$\Ubuntu\home\user"
-                    return Path.Combine(new[] { root }.Concat(segments).ToArray());
+                    return Path.Combine([root, .. segments]);
                 }
             }
         }
 
         private static string? GetDefaultWslDistributionName() {
-            using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Lxss")) {
+            using (RegistryKey? key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Lxss")) {
                 if (key == null) {
                     return null;
                 }
 
-                var defaultGuid = key.GetValue("DefaultDistribution") as string;
+                string? defaultGuid = key.GetValue("DefaultDistribution") as string;
                 if (string.IsNullOrEmpty(defaultGuid)) {
                     return null;
                 }
 
-                using (var distroKey = key.OpenSubKey(defaultGuid)) {
+                using (RegistryKey? distroKey = key.OpenSubKey(defaultGuid)) {
                     if (distroKey == null) {
                         return null;
                     }

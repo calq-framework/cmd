@@ -1,12 +1,8 @@
 ﻿namespace CalqFramework.Cmd.Shell {
 
-    public class HttpToolOutputStream : ShellWorkerOutputStream {
-        private readonly Stream _innerStream;
-        private Error _error = new Error(0, null);
-
-        public HttpToolOutputStream(Stream responseContentStream) {
-            _innerStream = responseContentStream;
-        }
+    public class HttpToolOutputStream(Stream responseContentStream) : ShellWorkerOutputStream {
+        private readonly Stream _innerStream = responseContentStream;
+        private Error _error = new(0, null);
 
         protected override Stream InnerStream => _innerStream;
 
@@ -30,7 +26,7 @@
 
         protected override async Task<int> TryReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) {
             try {
-                int bytesRead = await _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
+                int bytesRead = await _innerStream.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
                 return bytesRead;
             } catch (HttpProtocolException ex) {
                 _error = new Error(ex.ErrorCode, ex);

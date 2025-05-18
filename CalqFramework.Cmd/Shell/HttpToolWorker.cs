@@ -1,16 +1,12 @@
-﻿using CalqFramework.Cmd;
+﻿using System.Net;
+using CalqFramework.Cmd;
 using CalqFramework.Cmd.Shell;
-using System.Net;
 
-public class HttpToolWorker : ShellWorkerBase {
+public class HttpToolWorker(HttpClient httpClient, ShellScript shellScript, Stream? inputStream) : ShellWorkerBase(shellScript, inputStream) {
     private bool _disposed;
     private ShellWorkerOutputStream? _executionOutputStream;
-    private HttpClient _httpClient;
+    private readonly HttpClient _httpClient = httpClient;
     private HttpResponseMessage? _response;
-
-    public HttpToolWorker(HttpClient httpClient, ShellScript shellScript, Stream? inputStream) : base(shellScript, inputStream) {
-        _httpClient = httpClient;
-    }
 
     public override ShellWorkerOutputStream StandardOutput => _executionOutputStream!;
 
@@ -32,8 +28,9 @@ public class HttpToolWorker : ShellWorkerBase {
     }
 
     protected override async Task InitializeAsync(ShellScript shellScript, CancellationToken cancellationToken = default) {
-        var request = new HttpRequestMessage();
-        request.Version = new Version(2, 0);
+        var request = new HttpRequestMessage {
+            Version = new Version(2, 0)
+        };
         request.Headers.Add("Script", shellScript.Script);
 
         request.Method = HttpMethod.Post;
@@ -43,7 +40,7 @@ public class HttpToolWorker : ShellWorkerBase {
 
         _response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
-        var responseContentStream = await _response.Content.ReadAsStreamAsync(cancellationToken);
+        Stream responseContentStream = await _response.Content.ReadAsStreamAsync(cancellationToken);
         _executionOutputStream = new HttpToolOutputStream(responseContentStream);
     }
 }

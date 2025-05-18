@@ -49,7 +49,7 @@ public static class Terminal {
 
     public static void RUN(string script, Stream? inputStream, Stream outputStream, TimeSpan? timeout = null) {
         var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
-        var cmd = CMDV(script);
+        ShellScript cmd = CMDV(script);
         LocalTerminal.TerminalLogger.LogRun(cmd);
         cmd.Run(inputStream, outputStream, cancellationTokenSource.Token);
     }
@@ -63,7 +63,7 @@ public static class Terminal {
     }
 
     public static async Task RUNAsync(string script, Stream? inputStream, Stream outputStream, CancellationToken cancellationToken = default) {
-        var cmd = CMDV(script);
+        ShellScript cmd = CMDV(script);
         LocalTerminal.TerminalLogger.LogRun(cmd);
         await cmd.RunAsync(inputStream, outputStream, cancellationToken);
     }

@@ -2,15 +2,9 @@
 
 namespace CalqFramework.Cmd.Shells;
 
-public class ShellTool : ShellBase {
-
-    public ShellTool(IShell shell, string command) {
-        Shell = shell;
-        Command = command;
-    }
-
-    public string Command { get; init; }
-    public IShell Shell { get; }
+public class ShellTool(IShell shell, string command) : ShellBase {
+    public string Command { get; init; } = command;
+    public IShell Shell { get; } = shell;
 
     public override IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream) {
         shellScript.Script = Command + " " + shellScript.Script;

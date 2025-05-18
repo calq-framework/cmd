@@ -1,22 +1,17 @@
 ﻿namespace CalqFramework.Cmd.Shell {
 
-    public abstract class ShellWorkerBase : IShellWorker {
+    public abstract class ShellWorkerBase(ShellScript shellScript, Stream? inputStream) : IShellWorker {
         private bool _disposed;
-
-        public ShellWorkerBase(ShellScript shellScript, Stream? inputStream) {
-            ShellScript = shellScript;
-            InputStream = inputStream;
-        }
 
         ~ShellWorkerBase() {
             Dispose(false);
         }
 
-        public Stream? InputStream { get; private set; }
+        public Stream? InputStream { get; private set; } = inputStream;
 
         public IShellWorker? PipedWorker { get; private set; }
 
-        public ShellScript ShellScript { get; }
+        public ShellScript ShellScript { get; } = shellScript;
 
         public abstract ShellWorkerOutputStream StandardOutput { get; }
 
@@ -26,9 +21,9 @@
         }
 
         public async Task EnsurePipeIsCompletedAsync(CancellationToken cancellationToken = default) {
-            await EnsureStandardOutputIsReadToEndAsync();
+            await EnsureStandardOutputIsReadToEndAsync(cancellationToken);
             if (PipedWorker != null) {
-                await PipedWorker.EnsurePipeIsCompletedAsync();
+                await PipedWorker.EnsurePipeIsCompletedAsync(cancellationToken);
             }
         }
 

@@ -9,7 +9,7 @@ public class ShellToolTest {
     public void ShellTool_WithValidCommand_ReturnsNonEmpty() {
         LocalTerminal.Shell = new ShellTool(new CommandLine(), "dotnet");
 
-        var output = CMD("--version");
+        string output = CMD("--version");
 
         Assert.NotEqual("", output);
     }

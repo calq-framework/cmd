@@ -1,5 +1,5 @@
-﻿using CalqFramework.Cmd.Shells;
-using System.Text;
+﻿using System.Text;
+using CalqFramework.Cmd.Shells;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.CmdTest;
@@ -9,7 +9,7 @@ public class TerminalTest {
     [Fact]
     public void Bash_ReadInput_EchosCorrectly() {
         var writer = new MemoryStream();
-        var input = "hello world\n";
+        string input = "hello world\n";
 
         LocalTerminal.Out = writer;
         LocalTerminal.Shell = new Bash() {
@@ -17,15 +17,15 @@ public class TerminalTest {
         };
 
         RUN("sleep 1; read -r input; echo $input");
-        var output = ReadString(writer);
+        string output = ReadString(writer);
 
         Assert.Equal(input, output);
     }
 
     [Fact]
     public void CMD_WithLongOutput_ReturnsCorrectly() {
-        var expectedOutput = "";
-        for (var i = 0; i < 2500; ++i) {
+        string expectedOutput = "";
+        for (int i = 0; i < 2500; ++i) {
             expectedOutput += "1234567890";
         }
 
@@ -33,8 +33,8 @@ public class TerminalTest {
         LocalTerminal.Out = writer;
         LocalTerminal.Shell = new Bash();
 
-        var output = CMD("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
-        var writerOutput = ReadString(writer);
+        string output = CMD("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
+        string writerOutput = ReadString(writer);
 
         Assert.Equal(expectedOutput, output);
         Assert.Empty(writerOutput);
@@ -44,7 +44,7 @@ public class TerminalTest {
     public void CMD_WithValidCommand_ReturnsNonEmpty() {
         LocalTerminal.Shell = new CommandLine();
 
-        var output = CMD("dotnet --version");
+        string output = CMD("dotnet --version");
 
         Assert.NotEqual("", output);
     }
@@ -52,11 +52,11 @@ public class TerminalTest {
     [Fact]
     public void CommandOutput_AfterOutput_ReturnsCorrectly() {
         LocalTerminal.Shell = new Bash();
-        var input = "hello world";
+        string input = "hello world";
 
-        var command = CMDV($"echo {input}");
-        var output1 = command.Evaluate();
-        var output2 = command.Evaluate();
+        ShellScript command = CMDV($"echo {input}");
+        string output1 = command.Evaluate();
+        string output2 = command.Evaluate();
 
         Assert.Equal(input, output1);
         Assert.Equal(input, output2);
@@ -65,7 +65,7 @@ public class TerminalTest {
     [Fact]
     public void CommandPiping_AfterMultiplePipes_ReturnsCorrectly() {
         LocalTerminal.Shell = new Bash();
-        var echoText = "hello world";
+        string echoText = "hello world";
 
         string output = CMDV($"echo {echoText}") | CMDV("cat") | CMDV("cat") | CMDV("cat");
         Assert.Equal(echoText, output);
@@ -74,8 +74,8 @@ public class TerminalTest {
     [Fact]
     public void CommandPiping_WithEchoAndCut_ReturnsCorrectly() {
         LocalTerminal.Shell = new Bash();
-        var echoText = "hello, world";
-        var echoCommand = CMDV($"echo {echoText}");
+        string echoText = "hello, world";
+        ShellScript echoCommand = CMDV($"echo {echoText}");
 
         if (string.Compare(echoText, echoCommand) != 0) {
             Assert.True(false);
@@ -91,7 +91,7 @@ public class TerminalTest {
     [Fact]
     public void CommandPiping_WithError_ThrowsException() {
         LocalTerminal.Shell = new Bash();
-        var echoText = "hello world";
+        string echoText = "hello world";
 
         Assert.Throws<ShellScriptException>(() => {
             string output = CMDV($"echo {echoText}") | CMDV("cat; exit 1;") | CMDV("cat");
@@ -101,14 +101,14 @@ public class TerminalTest {
     [Fact]
     public async Task CommandStart_AfterGarbageCollection_ReturnsCorrectly() {
         LocalTerminal.Shell = new Bash();
-        var input = "hello world";
+        string input = "hello world";
 
-        var command = CMDV($"sleep 2; echo {input}");
-        using var proc = await command.StartAsync();
+        ShellScript command = CMDV($"sleep 2; echo {input}");
+        using Cmd.Shell.IShellWorker proc = await command.StartAsync();
         GC.Collect();
         GC.WaitForPendingFinalizers();
         using var reader = new StreamReader(proc.StandardOutput);
-        var output = reader.ReadLine();
+        string? output = reader.ReadLine();
 
         Assert.Equal(input, output);
     }
@@ -116,7 +116,7 @@ public class TerminalTest {
     [Fact]
     public async Task HttpTool_EchoContentBody_ReturnsCorrectly() {
         LocalTerminal.Shell = new Bash();
-        var pythonScript = CMDV(@"python <<EOF
+        ShellScript pythonScript = CMDV(@"python <<EOF
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 class Handler(BaseHTTPRequestHandler):
@@ -142,16 +142,17 @@ class Handler(BaseHTTPRequestHandler):
 HTTPServer(('', 8001), Handler).serve_forever()
 EOF
     ");
-        using var serverWorker = await pythonScript.StartAsync();
+        using Cmd.Shell.IShellWorker serverWorker = await pythonScript.StartAsync();
 
-        var httpClient = new HttpClient();
-        httpClient.BaseAddress = new Uri("http://127.0.0.1:8001");
-        var input = "hello world";
+        var httpClient = new HttpClient {
+            BaseAddress = new Uri("http://127.0.0.1:8001")
+        };
+        string input = "hello world";
         LocalTerminal.Shell = new HttpTool(httpClient) {
             In = GetStream(input)
         };
 
-        var echo = CMD("", LocalTerminal.Shell.In);
+        string echo = CMD("", LocalTerminal.Shell.In);
 
         Assert.Equal(input, echo);
     }
@@ -159,7 +160,7 @@ EOF
     [Fact]
     public async Task HttpTool_EvalPython_ReturnsCorrectly() {
         LocalTerminal.Shell = new Bash();
-        var pythonScript = CMDV(@"python <<EOF
+        ShellScript pythonScript = CMDV(@"python <<EOF
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 class Handler(BaseHTTPRequestHandler):
@@ -187,13 +188,14 @@ class Handler(BaseHTTPRequestHandler):
 HTTPServer(('', 8000), Handler).serve_forever()
 EOF
 ");
-        using var serverWorker = await pythonScript.StartAsync();
+        using Cmd.Shell.IShellWorker serverWorker = await pythonScript.StartAsync();
 
-        var httpClient = new HttpClient();
-        httpClient.BaseAddress = new Uri("http://127.0.0.1:8000");
+        var httpClient = new HttpClient {
+            BaseAddress = new Uri("http://127.0.0.1:8000")
+        };
         LocalTerminal.Shell = new HttpTool(httpClient);
 
-        var echo = CMD("sum([8, 16, 32])");
+        string echo = CMD("sum([8, 16, 32])");
 
         Assert.Equal((8 + 16 + 32).ToString(), echo);
     }
@@ -202,7 +204,7 @@ EOF
     public async Task HttpTool_MidStreamError_Throws() {
         LocalTerminal.Shell = new Bash();
         CMD(@"openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj ""/CN=localhost""");
-        var pythonScript = CMDV(@"python <<EOF
+        ShellScript pythonScript = CMDV(@"python <<EOF
 import ssl
 import socket
 import h2.connection
@@ -289,24 +291,25 @@ def run_h2_tls_server():
 
 run_h2_tls_server()
 EOF");
-        using var serverWorker = await pythonScript.StartAsync();
+        using Cmd.Shell.IShellWorker serverWorker = await pythonScript.StartAsync();
 
         var handler = new HttpClientHandler {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         };
-        var httpClient = new HttpClient(handler);
-        httpClient.BaseAddress = new Uri("https://localhost:8443");
+        var httpClient = new HttpClient(handler) {
+            BaseAddress = new Uri("https://localhost:8443")
+        };
 
-        var inputBeforeReset = "hello\nworld\n";
-        var input = inputBeforeReset + "should not be streamed back\n";
+        string inputBeforeReset = "hello\nworld\n";
+        string input = inputBeforeReset + "should not be streamed back\n";
         LocalTerminal.Shell = new HttpTool(httpClient) {
             In = GetStream(input)
         };
 
-        var echo = CMDV("");
-        using var requestWorker = await echo.StartAsync();
+        ShellScript echo = CMDV("");
+        using Cmd.Shell.IShellWorker requestWorker = await echo.StartAsync();
         var reader = new StreamReader(requestWorker.StandardOutput);
-        var output = "";
+        string output = "";
         Assert.Throws<ShellWorkerException>(() => {
             output += reader.ReadLine() + '\n'; // ok
             output += reader.ReadLine() + '\n'; // ok
@@ -318,8 +321,8 @@ EOF");
 
     [Fact]
     public void RUN_WithLongOutput_WritesCorrectly() {
-        var expectedOutput = "";
-        for (var i = 0; i < 2500; ++i) {
+        string expectedOutput = "";
+        for (int i = 0; i < 2500; ++i) {
             expectedOutput += "1234567890";
         }
 
@@ -328,7 +331,7 @@ EOF");
         LocalTerminal.Shell = new Bash();
 
         RUN("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
-        var writerOutput = ReadString(writer);
+        string writerOutput = ReadString(writer);
 
         Assert.Equal(expectedOutput, writerOutput);
     }
@@ -336,7 +339,7 @@ EOF");
     [Fact]
     public async Task Shell_WhenChangedInTask_RevertsToOriginal() {
         LocalTerminal.Shell = new CommandLine();
-        var cmd = LocalTerminal.Shell;
+        Cmd.Shell.IShell cmd = LocalTerminal.Shell;
         await Task.Run(() => {
             LocalTerminal.Shell = new Bash();
             Assert.True(LocalTerminal.Shell is Bash);
@@ -346,7 +349,7 @@ EOF");
 
     [Fact]
     public async Task WorkingDirectory_WhenChangedInTask_RevertsToOriginal() {
-        var currentDirectory = PWD;
+        string currentDirectory = PWD;
         await Task.Run(() => {
             CD("changed");
             Assert.NotEqual(currentDirectory, PWD);
@@ -354,15 +357,15 @@ EOF");
         Assert.Equal(currentDirectory, PWD);
     }
 
-    private Stream GetStream(string input) {
+    private static Stream GetStream(string input) {
         byte[] byteArray = Encoding.ASCII.GetBytes(input);
-        MemoryStream stream = new MemoryStream(byteArray);
+        MemoryStream stream = new(byteArray);
         return stream;
     }
 
-    private string ReadString(Stream writer) {
+    private static string ReadString(Stream writer) {
         writer.Position = 0;
-        using StreamReader reader = new StreamReader(writer);
+        using StreamReader reader = new(writer);
         return reader.ReadToEnd();
     }
 }
