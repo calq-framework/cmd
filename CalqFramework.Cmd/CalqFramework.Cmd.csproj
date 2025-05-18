@@ -7,7 +7,9 @@
     <Nullable>enable</Nullable>
     <RootNamespace>CalqFramework.Cmd</RootNamespace>
     <PackageId>CalqFramework.Cmd</PackageId>
-    <Version>0.8.0</Version>
+    <Version>0.23.3</Version>
+    <PackageProjectUrl>https://github.com/calq-framework</PackageProjectUrl>
+    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,10 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
