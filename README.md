@@ -3,7 +3,7 @@
 
 # Calq CMD  
 Calq CMD is an inter-process development framework that simplifies building cross-platform, multi-language tools by enabling shell-style C# scripting.  
-It integrates with Bash on Windows (WSL, Cygwin/MinGW/MSYS2) and provides Python interoperability via an asynchronous HTTP/2 server for low-latency, high-throughput scripting.
+It supports Bash on Windows (WSL, Cygwin/MinGW/MSYS2) and provides Python interoperability via an asynchronous HTTP/2 server for low-latency, high-throughput scripting.
 
 ## Shell-style scripting in C#  
 Write concise shell pipelines with C#:  
