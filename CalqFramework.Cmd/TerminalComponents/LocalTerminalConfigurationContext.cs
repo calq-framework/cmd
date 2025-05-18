@@ -31,5 +31,12 @@ namespace CalqFramework.Cmd.TerminalComponents {
             }
             set => _localTerminalLogger.Value = value;
         }
+
+        public string WorkingDirectory {
+            get {
+                return ShellScript.LocalWorkingDirectory.Value!;
+            }
+            set => ShellScript.LocalWorkingDirectory.Value = value;
+        }
     }
 }

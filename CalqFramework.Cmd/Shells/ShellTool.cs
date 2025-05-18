@@ -15,6 +15,10 @@ public class ShellTool : ShellBase {
         return Shell.CreateShellWorker(shellScript, inputStream);
     }
 
+    public override string MapToHostPath(string internalPth) {
+        return Shell.MapToHostPath(internalPth);
+    }
+
     public override string MapToInternalPath(string hostPath) {
         return Shell.MapToInternalPath(hostPath);
     }

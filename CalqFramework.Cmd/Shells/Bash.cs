@@ -21,15 +21,23 @@ public class Bash : ShellBase {
 
     internal static bool IsRunningBashOnWSL { get; }
 
+    public override ProcessWorkerBase CreateShellWorker(ShellScript shellScript, Stream? inputStream) {
+        return new BashWorker(shellScript, inputStream);
+    }
+
+    public override string MapToHostPath(string internalPth) {
+        if (IsRunningBashOnWSL) {
+            return WSLUtils.WindowsToWslPath(internalPth);
+        }
+
+        return internalPth;
+    }
+
     public override string MapToInternalPath(string hostPath) {
         if (IsRunningBashOnWSL) {
             return WSLUtils.WindowsToWslPath(hostPath);
         }
 
         return hostPath;
-    }
-
-    public override ProcessWorkerBase CreateShellWorker(ShellScript shellScript, Stream? inputStream) {
-        return new BashWorker(shellScript, inputStream);
     }
 }
