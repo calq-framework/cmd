@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace CalqFramework.Cmd.Shell {
 
     public class AutoTerminateProcess : Process {
-        private static readonly ConcurrentDictionary<Process, byte> _allProcesses = new();
+        private static readonly ConcurrentDictionary<Process, byte> s_allProcesses = new();
         private bool _disposed;
 
         static AutoTerminateProcess() {
@@ -12,7 +12,7 @@ namespace CalqFramework.Cmd.Shell {
         }
 
         public AutoTerminateProcess() {
-            _ = _allProcesses.TryAdd(this, 0);
+            _ = s_allProcesses.TryAdd(this, 0);
         }
 
         protected override void Dispose(bool disposing) {
@@ -20,7 +20,7 @@ namespace CalqFramework.Cmd.Shell {
                 if (!HasExited) { // TODO add HasStarted condition
                     Kill(true); // killing already killed process shouldn't throw
                 }
-                _ = _allProcesses.TryRemove(this, out _);
+                _ = s_allProcesses.TryRemove(this, out _);
 
                 _disposed = true;
             }
@@ -29,7 +29,7 @@ namespace CalqFramework.Cmd.Shell {
         }
 
         private static void OnProcessExit(object? sender, EventArgs e) {
-            foreach (Process process in _allProcesses.Keys) {
+            foreach (Process process in s_allProcesses.Keys) {
                 try {
                     if (!process.HasExited) {
                         process.Kill(true);

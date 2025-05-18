@@ -6,7 +6,7 @@ namespace CalqFramework.Cmd {
 
     [DebuggerDisplay("{Script}")]
     public class ShellScript(IShell shell, string script) {
-        public static AsyncLocal<string> LocalWorkingDirectory = new();
+        public static AsyncLocal<string> LocalWorkingDirectory { get; set; } = new();
 
         public ShellScript? PipedShellScript { get; private init; }
         public string Script { get; internal set; } = script;

@@ -1,6 +1,6 @@
 ﻿using System.Net;
-using CalqFramework.Cmd;
-using CalqFramework.Cmd.Shell;
+
+namespace CalqFramework.Cmd.Shell;
 
 public class HttpToolWorker(HttpClient httpClient, ShellScript shellScript, Stream? inputStream) : ShellWorkerBase(shellScript, inputStream) {
     private bool _disposed;

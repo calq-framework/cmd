@@ -25,7 +25,7 @@ namespace CalqFramework.Cmd.Shell {
                 char[] buffer = new char[1];
 
                 while (!cancellationToken.IsCancellationRequested) {
-                    int bytesRead = 0;
+                    int bytesRead;
                     try {
                         bytesRead = await inputReader.ReadAsync(buffer, cancellationToken);
                     } catch {
