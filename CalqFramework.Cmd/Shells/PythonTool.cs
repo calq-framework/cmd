@@ -20,6 +20,10 @@ public class PythonTool : ShellBase {
         return new HttpToolWorker(HttpClient, shellScript, inputStream);
     }
 
+    public override string MapToHostPath(string internalPth) {
+        return internalPth;
+    }
+
     public override string MapToInternalPath(string hostPath) {
         return hostPath;
     }

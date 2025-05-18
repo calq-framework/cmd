@@ -125,7 +125,7 @@ public class TerminalTest {
     }
 
     [Fact]
-    public async void CommandStart_AfterGarbageCollection_ReturnsCorrectly() {
+    public async Task CommandStart_AfterGarbageCollection_ReturnsCorrectly() {
         LocalTerminal.Shell = new Bash();
         var input = "hello world";
 
@@ -163,7 +163,7 @@ public class TerminalTest {
     }
 
     [Fact]
-    public async void HttpTool_EvalPython_ReturnsCorrectly() {
+    public async Task HttpTool_EvalPython_ReturnsCorrectly() {
         LocalTerminal.Shell = new Bash();
         var pythonScript = CMDV(@"python <<EOF
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -205,7 +205,7 @@ EOF
     }
 
     [Fact]
-    public async void HttpTool_EchoContentBody_ReturnsCorrectly() {
+    public async Task HttpTool_EchoContentBody_ReturnsCorrectly() {
         LocalTerminal.Shell = new Bash();
         var pythonScript = CMDV(@"python <<EOF
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -249,7 +249,7 @@ EOF
     }
 
     [Fact]
-    public async void HttpTool_MidStreamError_Throws() {
+    public async Task HttpTool_MidStreamError_Throws() {
         LocalTerminal.Shell = new Bash();
         CMD(@"openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj ""/CN=localhost""");
         var pythonScript = CMDV(@"python <<EOF

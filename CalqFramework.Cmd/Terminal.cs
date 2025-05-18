@@ -7,9 +7,9 @@ public static class Terminal {
     public static string PWD {
         get {
             ShellScript.LocalWorkingDirectory.Value ??= Environment.CurrentDirectory;
-            return ShellScript.LocalWorkingDirectory.Value!;
+            return LocalTerminal.Shell.MapToInternalPath(ShellScript.LocalWorkingDirectory.Value!);
         }
-        private set => ShellScript.LocalWorkingDirectory.Value = value;
+        private set => ShellScript.LocalWorkingDirectory.Value = LocalTerminal.Shell.MapToHostPath(value);
     }
 
     public static void CD(string path) {
