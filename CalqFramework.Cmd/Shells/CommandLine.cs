@@ -8,11 +8,11 @@ public class CommandLine : ShellBase {
         return new CommandLineWorker(shellScript, inputStream);
     }
 
-    public override string MapToHostPath(string internalPth) {
-        return internalPth;
+    public override string MapToHostPath(string internalPath) {
+        return Path.GetFullPath(internalPath); ;
     }
 
     public override string MapToInternalPath(string hostPath) {
-        return hostPath;
+        return Path.GetFullPath(hostPath); ;
     }
 }

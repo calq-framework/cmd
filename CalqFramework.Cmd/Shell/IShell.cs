@@ -9,7 +9,7 @@
 
         IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream);
 
-        string MapToHostPath(string internalPth);
+        string MapToHostPath(string internalPath);
 
         string MapToInternalPath(string hostPath);
     }
