@@ -2,14 +2,15 @@
 [![NuGet Downloads](https://img.shields.io/nuget/dt/CalqFramework.Cmd?color=508cf0)](https://www.nuget.org/packages/CalqFramework.Cmd)
 
 # Calq CMD  
-Calq CMD is an inter-process development framework that simplifies building cross-platform, multi-language tools by enabling shell-style C# scripting with native Bash integration.  
+Calq CMD is an inter-process development framework that simplifies building cross-platform, multi-language tools by enabling shell-style C# scripting.  
 It integrates with Bash on Windows (WSL, Cygwin/MinGW/MSYS2) and provides Python interoperability via an asynchronous HTTP/2 server for low-latency, high-throughput scripting.
 
 ## Shell-style scripting in C#  
 Write concise shell pipelines with C#:  
 ```csharp
-string output = CMD("git status");                     // capture stdout  
-string files  = CMDV("ls -1") | CMDV("grep \".cs\"")   // CMDV returns ShellScript which implicitly converts to string
+string output = CMD("git status");
+// CMDV returns ShellScript which implicitly converts to string
+string files  = CMDV("ls -1") | CMDV("grep \".cs\"");
 ```  
 Subshell isolation is as simple as `Task.Run()` - settings in the child task don’t leak out:  
 ```csharp
@@ -49,7 +50,8 @@ Console.WriteLine(script.Evaluate());
 ### Prepend commands with ShellTool  
 ```csharp
 LocalTerminal.Shell = new ShellTool(new CommandLine(), "sudo");
-RUN("apt update");   // runs "sudo apt update" on Linux and fails on Windows as Windows doesn't have sudo (nor apt)
+// runs "sudo apt update" on Linux and fails on Windows as Windows doesn't have sudo (nor apt)
+RUN("apt update");
 LocalTerminal.Shell = new ShellTool(new CommandLine(), "git");
 RUN("commit -m 'automated message'"); 
 ```  
