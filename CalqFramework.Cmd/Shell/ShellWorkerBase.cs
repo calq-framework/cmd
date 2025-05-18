@@ -1,4 +1,5 @@
 ﻿namespace CalqFramework.Cmd.Shell {
+
     public abstract class ShellWorkerBase : IShellWorker {
         private bool _disposed;
 
@@ -24,6 +25,15 @@
             GC.SuppressFinalize(this);
         }
 
+        public async Task EnsurePipeIsCompletedAsync(CancellationToken cancellationToken = default) {
+            await EnsureStandardOutputIsReadToEndAsync();
+            if (PipedWorker != null) {
+                await PipedWorker.EnsurePipeIsCompletedAsync();
+            }
+        }
+
+        public abstract Task<string> ReadErrorMessageAsync(CancellationToken cancellationToken = default);
+
         public async Task StartAsync(CancellationToken cancellationToken = default) {
             if (ShellScript.PipedShellScript != null) {
                 PipedWorker = await ShellScript.PipedShellScript.StartAsync(cancellationToken);
@@ -31,12 +41,6 @@
             }
 
             await InitializeAsync(ShellScript, cancellationToken);
-        }
-        public async Task EnsurePipeIsCompletedAsync(CancellationToken cancellationToken = default) {
-            await EnsureStandardOutputIsReadToEndAsync();
-            if (PipedWorker != null) {
-                await PipedWorker.EnsurePipeIsCompletedAsync();
-            }
         }
 
         protected virtual void Dispose(bool disposing) {
@@ -49,7 +53,6 @@
 
         protected abstract Task InitializeAsync(ShellScript shellScript, CancellationToken cancellationToken = default);
 
-        public abstract Task<string> ReadErrorMessageAsync(CancellationToken cancellationToken = default);
         private async Task EnsureStandardOutputIsReadToEndAsync(CancellationToken cancellationToken = default) {
             await StreamUtils.RelayStream(StandardOutput, Stream.Null, cancellationToken);
         }

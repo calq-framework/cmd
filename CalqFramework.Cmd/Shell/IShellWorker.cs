@@ -1,5 +1,5 @@
-﻿
-namespace CalqFramework.Cmd.Shell {
+﻿namespace CalqFramework.Cmd.Shell {
+
     public interface IShellWorker : IDisposable {
         IShellWorker? PipedWorker { get; }
         ShellScript ShellScript { get; }

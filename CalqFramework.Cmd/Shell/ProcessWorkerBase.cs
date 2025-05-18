@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 
 namespace CalqFramework.Cmd.Shell {
+
     public abstract class ProcessWorkerBase : ShellWorkerBase {
         private bool _disposed;
         private AutoTerminateProcess _process = null!;
@@ -10,6 +11,10 @@ namespace CalqFramework.Cmd.Shell {
         }
 
         public override ShellWorkerOutputStream StandardOutput { get => _processOutputStream!; }
+
+        public override async Task<string> ReadErrorMessageAsync(CancellationToken cancellationToken = default) {
+            return await _process.StandardError.ReadToEndAsync(cancellationToken);
+        }
 
         internal abstract ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script);
 
@@ -55,10 +60,6 @@ namespace CalqFramework.Cmd.Shell {
             _processOutputStream = new ProcessOutputStream(_process, relayInputTask);
 
             return Task.CompletedTask;
-        }
-
-        public override async Task<string> ReadErrorMessageAsync(CancellationToken cancellationToken = default) {
-            return await _process.StandardError.ReadToEndAsync(cancellationToken);
         }
     }
 }

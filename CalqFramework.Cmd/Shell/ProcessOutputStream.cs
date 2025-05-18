@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 
 namespace CalqFramework.Cmd.Shell {
+
     public class ProcessOutputStream : ShellWorkerOutputStream {
         private readonly Stream _innerStream;
         private readonly Process _process;

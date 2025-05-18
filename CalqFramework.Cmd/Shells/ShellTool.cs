@@ -1,7 +1,9 @@
 ﻿using CalqFramework.Cmd.Shell;
 
 namespace CalqFramework.Cmd.Shells;
+
 public class ShellTool : ShellBase {
+
     public ShellTool(IShell shell, string command) {
         Shell = shell;
         Command = command;
@@ -9,6 +11,7 @@ public class ShellTool : ShellBase {
 
     public string Command { get; init; }
     public IShell Shell { get; }
+
     public override IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream) {
         shellScript.Script = Command + " " + shellScript.Script;
         shellScript.Shell = Shell;

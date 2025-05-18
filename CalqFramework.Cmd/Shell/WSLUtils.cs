@@ -4,7 +4,9 @@ using System.Text;
 
 namespace CalqFramework.Cmd.Shell {
 #pragma warning disable CA1416 // Validate platform compatibility
+
     internal static class WSLUtils {
+
         internal static string WindowsToWslPath(string windowsPath) {
             const string wslPrefix = @"\\wsl$\";
 
@@ -34,6 +36,18 @@ namespace CalqFramework.Cmd.Shell {
             }
 
             throw new ArgumentException("Unsupported path format", nameof(windowsPath));
+        }
+
+        private static string? GetUncPathFromDrive(string driveLetter) {
+            var maxPathSize = 256;
+            var sb = new StringBuilder(maxPathSize);
+            var result = WNetGetConnection(driveLetter, sb, ref maxPathSize);
+
+            if (result == 0) {
+                return sb.ToString();
+            }
+
+            return null;
         }
 
         internal static string WslToWindowsPath(string wslPath) {
@@ -113,19 +127,9 @@ namespace CalqFramework.Cmd.Shell {
             }
         }
 
-        private static string? GetUncPathFromDrive(string driveLetter) {
-            var maxPathSize = 256;
-            var sb = new StringBuilder(maxPathSize);
-            var result = WNetGetConnection(driveLetter, sb, ref maxPathSize);
-
-            if (result == 0) {
-                return sb.ToString();
-            }
-
-            return null;
-        }
         [DllImport("mpr.dll", CharSet = CharSet.Unicode)]
         private static extern int WNetGetConnection(string localName, StringBuilder remoteName, ref int length);
     }
+
 #pragma warning restore CA1416 // Validate platform compatibility
 }

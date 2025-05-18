@@ -1,6 +1,7 @@
 ﻿using CalqFramework.Cmd.TerminalComponents;
 
 namespace CalqFramework.Cmd;
+
 public static class Terminal {
     public static LocalTerminalConfigurationContext LocalTerminal { get; } = new LocalTerminalConfigurationContext();
 
