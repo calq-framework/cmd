@@ -41,7 +41,7 @@ public class PythonToolServer(string toolScriptPath) : IPythonToolServer {
         using StreamReader reader = new(stream);
         string pythonServerScript = reader.ReadToEnd();
 
-        pythonServerScript = pythonServerScript.Replace("sys.path.append('./')", $"sys.path.append('{scriptDir}')");
+        pythonServerScript = pythonServerScript.Replace("sys.path.append('./')", $"sys.path.append('{scriptDirWihinShell}')");
         pythonServerScript = pythonServerScript.Replace("test_tool", scriptFileNameWithoutExtension);
 
         _port ??= GetAvailablePort();
