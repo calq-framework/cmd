@@ -1,0 +1,10 @@
+name: nuget.org rerelease
+
+on: workflow_dispatch
+
+jobs:
+  release:
+    uses: calq-framework/stableflow/.github/workflows/stableflow.yaml@latest
+    with:
+      command: rerelease --repositories nuget.org
+    secrets: inherit
