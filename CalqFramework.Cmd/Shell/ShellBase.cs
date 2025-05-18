@@ -11,7 +11,7 @@ public abstract class ShellBase : IShell {
 
     public abstract IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream);
 
-    public abstract string MapToHostPath(string internalPth);
+    public abstract string MapToHostPath(string internalPath);
 
     public abstract string MapToInternalPath(string hostPath);
 }

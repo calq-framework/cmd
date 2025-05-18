@@ -26,19 +26,26 @@ public class Bash : ShellBase {
         return new BashWorker(shellScript, inputStream);
     }
 
-    public override string MapToHostPath(string internalPth) {
-        if (IsRunningBashOnWSL) {
-            return WSLUtils.WindowsToWslPath(internalPth);
-        }
-
-        return internalPth;
-    }
-
-    public override string MapToInternalPath(string hostPath) {
-        if (IsRunningBashOnWSL) {
-            return WSLUtils.WindowsToWslPath(hostPath);
+    public override string MapToHostPath(string internalPath) {
+        string hostPath;
+        if (IsRunningBashOnWSL && Path.IsPathRooted(internalPath)) {
+            hostPath = WSLUtils.WslToWindowsPath(internalPath);
+        } else {
+            hostPath = Path.GetFullPath(internalPath);
         }
 
         return hostPath;
+    }
+
+    public override string MapToInternalPath(string hostPath) {
+        string internalPath;
+        if (IsRunningBashOnWSL) {
+            hostPath = Path.GetFullPath(hostPath);
+            internalPath = WSLUtils.WindowsToWslPath(hostPath);
+        } else {
+            internalPath = Path.GetFullPath(hostPath);
+        }
+
+        return internalPath;
     }
 }
