@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-
+﻿using System.Text.RegularExpressions;
 
 namespace CalqFramework.Cmd.RegexGenerator {
-    partial class Newline {
-        [GeneratedRegex(@"\n")]
-        public static partial Regex Unix();
+
+    internal partial class Newline {
 
         [GeneratedRegex(@"\r\n")]
         public static partial Regex DOS();
+
+        [GeneratedRegex(@"\n")]
+        public static partial Regex Unix();
     }
 }

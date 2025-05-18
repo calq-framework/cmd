@@ -4,6 +4,7 @@ using System.Reflection;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.Python;
+
 public class PythonToolServer : IPythonToolServer {
     private int? _port;
     private bool _started;
@@ -17,8 +18,8 @@ public class PythonToolServer : IPythonToolServer {
         init => _port = value;
     }
 
-    public string ToolScriptPath { get; }
     public IShell Shell { get; init; } = new Bash();
+    public string ToolScriptPath { get; }
 
     public Uri Uri {
         get => !_started ? throw new InvalidOperationException("Server hasn't started yet.") : new Uri($"https://localhost:{Port}");
@@ -60,7 +61,7 @@ EOF");
         return worker;
     }
 
-    int GetAvailablePort() {
+    private int GetAvailablePort() {
         var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
         listener.Start();
         var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;

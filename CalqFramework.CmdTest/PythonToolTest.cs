@@ -6,17 +6,6 @@ using static CalqFramework.Cmd.Terminal;
 namespace CalqFramework.CmdTest;
 
 public class PythonToolTest {
-    private Stream GetStream(string input) {
-        byte[] byteArray = Encoding.ASCII.GetBytes(input);
-        MemoryStream stream = new MemoryStream(byteArray);
-        return stream;
-    }
-
-    private string ReadString(Stream writer) {
-        writer.Position = 0;
-        using StreamReader reader = new StreamReader(writer);
-        return reader.ReadToEnd();
-    }
 
     [Fact]
     public async Task PythonTool_ReadInput_EchosCorrectly() {
@@ -34,5 +23,17 @@ public class PythonToolTest {
 
         var output = ReadString(writer);
         Assert.Equal(input, output);
+    }
+
+    private Stream GetStream(string input) {
+        byte[] byteArray = Encoding.ASCII.GetBytes(input);
+        MemoryStream stream = new MemoryStream(byteArray);
+        return stream;
+    }
+
+    private string ReadString(Stream writer) {
+        writer.Position = 0;
+        using StreamReader reader = new StreamReader(writer);
+        return reader.ReadToEnd();
     }
 }

@@ -1,7 +1,9 @@
 ﻿using CalqFramework.Cmd.Shell;
 
 namespace CalqFramework.Cmd.Shells;
+
 public class HttpTool : ShellBase {
+
     public HttpTool(HttpClient httpClient) {
         HttpClient = httpClient;
     }

@@ -2,7 +2,9 @@
 using System.Text.RegularExpressions;
 
 namespace CalqFramework.Cmd.Shell {
+
     public class BashWorker : ProcessWorkerBase {
+
         public BashWorker(ShellScript shellScript, Stream? inputStream) : base(shellScript, inputStream) {
         }
 

@@ -1,6 +1,7 @@
 ﻿using CalqFramework.Cmd.Shell;
 
 namespace CalqFramework.Cmd.Shells;
+
 public class Bash : ShellBase {
 
     static Bash() {

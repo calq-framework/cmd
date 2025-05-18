@@ -1,6 +1,7 @@
-﻿
-namespace CalqFramework.Cmd.Shell {
+﻿namespace CalqFramework.Cmd.Shell {
+
     public class CommandLineWorker : ProcessWorkerBase {
+
         public CommandLineWorker(ShellScript shellScript, Stream? inputStream) : base(shellScript, inputStream) {
         }
 

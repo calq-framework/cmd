@@ -2,6 +2,7 @@
 using CalqFramework.Cmd.Shell;
 
 namespace CalqFramework.Cmd.Shells;
+
 public class PythonTool : ShellBase {
 
     public PythonTool(IPythonToolServer pythonServer) {

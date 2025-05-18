@@ -2,6 +2,7 @@
 using CalqFramework.Cmd.Shells;
 
 namespace CalqFramework.Cmd.TerminalComponents {
+
     public class LocalTerminalConfigurationContext {
         private readonly AsyncLocal<Stream> _localOut = new();
         private readonly AsyncLocal<IShell> _localShell = new();
@@ -14,7 +15,6 @@ namespace CalqFramework.Cmd.TerminalComponents {
             }
             set => _localOut.Value = value;
         }
-
 
         public IShell Shell {
             get {

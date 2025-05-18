@@ -3,11 +3,11 @@ using CalqFramework.Cmd.Shell;
 using System.Net;
 
 public class HttpToolWorker : ShellWorkerBase {
-    private ShellWorkerOutputStream? _executionOutputStream;
     private bool _disposed;
-
-    private HttpResponseMessage? _response;
+    private ShellWorkerOutputStream? _executionOutputStream;
     private HttpClient _httpClient;
+    private HttpResponseMessage? _response;
+
     public HttpToolWorker(HttpClient httpClient, ShellScript shellScript, Stream? inputStream) : base(shellScript, inputStream) {
         _httpClient = httpClient;
     }
@@ -15,6 +15,10 @@ public class HttpToolWorker : ShellWorkerBase {
     public override ShellWorkerOutputStream StandardOutput => _executionOutputStream!;
 
     private HttpStatusCode? StatusCode => _response!.StatusCode; // TODO separate error handler
+
+    public override async Task<string> ReadErrorMessageAsync(CancellationToken cancellationToken = default) {
+        return await Task.FromResult("");
+    }
 
     protected override void Dispose(bool disposing) {
         if (!_disposed) {
@@ -41,9 +45,5 @@ public class HttpToolWorker : ShellWorkerBase {
 
         var responseContentStream = await _response.Content.ReadAsStreamAsync(cancellationToken);
         _executionOutputStream = new HttpToolOutputStream(responseContentStream);
-    }
-
-    public override async Task<string> ReadErrorMessageAsync(CancellationToken cancellationToken = default) {
-        return await Task.FromResult("");
     }
 }

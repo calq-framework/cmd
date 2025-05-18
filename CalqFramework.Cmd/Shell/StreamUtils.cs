@@ -2,52 +2,8 @@
 using System.Runtime.InteropServices;
 
 namespace CalqFramework.Cmd.Shell {
+
     internal class StreamUtils {
-        // assumes one of the following
-        // https://github.com/dotnet/runtime/blob/464e5fe6fbe499012445cbd6371010748b89dba3/src/libraries/System.Console/src/System/ConsolePal.Unix.ConsoleStream.cs#L13
-        // https://github.com/dotnet/runtime/blob/464e5fe6fbe499012445cbd6371010748b89dba3/src/libraries/System.Console/src/System/ConsolePal.Windows.cs#L1149
-        private static bool HasMatchingUnderlyingStream(Stream stream1, Stream stream2) {
-            if (stream1.GetType() != stream2.GetType()) {
-                return false;
-            }
-
-            var handleField1 = stream1.GetType().GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance)!;
-            var handleField2 = stream2.GetType().GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance)!;
-            var handle1 = handleField1.GetValue(stream1)!;
-            var handle2 = handleField2.GetValue(stream2)!;
-
-            return (handle1, handle2) switch {
-                (IntPtr ptr1, IntPtr ptr2) => ptr1 == ptr2,
-                (SafeHandle sh1, SafeHandle sh2) => sh1.DangerousGetHandle() == sh2.DangerousGetHandle(),
-                _ => handle1?.Equals(handle2) ?? false
-            };
-        }
-
-        private static bool IsStandardInputStream(TextReader reader) {
-            if (reader is StreamReader sr) {
-                using var standardInput = Console.OpenStandardInput();
-                return HasMatchingUnderlyingStream(sr.BaseStream, standardInput);
-            }
-
-            var readerType = reader.GetType();
-            if (readerType.FullName == "System.IO.StdInReader") { // this is used on linux
-                return true;
-            }
-
-            if (readerType.FullName == "System.IO.SyncTextReader") {
-                var innerReaderField = readerType.GetField("_in", BindingFlags.NonPublic | BindingFlags.Instance);
-                if (innerReaderField != null) {
-                    var innerReader = (innerReaderField.GetValue(reader) as TextReader)!;
-                    return IsStandardInputStream(innerReader);
-                }
-            }
-
-            return false;
-        }
-
-        private static bool IsInputRedirected(TextReader reader) {
-            return Console.IsInputRedirected || IsStandardInputStream(reader) == false;
-        }
 
         public static async Task RelayInput(TextWriter processInput, StreamReader inputReader, CancellationToken cancellationToken) {
             var isInputRedirected = IsInputRedirected(inputReader);
@@ -100,6 +56,52 @@ namespace CalqFramework.Cmd.Shell {
                 await writer.WriteAsync(bufferArray, 0, bytesRead);
             }
             await writer.FlushAsync();
+        }
+
+        // assumes one of the following
+        // https://github.com/dotnet/runtime/blob/464e5fe6fbe499012445cbd6371010748b89dba3/src/libraries/System.Console/src/System/ConsolePal.Unix.ConsoleStream.cs#L13
+        // https://github.com/dotnet/runtime/blob/464e5fe6fbe499012445cbd6371010748b89dba3/src/libraries/System.Console/src/System/ConsolePal.Windows.cs#L1149
+        private static bool HasMatchingUnderlyingStream(Stream stream1, Stream stream2) {
+            if (stream1.GetType() != stream2.GetType()) {
+                return false;
+            }
+
+            var handleField1 = stream1.GetType().GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            var handleField2 = stream2.GetType().GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            var handle1 = handleField1.GetValue(stream1)!;
+            var handle2 = handleField2.GetValue(stream2)!;
+
+            return (handle1, handle2) switch {
+                (IntPtr ptr1, IntPtr ptr2) => ptr1 == ptr2,
+                (SafeHandle sh1, SafeHandle sh2) => sh1.DangerousGetHandle() == sh2.DangerousGetHandle(),
+                _ => handle1?.Equals(handle2) ?? false
+            };
+        }
+
+        private static bool IsInputRedirected(TextReader reader) {
+            return Console.IsInputRedirected || IsStandardInputStream(reader) == false;
+        }
+
+        private static bool IsStandardInputStream(TextReader reader) {
+            if (reader is StreamReader sr) {
+                using var standardInput = Console.OpenStandardInput();
+                return HasMatchingUnderlyingStream(sr.BaseStream, standardInput);
+            }
+
+            var readerType = reader.GetType();
+            if (readerType.FullName == "System.IO.StdInReader") { // this is used on linux
+                return true;
+            }
+
+            if (readerType.FullName == "System.IO.SyncTextReader") {
+                var innerReaderField = readerType.GetField("_in", BindingFlags.NonPublic | BindingFlags.Instance);
+                if (innerReaderField != null) {
+                    var innerReader = (innerReaderField.GetValue(reader) as TextReader)!;
+                    return IsStandardInputStream(innerReader);
+                }
+            }
+
+            return false;
         }
     }
 }

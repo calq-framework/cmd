@@ -1,4 +1,5 @@
 ﻿namespace CalqFramework.Cmd.Shell {
+
     // INFO throwing with only ErrorCode is OK, stderr might contain diagnostics/info instead of error errorMessage so don't throw just because not empty
     public abstract class ShellWorkerOutputStream : Stream {
         protected readonly record struct Error(long? ErrorCode, Exception? Exception);
@@ -18,10 +19,6 @@
         public override void Flush() {
             InnerStream.Flush();
         }
-
-        protected abstract Error GetError();
-
-        protected abstract Task<Error> GetErrorAsync();
 
         public override int Read(byte[] buffer, int offset, int count) {
             int bytesRead;
@@ -83,6 +80,10 @@
             }
             base.Dispose(disposing);
         }
+
+        protected abstract Error GetError();
+
+        protected abstract Task<Error> GetErrorAsync();
 
         protected abstract int TryRead(byte[] buffer, int offset, int count);
 

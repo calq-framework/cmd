@@ -1,6 +1,6 @@
 ﻿namespace CalqFramework.Cmd.TerminalComponents {
-    internal class TerminalLogger : ITerminalLogger {
 
+    internal class TerminalLogger : ITerminalLogger {
         public TextWriter Out { get; init; } = Console.Out;
 
         public void LogRun(ShellScript shellScript) {
