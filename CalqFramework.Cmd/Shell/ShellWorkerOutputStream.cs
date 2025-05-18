@@ -31,7 +31,7 @@
             }
 
             if (bytesRead == 0) {
-                var error = GetError();
+                Error error = GetError();
 
                 if (error.ErrorCode != 0) {
                     throw new ShellWorkerException(error.ErrorCode, $"Error code: {error.ErrorCode}", error.Exception);
@@ -52,7 +52,7 @@
             }
 
             if (bytesRead == 0) {
-                var error = await GetErrorAsync();
+                Error error = await GetErrorAsync();
 
                 if (error.ErrorCode != 0) {
                     throw new ShellWorkerException(error.ErrorCode, $"Error code: {error.ErrorCode}", error.Exception);

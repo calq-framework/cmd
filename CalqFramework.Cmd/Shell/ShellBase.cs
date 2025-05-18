@@ -6,7 +6,7 @@ public abstract class ShellBase : IShell {
     public IShellScriptPostprocessor Postprocessor { get; init; } = new ShellScriptPostprocessor();
 
     public IShellWorker CreateShellWorker(ShellScript shellScript) {
-        return CreateShellWorker(shellScript, this.In);
+        return CreateShellWorker(shellScript, In);
     }
 
     public abstract IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream);

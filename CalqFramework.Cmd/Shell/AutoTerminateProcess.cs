@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace CalqFramework.Cmd.Shell {
 
     public class AutoTerminateProcess : Process {
-        private static ConcurrentDictionary<Process, byte> _allProcesses = new();
+        private static readonly ConcurrentDictionary<Process, byte> _allProcesses = new();
         private bool _disposed;
 
         static AutoTerminateProcess() {
@@ -29,7 +29,7 @@ namespace CalqFramework.Cmd.Shell {
         }
 
         private static void OnProcessExit(object? sender, EventArgs e) {
-            foreach (var process in _allProcesses.Keys) {
+            foreach (Process process in _allProcesses.Keys) {
                 try {
                     if (!process.HasExited) {
                         process.Kill(true);

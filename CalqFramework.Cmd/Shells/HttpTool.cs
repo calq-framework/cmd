@@ -2,13 +2,8 @@
 
 namespace CalqFramework.Cmd.Shells;
 
-public class HttpTool : ShellBase {
-
-    public HttpTool(HttpClient httpClient) {
-        HttpClient = httpClient;
-    }
-
-    public HttpClient HttpClient { get; }
+public class HttpTool(HttpClient httpClient) : ShellBase {
+    public HttpClient HttpClient { get; } = httpClient;
 
     public override IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream) {
         return new HttpToolWorker(HttpClient, shellScript, inputStream);

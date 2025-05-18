@@ -9,8 +9,9 @@ public class PythonTool : ShellBase {
         var handler = new HttpClientHandler {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         };
-        var httpClient = new HttpClient(handler);
-        httpClient.BaseAddress = pythonServer.Uri;
+        var httpClient = new HttpClient(handler) {
+            BaseAddress = pythonServer.Uri
+        };
 
         HttpClient = httpClient;
     }

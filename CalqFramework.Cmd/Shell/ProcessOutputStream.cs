@@ -2,16 +2,10 @@
 
 namespace CalqFramework.Cmd.Shell {
 
-    public class ProcessOutputStream : ShellWorkerOutputStream {
-        private readonly Stream _innerStream;
-        private readonly Process _process;
-        private readonly Task _realyInputTask;
-
-        public ProcessOutputStream(Process process, Task relayInputTask) {
-            _process = process;
-            _innerStream = process.StandardOutput.BaseStream;
-            _realyInputTask = relayInputTask;
-        }
+    public class ProcessOutputStream(Process process, Task relayInputTask) : ShellWorkerOutputStream {
+        private readonly Stream _innerStream = process.StandardOutput.BaseStream;
+        private readonly Process _process = process;
+        private readonly Task _realyInputTask = relayInputTask;
 
         protected override Stream InnerStream => _innerStream;
 
@@ -36,7 +30,7 @@ namespace CalqFramework.Cmd.Shell {
             if (_realyInputTask.IsFaulted) {
                 throw _realyInputTask.Exception;
             }
-            return await _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
+            return await _innerStream.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
         }
     }
 }

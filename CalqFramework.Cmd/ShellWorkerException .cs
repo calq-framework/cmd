@@ -1,13 +1,9 @@
 ﻿namespace CalqFramework.Cmd;
 
-public class ShellWorkerException : Exception {
+public class ShellWorkerException(long? errorCode, string? message, Exception? innerException) : Exception(message, innerException) {
 
     public ShellWorkerException(long? errorCode, string? message) : this(errorCode, message, null) {
     }
 
-    public ShellWorkerException(long? errorCode, string? message, Exception? innerException) : base(message, innerException) {
-        ErrorCode = errorCode;
-    }
-
-    public long? ErrorCode { get; }
+    public long? ErrorCode { get; } = errorCode;
 }

@@ -32,7 +32,7 @@ namespace CalqFramework.Cmd.TerminalComponents {
             set => _localTerminalLogger.Value = value;
         }
 
-        public string WorkingDirectory {
+        public static string WorkingDirectory {
             get {
                 return ShellScript.LocalWorkingDirectory.Value!;
             }

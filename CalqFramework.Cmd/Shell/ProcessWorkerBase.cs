@@ -2,13 +2,10 @@
 
 namespace CalqFramework.Cmd.Shell {
 
-    public abstract class ProcessWorkerBase : ShellWorkerBase {
+    public abstract class ProcessWorkerBase(ShellScript shellScript, Stream? inputStream) : ShellWorkerBase(shellScript, inputStream) {
         private bool _disposed;
         private AutoTerminateProcess _process = null!;
         private ProcessOutputStream? _processOutputStream;
-
-        public ProcessWorkerBase(ShellScript shellScript, Stream? inputStream) : base(shellScript, inputStream) {
-        }
 
         public override ShellWorkerOutputStream StandardOutput { get => _processOutputStream!; }
 
@@ -28,7 +25,7 @@ namespace CalqFramework.Cmd.Shell {
         }
 
         protected override Task InitializeAsync(ShellScript shellScript, CancellationToken cancellationToken = default) {
-            var processExecutionInfo = GetProcessExecutionInfo(ShellScript.WorkingDirectory, ShellScript.Script);
+            ProcessExecutionInfo processExecutionInfo = GetProcessExecutionInfo(ShellScript.WorkingDirectory, ShellScript.Script);
 
             _process = new AutoTerminateProcess() {
                 StartInfo = new ProcessStartInfo {
@@ -52,9 +49,9 @@ namespace CalqFramework.Cmd.Shell {
 
             _process.Start();
 
-            var relayInputTask = Task.CompletedTask;
+            Task relayInputTask = Task.CompletedTask;
             if (InputStream != null) {
-                relayInputTask = Task.Run(async () => await StreamUtils.RelayInput(_process.StandardInput!, new StreamReader(InputStream!), relayInputTaskAbortCts.Token)).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
+                relayInputTask = Task.Run(async () => await StreamUtils.RelayInput(_process.StandardInput!, new StreamReader(InputStream!), relayInputTaskAbortCts.Token), cancellationToken).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
             }
 
             _processOutputStream = new ProcessOutputStream(_process, relayInputTask);

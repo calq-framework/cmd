@@ -1,17 +1,13 @@
-﻿using CalqFramework.Cmd.Shell;
+﻿using System.Reflection;
+using CalqFramework.Cmd.Shell;
 using CalqFramework.Cmd.Shells;
-using System.Reflection;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.Python;
 
-public class PythonToolServer : IPythonToolServer {
+public class PythonToolServer(string toolScriptPath) : IPythonToolServer {
     private int? _port;
     private bool _started;
-
-    public PythonToolServer(string toolScriptPath) {
-        ToolScriptPath = toolScriptPath;
-    }
 
     public int Port {
         get => !_started ? throw new InvalidOperationException("Server hasn't started yet.") : (int)_port!;
@@ -19,7 +15,7 @@ public class PythonToolServer : IPythonToolServer {
     }
 
     public IShell Shell { get; init; } = new Bash();
-    public string ToolScriptPath { get; }
+    public string ToolScriptPath { get; } = toolScriptPath;
 
     public Uri Uri {
         get => !_started ? throw new InvalidOperationException("Server hasn't started yet.") : new Uri($"https://localhost:{Port}");
@@ -30,20 +26,20 @@ public class PythonToolServer : IPythonToolServer {
             throw new InvalidOperationException("Server has already started.");
         }
 
-        var scriptDir = Path.GetDirectoryName(Path.GetFullPath(ToolScriptPath))!;
-        var scriptFileNameWithoutExtension = Path.GetFileNameWithoutExtension(ToolScriptPath);
+        string scriptDir = Path.GetDirectoryName(Path.GetFullPath(ToolScriptPath))!;
+        string scriptFileNameWithoutExtension = Path.GetFileNameWithoutExtension(ToolScriptPath);
 
         LocalTerminal.Shell = Shell;
-        var scriptDirWihinShell = LocalTerminal.Shell.MapToInternalPath(scriptDir);
+        string scriptDirWihinShell = LocalTerminal.Shell.MapToInternalPath(scriptDir);
 
-        await CMDAsync(@"openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj ""/CN=localhost""");
+        await CMDAsync(@"openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj ""/CN=localhost""", cancellationToken);
 
         var assembly = Assembly.GetExecutingAssembly();
-        var pythonServerFile = "CalqFramework.Cmd.Python.server.py";
+        string pythonServerFile = "CalqFramework.Cmd.Python.server.py";
 
         using Stream stream = assembly.GetManifestResourceStream(pythonServerFile)!;
-        using StreamReader reader = new StreamReader(stream);
-        var pythonServerScript = reader.ReadToEnd();
+        using StreamReader reader = new(stream);
+        string pythonServerScript = reader.ReadToEnd();
 
         pythonServerScript = pythonServerScript.Replace("sys.path.append('./')", $"sys.path.append('{scriptDir}')");
         pythonServerScript = pythonServerScript.Replace("test_tool", scriptFileNameWithoutExtension);
@@ -51,20 +47,20 @@ public class PythonToolServer : IPythonToolServer {
         _port ??= GetAvailablePort();
         pythonServerScript = pythonServerScript.Replace("8443", _port.ToString());
 
-        var cmd = CMDV(@$"python <<EOF
+        ShellScript cmd = CMDV(@$"python <<EOF
 {pythonServerScript}
 EOF");
 
-        var worker = await cmd.StartAsync(cancellationToken);
+        IShellWorker worker = await cmd.StartAsync(cancellationToken);
         _started = true;
 
         return worker;
     }
 
-    private int GetAvailablePort() {
+    private static int GetAvailablePort() {
         var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
         listener.Start();
-        var port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+        int port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
         listener.Stop();
         return port;
     }

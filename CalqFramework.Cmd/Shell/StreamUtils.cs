@@ -6,11 +6,11 @@ namespace CalqFramework.Cmd.Shell {
     internal class StreamUtils {
 
         public static async Task RelayInput(TextWriter processInput, StreamReader inputReader, CancellationToken cancellationToken) {
-            var isInputRedirected = IsInputRedirected(inputReader);
+            bool isInputRedirected = IsInputRedirected(inputReader);
             if (isInputRedirected == false) {
                 while (!cancellationToken.IsCancellationRequested) {
                     if (Console.KeyAvailable) {
-                        var keyChar = Console.ReadKey(false).KeyChar;
+                        char keyChar = Console.ReadKey(false).KeyChar;
                         if (keyChar == '\r') { // windows enterkey is \r which returns carriage back to the beginning of the line instead of starting a new line
                             Console.WriteLine();
                             keyChar = '\n';
@@ -18,11 +18,11 @@ namespace CalqFramework.Cmd.Shell {
                         processInput.Write(keyChar);
                     }
 
-                    await Task.Delay(1);
+                    await Task.Delay(1, cancellationToken);
                 }
             } else {
                 // TODO relay block by block
-                var buffer = new char[1];
+                char[] buffer = new char[1];
 
                 while (!cancellationToken.IsCancellationRequested) {
                     int bytesRead = 0;
@@ -33,29 +33,29 @@ namespace CalqFramework.Cmd.Shell {
                         throw;
                     }
 
-                    var keyChar = buffer[0];
+                    char keyChar = buffer[0];
                     if (bytesRead == 0 || keyChar == '\uffff') { // '\uffff' == -1
                         processInput.Close(); // in case input stream reached EOF close input stream to signal EOF to the process
                         break;
                     }
                     processInput.Write(keyChar);
 
-                    await Task.Delay(1);
+                    await Task.Delay(1, cancellationToken);
                 }
             }
         }
 
         public static async Task RelayStream(Stream reader, Stream writer, CancellationToken cancellationToken) {
-            var bufferArray = new byte[4096];
+            byte[] bufferArray = new byte[4096];
 
             while (!cancellationToken.IsCancellationRequested) {
                 int bytesRead = await reader.ReadAsync(bufferArray, cancellationToken);
                 if (bytesRead == 0) {
                     break;
                 }
-                await writer.WriteAsync(bufferArray, 0, bytesRead);
+                await writer.WriteAsync(bufferArray, 0, bytesRead, cancellationToken);
             }
-            await writer.FlushAsync();
+            await writer.FlushAsync(cancellationToken);
         }
 
         // assumes one of the following
@@ -66,10 +66,10 @@ namespace CalqFramework.Cmd.Shell {
                 return false;
             }
 
-            var handleField1 = stream1.GetType().GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance)!;
-            var handleField2 = stream2.GetType().GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance)!;
-            var handle1 = handleField1.GetValue(stream1)!;
-            var handle2 = handleField2.GetValue(stream2)!;
+            FieldInfo handleField1 = stream1.GetType().GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            FieldInfo handleField2 = stream2.GetType().GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            object handle1 = handleField1.GetValue(stream1)!;
+            object handle2 = handleField2.GetValue(stream2)!;
 
             return (handle1, handle2) switch {
                 (IntPtr ptr1, IntPtr ptr2) => ptr1 == ptr2,
@@ -84,19 +84,19 @@ namespace CalqFramework.Cmd.Shell {
 
         private static bool IsStandardInputStream(TextReader reader) {
             if (reader is StreamReader sr) {
-                using var standardInput = Console.OpenStandardInput();
+                using Stream standardInput = Console.OpenStandardInput();
                 return HasMatchingUnderlyingStream(sr.BaseStream, standardInput);
             }
 
-            var readerType = reader.GetType();
+            Type readerType = reader.GetType();
             if (readerType.FullName == "System.IO.StdInReader") { // this is used on linux
                 return true;
             }
 
             if (readerType.FullName == "System.IO.SyncTextReader") {
-                var innerReaderField = readerType.GetField("_in", BindingFlags.NonPublic | BindingFlags.Instance);
+                FieldInfo? innerReaderField = readerType.GetField("_in", BindingFlags.NonPublic | BindingFlags.Instance);
                 if (innerReaderField != null) {
-                    var innerReader = (innerReaderField.GetValue(reader) as TextReader)!;
+                    TextReader innerReader = (innerReaderField.GetValue(reader) as TextReader)!;
                     return IsStandardInputStream(innerReader);
                 }
             }

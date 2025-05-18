@@ -1,23 +1,17 @@
-﻿using CalqFramework.Cmd.Shell;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
+using CalqFramework.Cmd.Shell;
 
 namespace CalqFramework.Cmd {
 
     [DebuggerDisplay("{Script}")]
-    public class ShellScript {
+    public class ShellScript(IShell shell, string script) {
         public static AsyncLocal<string> LocalWorkingDirectory = new();
 
-        public ShellScript(IShell shell, string script) {
-            Shell = shell;
-            Script = script;
-            WorkingDirectory = LocalWorkingDirectory.Value ?? Environment.CurrentDirectory;
-        }
-
         public ShellScript? PipedShellScript { get; private init; }
-        public string Script { get; internal set; } // setter should be only accessed by Shells.Tool
-        public IShell Shell { get; internal set; } // setter should be only accessed by Shells.Tool
-        public string WorkingDirectory { get; init; }
+        public string Script { get; internal set; } = script;
+        public IShell Shell { get; internal set; } = shell;
+        public string WorkingDirectory { get; init; } = LocalWorkingDirectory.Value ?? Environment.CurrentDirectory;
 
         public static implicit operator string(ShellScript obj) {
             return obj.Evaluate();
@@ -33,15 +27,15 @@ namespace CalqFramework.Cmd {
         }
 
         public string Evaluate(CancellationToken cancellationToken = default) {
-            return EvaluateAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            return EvaluateAsync(cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         public string Evaluate(Stream? inputStream, CancellationToken cancellationToken = default) {
-            return EvaluateAsync(inputStream).ConfigureAwait(false).GetAwaiter().GetResult();
+            return EvaluateAsync(inputStream, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         public async Task<string> EvaluateAsync(Stream? inputStream, CancellationToken cancellationToken = default) {
-            using var worker = await StartAsync(inputStream, cancellationToken);
+            using IShellWorker worker = await StartAsync(inputStream, cancellationToken);
             using var reader = new StreamReader(worker.StandardOutput);
 
             var sb = new StringBuilder();
@@ -81,7 +75,7 @@ namespace CalqFramework.Cmd {
         }
 
         public async Task RunAsync(Stream? inputStream, Stream outputStream, CancellationToken cancellationToken = default) {
-            using var worker = await StartAsync(inputStream, cancellationToken);
+            using IShellWorker worker = await StartAsync(inputStream, cancellationToken);
             var relayOutputCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
             try {
@@ -95,13 +89,13 @@ namespace CalqFramework.Cmd {
         }
 
         public async Task<IShellWorker> StartAsync(CancellationToken cancellationToken = default) {
-            var worker = Shell.CreateShellWorker(this, Shell.In);
+            IShellWorker worker = Shell.CreateShellWorker(this, Shell.In);
             await worker.StartAsync(cancellationToken);
             return worker;
         }
 
         public async Task<IShellWorker> StartAsync(Stream? inputStream, CancellationToken cancellationToken = default) {
-            var worker = Shell.CreateShellWorker(this, inputStream);
+            IShellWorker worker = Shell.CreateShellWorker(this, inputStream);
             await worker.StartAsync(cancellationToken);
             return worker;
         }
