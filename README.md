@@ -2,7 +2,7 @@
 [![NuGet Downloads](https://img.shields.io/nuget/dt/CalqFramework.Cmd?color=508cf0)](https://www.nuget.org/packages/CalqFramework.Cmd)
 
 # Calq CMD  
-Calq CMD is a distributed scripting framework that simplifies building cross-platform, multi-language tools, streaming data pipelines, parallel batch workloads, high performance computing (HPC) processes, and AI-powered systems by enabling shell-like scripting in C#.  
+Calq CMD is a distributed scripting framework that streamlines the development of cross-platform, multi-language tools, streaming data pipelines, parallel batch workloads, high performance computing (HPC) processes, and AI-powered systems by enabling shell-like scripting in C#.  
 It supports Bash on Windows via WSL and Cygwin/MinGW/MSYS2. To improve performance in Python-backed systems, Calq CMD provides interoperability with Python via an asynchronous HTTP/2 server.
 
 ## Shell-style scripting in C#  
