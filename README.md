@@ -2,8 +2,34 @@
 [![NuGet Downloads](https://img.shields.io/nuget/dt/CalqFramework.Cmd?color=508cf0)](https://www.nuget.org/packages/CalqFramework.Cmd)
 
 # Calq CMD  
-Calq CMD is a distributed scripting framework that streamlines the development of cross-platform, multi-language tools, streaming data pipelines, parallel batch workloads, high performance computing (HPC) processes, and AI-powered systems by enabling shell-like scripting in C#.  
+Calq CMD is a distributed scripting framework that streamlines development of cross-platform tools, streaming data pipelines, parallel batch workloads, HPC processes, and AI-powered systems by enabling shell-like scripting in C#.  
 It supports Bash on Windows via WSL and Cygwin/MinGW/MSYS2. To improve performance in Python-backed systems, Calq CMD provides interoperability with Python via an asynchronous HTTP/2 server.
+
+## Why Calq CMD: Comparison with Managed Batch Services
+| Feature | Calq CMD (on Kubernetes) | Azure Batch | AWS Batch | Google Cloud Batch |
+| :--- | :--- | :--- | :--- | :--- |
+| **Model** | C# Scripting Framework | Managed Batch Service | Managed Batch Service | Managed Batch Service |
+| **Primary Use Case** | Unified streaming & batch processing | Large-scale batch & HPC jobs | Large-scale batch processing | Large-scale batch processing |
+| **Real-time Streaming** | Natively Supported | Not Supported | Not Supported | Not Supported |
+| **Startup Latency** | Low to High (configurable) | High (minutes) | High (minutes) | High (minutes) |
+| **Execution Model** | Imperative, in-code orchestration | Declarative job submission | Declarative job submission | Declarative job submission |
+| **Workflow Orchestration**| Native, in-code (C#) | Requires external service (e.g., Data Factory) | Requires external service (e.g., Step Functions) | Requires external service (e.g., Workflows) |
+| **Language Support** | C# native with direct Python interop & shell execution | Language-agnostic (via container/VM) | Language-agnostic (via container/VM) | Language-agnostic (via container/VM) |
+| **Monitoring** | Customizable (e.g., Prometheus, Grafana) | Integrated (Azure Monitor) | Integrated (Amazon CloudWatch) | Integrated (Cloud Monitoring) |
+| **Distribution Model** | Kubernetes-driven scaling | Service-managed auto-scaling | Service-managed auto-scaling | Service-managed auto-scaling |
+| **Management Scope** | Application & Kubernetes Cluster | Application & Pool Definitions | Application & Job Definitions | Application & Job Definitions |
+| **Portability** | High (Kubernetes-native) | Low (Tied to Azure ecosystem) | Low (Tied to AWS ecosystem) | Low (Tied to Google ecosystem) |
+
+## Why Calq CMD: Comparison with CliWrap
+| Feature | Calq CMD (on Kubernetes) | CliWrap (on Kubernetes) |
+| :--- | :--- | :--- |
+| **Core Capability** | Application Integration & Process Automation | Application Integration |
+| **Developer Experience** | Shell-like scripting & direct process control | Standard fluent C# API |
+| **Distributed Computing** | Native support via HTTP/Python backends and in-code orchestration | Requires external orchestration (e.g., KubeFlow, Argo) |
+| **Cross-Platform Strategy** | Platform-Aware: Auto-manages WSL paths | Platform-Agnostic: Developer manages OS differences |
+| **Architecture** | Extensible Framework (pluggable shells, Python, HTTP) | Self-Contained Library |
+| **System Interoperability** | Standard commands + High-Performance Python Integration | Standard commands only |
+| **Working Directory** | Automatic management (persistent across commands) | Explicit configuration per command |
 
 ## Shell-style scripting in C#  
 Calq CMD introduces a set of static APIs that allow writing in a style that mimics Unix shell scripts.
