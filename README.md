@@ -21,15 +21,18 @@ It supports Bash on Windows via WSL and Cygwin/MinGW/MSYS2. To improve performan
 | **Portability** | High (Kubernetes-native) | Low (Tied to Azure ecosystem) | Low (Tied to AWS ecosystem) | Low (Tied to Google ecosystem) |
 
 ## Why Calq CMD: Comparison with CliWrap
-| Feature | Calq CMD (on Kubernetes) | CliWrap (on Kubernetes) |
+| Feature | Calq CMD | CliWrap |
 | :--- | :--- | :--- |
-| **Core Capability** | Application Integration & Process Automation | Application Integration |
-| **Developer Experience** | Shell-like scripting & direct process control | Standard fluent C# API |
-| **Distributed Computing** | Native support via HTTP/Python backends and in-code orchestration | Requires external orchestration (e.g., KubeFlow, Argo) |
-| **Cross-Platform Strategy** | Platform-Aware: Auto-manages WSL paths | Platform-Agnostic: Developer manages OS differences |
-| **Architecture** | Extensible Framework (pluggable shells, Python, HTTP) | Self-Contained Library |
-| **System Interoperability** | Standard commands + High-Performance Python Integration | Standard commands only |
-| **Working Directory** | Automatic management (persistent across commands) | Explicit configuration per command |
+| **Model** | Extensible Wrapper / Framework | Specialized Process Wrapper |
+| **Primary Use Case** | Local & Distributed Execution | Local Execution |
+| **Execution Model** | Shell-like API & Object Model | Fluent Builder Pattern |
+| **Shell Context** | Context-Aware (per task) | Stateless (per command) |
+| **Piping** | Distributed / Cross-language | Local-only |
+| **Real-time Streaming**| Direct Stream Control | Structured Event Stream |
+| **Extensibility** | High (via `IShell` interface) | Low (Stream-focused) |
+| **Distributed Computing**| Natively Supported | Not Supported |
+| **Language Interop** | Python via HTTP/2 | Standard (via stdio) |
+| **Cross-Platform** | Platform-Aware (via `IShell`) | Platform-Agnostic |
 
 ## Shell-style scripting in C#  
 Calq CMD introduces a set of static APIs that allow writing in a style that mimics Unix shell scripts.
