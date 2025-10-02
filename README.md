@@ -9,30 +9,32 @@ It supports Bash on Windows via WSL and Cygwin/MinGW/MSYS2. To improve performan
 | Feature | Calq CMD (on Kubernetes) | Azure Batch | AWS Batch | Google Cloud Batch |
 | :--- | :--- | :--- | :--- | :--- |
 | **Model** | C# Scripting Framework | Managed Batch Service | Managed Batch Service | Managed Batch Service |
-| **Primary Use Case** | Unified streaming & batch processing | Large-scale batch & HPC jobs | Large-scale batch processing | Large-scale batch processing |
+| **Primary Use Case** | Unified streaming & Large-scale batch processing | Large-scale batch processing | Large-scale batch processing | Large-scale batch processing |
 | **Real-time Streaming** | Natively Supported | Not Supported | Not Supported | Not Supported |
 | **Startup Latency** | Low to High (configurable) | High (minutes) | High (minutes) | High (minutes) |
 | **Execution Model** | Imperative, in-code orchestration | Declarative job submission | Declarative job submission | Declarative job submission |
 | **Workflow Orchestration**| Native, in-code (C#) | Requires external service (e.g., Data Factory) | Requires external service (e.g., Step Functions) | Requires external service (e.g., Workflows) |
-| **Language Support** | C# native with direct Python interop & shell execution | Language-agnostic (via container/VM) | Language-agnostic (via container/VM) | Language-agnostic (via container/VM) |
-| **Monitoring** | Customizable (e.g., Prometheus, Grafana) | Integrated (Azure Monitor) | Integrated (Amazon CloudWatch) | Integrated (Cloud Monitoring) |
+| **Language Support** | C# with Python interop & Shell execution | Language-agnostic (via container/VM) | Language-agnostic (via container/VM) | Language-agnostic (via container/VM) |
+| **Monitoring Service** | Pluggable (e.g., Prometheus) | Integrated (Azure Monitor) | Integrated (Amazon CloudWatch) | Integrated (Cloud Monitoring) |
+| **Dedicated Management UI/Tool** | Pluggable (e.g., Grafana, Jaeger) | Yes (Azure Portal & Batch Explorer) | Yes (Specialized AWS Console UI) | Yes (Specialized Google Cloud Console UI) |
 | **Distribution Model** | Kubernetes-driven scaling | Service-managed auto-scaling | Service-managed auto-scaling | Service-managed auto-scaling |
-| **Management Scope** | Application & Kubernetes Cluster | Application & Pool Definitions | Application & Job Definitions | Application & Job Definitions |
 | **Portability** | High (Kubernetes-native) | Low (Tied to Azure ecosystem) | Low (Tied to AWS ecosystem) | Low (Tied to Google ecosystem) |
+| **Infrastructure Complexity** | Low to High (Kubernetes) | Low | Low | Low |
+| **Workflow Logic Complexity**| Low | Moderate | Moderate | Moderate |
 
 ## Why Calq CMD: Comparison with CliWrap
 | Feature | Calq CMD | CliWrap |
 | :--- | :--- | :--- |
-| **Model** | Extensible Wrapper / Framework | Specialized Process Wrapper |
-| **Primary Use Case** | Local & Distributed Execution | Local Execution |
+| **Model** | C# Scripting Framework | Specialized Process Wrapper |
+| **Primary Use Case** | Distributed & Local Process Execution | Local Process Execution |
 | **Execution Model** | Shell-like API & Object Model | Fluent Builder Pattern |
 | **Shell Context** | Context-Aware (per task) | Stateless (per command) |
-| **Piping** | Distributed / Cross-language | Local-only |
 | **Real-time Streaming**| Direct Stream Control | Structured Event Stream |
 | **Extensibility** | High (via `IShell` interface) | Low (Stream-focused) |
 | **Distributed Computing**| Natively Supported | Not Supported |
-| **Language Interop** | Python via HTTP/2 | Standard (via stdio) |
+| **Language Interop** | Python via HTTP/2 server & Shell execution | Shell execution |
 | **Cross-Platform** | Platform-Aware (via `IShell`) | Platform-Agnostic |
+| **Scripting Complexity**| Low | Low to Moderate |
 
 ## Shell-style scripting in C#  
 Calq CMD introduces a set of static APIs that allow writing in a style that mimics Unix shell scripts.
