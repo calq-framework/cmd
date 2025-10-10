@@ -2,49 +2,61 @@
 [![NuGet Downloads](https://img.shields.io/nuget/dt/CalqFramework.Cmd?color=508cf0)](https://www.nuget.org/packages/CalqFramework.Cmd)
 
 # Calq CMD  
-Calq CMD is a distributed scripting framework that streamlines development of cross-platform tools, streaming data pipelines, parallel batch workloads, HPC processes, and AI-powered systems by enabling shell-like scripting in C#.  
+Calq CMD is a distributed scripting framework that streamlines development of cross-platform tools, streaming data pipelines, parallel batch workloads, HPC processes, and AI-powered systems by enabling shell-style scripting in C#.  
 It supports Bash on Windows via WSL and Cygwin/MinGW/MSYS2. To improve performance in Python-backed systems, Calq CMD provides interoperability with Python via an asynchronous HTTP/2 server.
 
 ## Why Calq CMD: Comparison with Managed Batch Services
-| Feature | Calq CMD (on Kubernetes) | Azure Batch | AWS Batch | Google Cloud Batch |
-| :--- | :--- | :--- | :--- | :--- |
-| **Model** | C# Scripting Framework | Managed Batch Service | Managed Batch Service | Managed Batch Service |
-| **Primary Use Case** | Unified streaming & Large-scale batch processing | Large-scale batch processing | Large-scale batch processing | Large-scale batch processing |
-| **Real-time Streaming** | Natively Supported | Not Supported | Not Supported | Not Supported |
-| **Startup Latency** | Low to High (configurable) | High (minutes) | High (minutes) | High (minutes) |
-| **Execution Model** | Imperative, in-code orchestration | Declarative job submission | Declarative job submission | Declarative job submission |
-| **Workflow Orchestration**| Native, in-code (C#) | Requires external service (e.g., Data Factory) | Requires external service (e.g., Step Functions) | Requires external service (e.g., Workflows) |
-| **Language Support** | C# with Python interop & Shell execution | Language-agnostic (via container/VM) | Language-agnostic (via container/VM) | Language-agnostic (via container/VM) |
-| **Monitoring Service** | Pluggable (e.g., Prometheus) | Integrated (Azure Monitor) | Integrated (Amazon CloudWatch) | Integrated (Cloud Monitoring) |
-| **Dedicated Management UI/Tool** | Pluggable (e.g., Grafana, Jaeger) | Yes (Azure Portal & Batch Explorer) | Yes (Specialized AWS Console UI) | Yes (Specialized Google Cloud Console UI) |
-| **Distribution Model** | Kubernetes-driven scaling | Service-managed auto-scaling | Service-managed auto-scaling | Service-managed auto-scaling |
-| **Portability** | High (Kubernetes-native) | Low (Tied to Azure ecosystem) | Low (Tied to AWS ecosystem) | Low (Tied to Google ecosystem) |
-| **Infrastructure Complexity** | Low to High (Kubernetes) | Low | Low | Low |
-| **Workflow Logic Complexity**| Low | Moderate | Moderate | Moderate |
+| Feature | Calq CMD on Kubernetes | Managed Batch Services (Azure/Google/AWS) |
+| :--- | :--- | :--- |
+| **Runnable Workloads** | C#/Python Code & Scripts & Containers | Scripts & Containers |
+| **Job Definition** | C# | Provider-Specific JSON/YAML |
+| **Orchestration** | C# & Kubernetes CLI | Provider-Specific SDK/CLI |
+| **Scripting Languages** | C# & Bash/PowerShell | Bash/PowerShell |
+| **SDK Languages** | C# | All major languages |
+| **Infrastructure as Code** | Terraform & Kubernetes Manifests | Terraform & Provider-Specific IaC |
+| **Monitoring** | Kubernetes | Provider-Specific |
+| **Distributed Computing** | Yes | Yes |
+| **Composable Pipes**| Yes | Yes |
+| **Stream Redirection** | Yes | Yes (via storage services) |
+| **Real-Time Streaming** | Yes | No |
+| **On-Premise Deployment** | Yes | No |
+| **Fully Local Development** | Yes | No |
+| **Infrastructure Cost** | Underlying Resources | Underlying Resources |
+| **Development Time** | Fast to Moderate | Moderate to Slow |
 
 ## Why Calq CMD: Comparison with CliWrap
 | Feature | Calq CMD | CliWrap |
 | :--- | :--- | :--- |
-| **Model** | C# Scripting Framework | Specialized Process Wrapper |
-| **Primary Use Case** | Distributed & Local Process Execution | Local Process Execution |
-| **Execution Model** | Shell-like API & Object Model | Fluent Builder Pattern |
-| **Shell Context** | Context-Aware (per task) | Stateless (per command) |
-| **Real-time Streaming**| Direct Stream Control | Structured Event Stream |
-| **Extensibility** | High (via `IShell` interface) | Low (Stream-focused) |
-| **Distributed Computing**| Natively Supported | Not Supported |
-| **Language Interop** | Python via HTTP/2 server & Shell execution | Shell execution |
-| **Cross-Platform** | Platform-Aware (via `IShell`) | Platform-Agnostic |
-| **Scripting Complexity**| Low | Low to Moderate |
+| **Programming Model** | Shell-Style Scripting & Object Model | Fluent Builder Pattern |
+| **Real-Time Streaming** | Direct Stream Control | Structured Event Stream |
+| **Local Process Execution** | Yes | Yes |
+| **Composable Pipes** | Yes | Yes |
+| **Stream Redirection** | Yes | Yes |
+| **Distributed Computing** | Yes | No |
+| **Context-Aware Shell** | Yes | No |
+| **Platform-Aware Shell** | Yes | No |
+| **Shell Customization** | Yes | No |
+| **Native Python Execution** | Yes | No |
+| **Development Time**| Fast | Fast to Moderate |
+
+## Why Calq CMD: Comparison with Python Microservices
+| Feature | Calq CMD | Python Microservices |
+| :--- | :--- | :--- |
+| **Project Model** | Single Application | Distributed System |
+| **Deployment Artifacts** | Single | Multiple |
+| **Real-Time Streaming** | Yes | Yes (via custom SSE or WebSocket) |
+| **Sub-ms Latency** | Yes | No |
+| **Development Time** | Fast | Moderate to Slow |
 
 ## Shell-style scripting in C#  
 Calq CMD introduces a set of static APIs that allow writing in a style that mimics Unix shell scripts.
 ```csharp
 string echo = CMD("echo Hello World");
-RUN($"echo {echo}); // prints "Hello World"
+RUN($"echo {echo}"); // prints "Hello World"
 ```
 ```csharp
 string echo = await CMDAsync("echo Hello World");
-await RUNAsync($"echo {echo}); // prints "Hello World"
+await RUNAsync($"echo {echo}"); // prints "Hello World"
 ```
 Pipelines are internally run asynchronously, and each pipeline step is run in parallel.  
 The following returns "Hello World" after 1 second.
