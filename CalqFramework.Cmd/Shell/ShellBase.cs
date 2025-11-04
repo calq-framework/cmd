@@ -2,7 +2,7 @@
 
 public abstract class ShellBase : IShell {
     public IShellScriptExceptionFactory ExceptionFactory { get; init; } = new ShellScriptExceptionFactory();
-    public Stream? In { get; init; } = Console.OpenStandardInput();
+    public Stream? In { get; init; } = null;
     public IShellScriptPostprocessor Postprocessor { get; init; } = new ShellScriptPostprocessor();
 
     public IShellWorker CreateShellWorker(ShellScript shellScript) {
