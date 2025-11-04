@@ -101,12 +101,12 @@ See [Terminal.cs](https://github.com/calq-framework/cmd/blob/main/CalqFramework.
 
 ### LocalTerminal
 `LocalTerminal` settings are stored in an `AsyncLocal<T>` so that each logical context (thread or async task) keeps its own configuration.  
-By default, streams of `Console.In` and `Console.Out` are used for Input/Output settings.
+By default, `LocalTerminal.Shell.In` is set to `null` and `LocalTerminal.Out` is set to `Console.OpenStandardOutput()`.
 ```csharp
 LocalTerminal.Shell = new CommandLine() {
-    In =  Console.OpenStandardInput();
+    In =  Console.OpenStandardInput(); // default is `null`
 }
-LocalTerminal.Out = Console.OpenStandardOutput();
+LocalTerminal.Out = Console.OpenStandardOutput(); // default
 ```
 
 ### HttpTool
