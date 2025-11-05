@@ -14,7 +14,7 @@ public class PythonToolServer(string toolScriptPath) : IPythonToolServer {
         init => _port = value;
     }
 
-    public IShell Shell { get; init; } = new Bash();
+    public IShell Shell { get; init; } = new CommandLine();
     public string ToolScriptPath { get; } = toolScriptPath;
 
     public Uri Uri {
@@ -41,15 +41,15 @@ public class PythonToolServer(string toolScriptPath) : IPythonToolServer {
         using StreamReader reader = new(stream);
         string pythonServerScript = reader.ReadToEnd();
 
-        pythonServerScript = pythonServerScript.Replace("sys.path.append('./')", $"sys.path.append('{scriptDirWihinShell}')");
+        pythonServerScript = pythonServerScript.Replace("sys.path.append('./')", $"sys.path.append(r'{scriptDirWihinShell}')");
         pythonServerScript = pythonServerScript.Replace("test_tool", scriptFileNameWithoutExtension);
 
         _port ??= GetAvailablePort();
         pythonServerScript = pythonServerScript.Replace("8443", _port.ToString());
 
-        ShellScript cmd = CMDV(@$"python <<EOF
-{pythonServerScript}
-EOF");
+        string tempPyFile = Path.GetTempFileName();
+        File.WriteAllText(tempPyFile, pythonServerScript);
+        ShellScript cmd = CMDV($"python {tempPyFile}");
 
         IShellWorker worker = await cmd.StartAsync(cancellationToken);
         _started = true;
