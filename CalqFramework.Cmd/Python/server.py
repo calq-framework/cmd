@@ -306,19 +306,19 @@ ssl_context.options |= (
 ssl_context.load_cert_chain(certfile='cert.pem', keyfile='key.pem')
 ssl_context.set_alpn_protocols(["h2"])
 
-loop = asyncio.get_event_loop()
-# Each client connection will create a new protocol instance
-coro = loop.create_server(H2Protocol, '127.0.0.1', 8443, ssl=ssl_context)
-server = loop.run_until_complete(coro)
+async def main():
+    # Each client connection will create a new protocol instance
+    server = await asyncio.get_event_loop().create_server(H2Protocol, '127.0.0.1', 8443, ssl=ssl_context)
+    
+    # Serve requests until Ctrl+C is pressed
+    print('Serving on {}'.format(server.sockets[0].getsockname()))
+    try:
+        await server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        # Close the server
+        server.close()
+        await server.wait_closed()
 
-# Serve requests until Ctrl+C is pressed
-print('Serving on {}'.format(server.sockets[0].getsockname()))
-try:
-    loop.run_forever()
-except KeyboardInterrupt:
-    pass
-finally:
-    # Close the server
-    server.close()
-    loop.run_until_complete(server.wait_closed())
-    loop.close()
+asyncio.run(main())
