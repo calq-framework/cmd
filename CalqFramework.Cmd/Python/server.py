@@ -38,6 +38,8 @@ import io
 import json
 import ssl
 import collections
+import traceback
+import zlib
 from typing import List, Tuple
 
 from h2.config import H2Configuration
@@ -80,6 +82,9 @@ sys.path.append('./')
 import test_tool
 
 class H2Protocol(asyncio.Protocol):
+    # Configurable integer range for exception hash codes
+    ERROR_HASH_RANGE = (256, 0xFFFFFFFF)
+
     class RequestData:
         def __init__(self, headers, data):
             self.headers = headers
@@ -270,11 +275,22 @@ class H2Protocol(asyncio.Protocol):
             self.conn.send_data(stream_id, b'', end_stream=True)
             self.transport.write(self.conn.data_to_send())
 
-        except Exception:
-            # Reset stream on any exception
-            asyncio.create_task(self.abort_stream(stream_id, 128))
         except (StreamClosedError, ProtocolError):
+            # Ignore standard H2 stream closure/errors
             pass
+        except Exception:
+            # Reset stream on any exception with a hash of the stack trace
+            tb = traceback.format_exc()
+            checksum = zlib.crc32(tb.encode('utf-8'))
+            
+            # Map hash to configurable integer range
+            start, end = self.ERROR_HASH_RANGE
+            if end > start:
+                error_code = start + (checksum % (end - start))
+            else:
+                error_code = start
+                
+            asyncio.create_task(self.abort_stream(stream_id, error_code))
 
     async def wait_for_flow_control(self, stream_id):
         """
