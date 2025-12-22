@@ -84,6 +84,9 @@ import test_tool
 class H2Protocol(asyncio.Protocol):
     # Configurable integer range for exception hash codes
     ERROR_HASH_RANGE = (256, 0xFFFFFFFF)
+    
+    # Simple dictionary to cache exceptions
+    EXCEPTION_CACHE = {}
 
     class RequestData:
         def __init__(self, headers, data):
@@ -160,6 +163,21 @@ class H2Protocol(asyncio.Protocol):
         body = request_data.data.getvalue().decode('utf-8')
         sys._calq_cmd_stdin_local.set(io.StringIO(body))
 
+        # Check if the endpoint is read_error_message
+        path = headers.get(':path', '')
+        if path == '/read_error_message':
+            error_code_str = headers.get("error_code")
+            response_data = self.EXCEPTION_CACHE.get(error_code_str, "")
+            
+            response_headers = (
+                (':status', '200'),
+                ('content-type', 'text/plain'),
+            )
+            self.conn.send_headers(stream_id, response_headers)
+            self.stream_task[stream_id] = asyncio.ensure_future(self.send_data(response_data.encode("utf8"), stream_id))
+            return
+
+        # Otherwise run script
         response_headers = (
             (':status', '200'),
             ('content-type', 'text/plain'),
@@ -289,6 +307,9 @@ class H2Protocol(asyncio.Protocol):
                 error_code = start + (checksum % (end - start))
             else:
                 error_code = start
+                
+            # Cache the exception
+            self.EXCEPTION_CACHE[str(error_code)] = tb
                 
             asyncio.create_task(self.abort_stream(stream_id, error_code))
 
