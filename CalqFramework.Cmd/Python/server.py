@@ -163,19 +163,15 @@ class H2Protocol(asyncio.Protocol):
         )
         self.conn.send_headers(stream_id, response_headers)
 
-        try:
-            value = fire.Fire(test_tool, command=headers["script"])
-            if isinstance(value, types.AsyncGeneratorType):
-                self.stream_task[stream_id] = asyncio.ensure_future(self.send_stream_data(value, stream_id))
-            elif isinstance(value, str):
-                self.stream_task[stream_id] = asyncio.ensure_future(self.send_data(value.encode("utf8"), stream_id))
-            elif isinstance(value, bytes):
-                self.stream_task[stream_id] = asyncio.ensure_future(self.send_data(value, stream_id))
-            else:
-                self.stream_task[stream_id] = asyncio.ensure_future(self.send_data(str(value).encode("utf8"), stream_id))
-        except BaseException as e:
-            print(f"An unexpected error occurred: {e}")
-            asyncio.create_task(self.abort_stream(stream_id, 128))
+        value = fire.Fire(test_tool, command=headers["script"])
+        if isinstance(value, types.AsyncGeneratorType):
+            self.stream_task[stream_id] = asyncio.ensure_future(self.send_stream_data(value, stream_id))
+        elif isinstance(value, str):
+            self.stream_task[stream_id] = asyncio.ensure_future(self.send_data(value.encode("utf8"), stream_id))
+        elif isinstance(value, bytes):
+            self.stream_task[stream_id] = asyncio.ensure_future(self.send_data(value, stream_id))
+        else:
+            self.stream_task[stream_id] = asyncio.ensure_future(self.send_data(str(value).encode("utf8"), stream_id))
 
     async def abort_stream(self, stream_id, error_code):
         # TODO HttpClient throws on stream read if it already received RST_STREAM even before the output leading to the RESET has been read so consider fixing this wait time
@@ -274,6 +270,9 @@ class H2Protocol(asyncio.Protocol):
             self.conn.send_data(stream_id, b'', end_stream=True)
             self.transport.write(self.conn.data_to_send())
 
+        except Exception:
+            # Reset stream on any exception
+            asyncio.create_task(self.abort_stream(stream_id, 128))
         except (StreamClosedError, ProtocolError):
             pass
 
