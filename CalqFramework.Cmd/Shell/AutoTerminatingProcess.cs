@@ -3,15 +3,15 @@ using System.Diagnostics;
 
 namespace CalqFramework.Cmd.Shell {
 
-    public class AutoTerminateProcess : Process {
+    public class AutoTerminatingProcess : Process {
         private static readonly ConcurrentDictionary<Process, byte> s_allProcesses = new();
         private bool _disposed;
 
-        static AutoTerminateProcess() {
+        static AutoTerminatingProcess() {
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
         }
 
-        public AutoTerminateProcess() {
+        public AutoTerminatingProcess() {
             _ = s_allProcesses.TryAdd(this, 0);
         }
 

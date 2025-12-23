@@ -4,7 +4,7 @@ namespace CalqFramework.Cmd.Shell {
 
     public abstract class ProcessWorkerBase(ShellScript shellScript, Stream? inputStream) : ShellWorkerBase(shellScript, inputStream) {
         private bool _disposed;
-        private AutoTerminateProcess _process = null!;
+        private AutoTerminatingProcess _process = null!;
         private ProcessOutputStream? _processOutputStream;
 
         public override ShellWorkerOutputStream StandardOutput { get => _processOutputStream!; }
@@ -27,7 +27,7 @@ namespace CalqFramework.Cmd.Shell {
         protected override Task InitializeAsync(ShellScript shellScript, CancellationToken cancellationToken = default) {
             ProcessExecutionInfo processExecutionInfo = GetProcessExecutionInfo(ShellScript.WorkingDirectory, ShellScript.Script);
 
-            _process = new AutoTerminateProcess() {
+            _process = new AutoTerminatingProcess() {
                 StartInfo = new ProcessStartInfo {
                     WorkingDirectory = ShellScript.WorkingDirectory,
                     FileName = processExecutionInfo.FileName,
