@@ -2,10 +2,13 @@
 [![NuGet Downloads](https://img.shields.io/nuget/dt/CalqFramework.Cmd?color=508cf0)](https://www.nuget.org/packages/CalqFramework.Cmd)
 
 # Calq CMD  
-Calq CMD is a distributed scripting framework that streamlines development of cross-platform tools, streaming data pipelines, parallel batch workloads, HPC processes, and AI-powered systems by enabling shell-style scripting in C#.  
-It supports Bash on Windows via WSL and Cygwin/MinGW/MSYS2. To improve performance in Python-backed systems, Calq CMD provides interoperability with Python via an asynchronous HTTP/2 server.
+Calq CMD introduces distributed, shell-style scripting to C#, turning complex systems into simple scripts. Build cross-platform tools, streaming data pipelines, parallel batch workloads, HPC processes, and AI-powered systems with unprecedented simplicity.
 
-## Why Calq CMD: Comparison with Managed Batch Services
+Supports Bash on Windows via WSL and Cygwin/MinGW/MSYS2. Python interoperability provided via high-performance asynchronous HTTP/2 server.
+
+## How Calq CMD Stacks Up
+
+### Calq CMD vs. Managed Batch Services
 | Feature | Calq CMD on Kubernetes | Managed Batch Services (Azure/Google/AWS) |
 | :--- | :--- | :--- |
 | **Runnable Workloads** | C#/Python Code & Scripts & Containers | Scripts & Containers |
@@ -15,38 +18,54 @@ It supports Bash on Windows via WSL and Cygwin/MinGW/MSYS2. To improve performan
 | **SDK Languages** | C# | All major languages |
 | **Infrastructure as Code** | Terraform & Kubernetes Manifests | Terraform & Provider-Specific IaC |
 | **Monitoring** | Kubernetes | Provider-Specific |
-| **Distributed Computing** | Yes | Yes |
-| **Composable Pipes**| Yes | Yes |
-| **Stream Redirection** | Yes | Yes (via storage services) |
-| **Real-Time Streaming** | Yes | No |
-| **On-Premise Deployment** | Yes | No |
-| **Fully Local Development** | Yes | No |
+| **Distributed Computing** | ✅ | ✅ |
+| **Composable Pipes**| ✅ | ✅ |
+| **Stream Redirection** | ✅ | ✅ (via storage services) |
+| **Real-Time Streaming** | ✅ | ❌ |
+| **Open Source** | ✅ | ❌ |
+| **Fully Local Development** | ✅ | ❌ |
+| **On-Premise Deployment** | ✅ | ❌ |
 | **Infrastructure Cost** | Underlying Resources | Underlying Resources |
 | **Development Time** | Fast to Moderate | Moderate to Slow |
 
-## Why Calq CMD: Comparison with CliWrap
+### Calq CMD vs. CliWrap
 | Feature | Calq CMD | CliWrap |
 | :--- | :--- | :--- |
 | **Programming Model** | Shell-Style Scripting & Object Model | Fluent Builder Pattern |
 | **Real-Time Streaming** | Direct Stream Control | Structured Event Stream |
-| **Local Process Execution** | Yes | Yes |
-| **Composable Pipes** | Yes | Yes |
-| **Stream Redirection** | Yes | Yes |
-| **Distributed Computing** | Yes | No |
-| **Context-Aware Shell** | Yes | No |
-| **Platform-Aware Shell** | Yes | No |
-| **Shell Customization** | Yes | No |
-| **Native Python Execution** | Yes | No |
+| **Local Process Execution** | ✅ | ✅ |
+| **Composable Pipes** | ✅ | ✅ |
+| **Stream Redirection** | ✅ | ✅ |
+| **Distributed Computing** | ✅ | ❌ |
+| **Context-Aware Shell** | ✅ | ❌ |
+| **Platform-Aware Shell** | ✅ | ❌ |
+| **Shell Customization** | ✅ | ❌ |
+| **Native Python Execution** | ✅ | ❌ |
 | **Development Time**| Fast | Fast to Moderate |
 
-## Why Calq CMD: Comparison with Python Microservices
+### Calq CMD vs. Python Microservices
 | Feature | Calq CMD | Python Microservices |
 | :--- | :--- | :--- |
 | **Project Model** | Single Application | Distributed System |
 | **Deployment Artifacts** | Single | Multiple |
-| **Real-Time Streaming** | Yes | Yes (via custom SSE or WebSocket) |
-| **Sub-ms Latency** | Yes | No |
+| **Real-Time Streaming** | ✅ | ✅ (via custom SSE or WebSocket) |
+| **Sub-ms Latency** | ✅ | ❌ |
 | **Development Time** | Fast | Moderate to Slow |
+
+### Calq CMD via Vibe Coding vs. n8n
+| Feature | Calq CMD via Vibe Coding | n8n |
+| :--- | :--- | :--- |
+| **Development Model** | Code-First C# | Visual Workflow Builder |
+| **Custom Code Support** | Any language (via shell) | JavaScript & Python (in nodes) |
+| **Integrations** | 500,000+ NuGet packages | 400+ pre-built visual nodes |
+| **Open Source** | ✅ | ✅ |
+| **Fully Local Development** | ✅ | ✅ |
+| **On-Premise Deployment** | ✅ | ✅ |
+| **Modular Development** | ✅ | ✅ (sub-workflows) |
+| **AI Code Generation** | ✅ | ✅ (JSON templates) |
+| **AI Debugging** | ✅ | ❌ |
+| **AI Testing** | ✅ | ❌ |
+| **Development Time** | Very Fast | Fast to Moderate |
 
 ## Shell-style scripting in C#  
 Calq CMD introduces a set of static APIs that allow writing in a style that mimics Unix shell scripts.
@@ -129,7 +148,7 @@ When using Bash on Windows via WSL, PWD is automatically mapped to the WSL path 
 On Linux, these are effectively the same.
 ```csharp
 Console.WriteLine(LocalTerminal.WorkingDirectory); // e.g. "C:\Users"
-Console.WriteLine(PWD);                            // e.g. "/mnt/c/Users
+Console.WriteLine(PWD);                            // e.g. "/mnt/c/Users"
 ```
 
 ### Python
