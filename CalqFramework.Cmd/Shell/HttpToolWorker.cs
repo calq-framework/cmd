@@ -3,7 +3,7 @@ using System.Text;
 
 namespace CalqFramework.Cmd.Shell;
 
-public class HttpToolWorker(HttpClient httpClient, ShellScript shellScript, Stream? inputStream) : ShellWorkerBase(shellScript, inputStream) {
+public class HttpToolWorker(HttpClient httpClient, ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) : ShellWorkerBase(shellScript, inputStream, disposeOnCompletion) {
     private bool _disposed;
     private HttpToolOutputStream? _executionOutputStream;
     private readonly HttpClient _httpClient = httpClient;
@@ -77,6 +77,6 @@ public class HttpToolWorker(HttpClient httpClient, ShellScript shellScript, Stre
         _response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
         Stream responseContentStream = await _response.Content.ReadAsStreamAsync(cancellationToken);
-        _executionOutputStream = new HttpToolOutputStream(responseContentStream);
+        _executionOutputStream = new HttpToolOutputStream(responseContentStream, this);
     }
 }

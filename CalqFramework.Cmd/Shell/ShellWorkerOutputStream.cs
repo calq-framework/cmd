@@ -4,6 +4,12 @@
     public abstract class ShellWorkerOutputStream : Stream {
         protected readonly record struct Error(long? ErrorCode, Exception? Exception);
 
+        private readonly IShellWorker _shellWorker;
+
+        public ShellWorkerOutputStream(IShellWorker shellWorker) {
+            _shellWorker = shellWorker;
+        }
+
         public override bool CanRead => InnerStream.CanRead;
 
         public override bool CanSeek => InnerStream.CanSeek;
@@ -36,6 +42,10 @@
                 if (error.ErrorCode != 0) {
                     throw new ShellWorkerException(error.ErrorCode, $"Error code: {error.ErrorCode}", error.Exception);
                 }
+
+                if (_shellWorker.DisposeOnCompletion) {
+                    _shellWorker.Dispose();
+                }
             }
 
             return bytesRead;
@@ -56,6 +66,10 @@
 
                 if (error.ErrorCode != 0) {
                     throw new ShellWorkerException(error.ErrorCode, $"Error code: {error.ErrorCode}", error.Exception);
+                }
+
+                if (_shellWorker.DisposeOnCompletion) {
+                    _shellWorker.Dispose();
                 }
             }
 

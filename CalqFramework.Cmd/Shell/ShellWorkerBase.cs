@@ -1,11 +1,13 @@
 ﻿namespace CalqFramework.Cmd.Shell {
 
-    public abstract class ShellWorkerBase(ShellScript shellScript, Stream? inputStream) : IShellWorker {
+    public abstract class ShellWorkerBase(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) : IShellWorker {
         private bool _disposed;
 
         ~ShellWorkerBase() {
             Dispose(false);
         }
+
+        public bool DisposeOnCompletion { get; } = disposeOnCompletion;
 
         public Stream? InputStream { get; private set; } = inputStream;
 

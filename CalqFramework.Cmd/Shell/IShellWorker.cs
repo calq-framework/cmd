@@ -1,6 +1,7 @@
 ﻿namespace CalqFramework.Cmd.Shell {
 
     public interface IShellWorker : IDisposable {
+        bool DisposeOnCompletion { get; }
         IShellWorker? PipedWorker { get; }
         ShellScript ShellScript { get; }
         ShellWorkerOutputStream StandardOutput { get; }
