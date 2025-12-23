@@ -66,6 +66,9 @@ class SysWithLocalStdIn(types.ModuleType):
         super().__init__(name, doc)
         self._calq_cmd_stdin_local = contextvars.ContextVar('_calq_cmd_stdin_local')
         self._calq_cmd_stdin_local.set(sys.stdin)
+        # Remove any cached stdin to ensure property is always called
+        if 'stdin' in self.__dict__:
+            del self.__dict__['stdin']
 
     @property
     def stdin(self):
@@ -162,6 +165,9 @@ class H2Protocol(asyncio.Protocol):
         headers = request_data.headers
         body = request_data.data.getvalue().decode('utf-8')
         sys._calq_cmd_stdin_local.set(io.StringIO(body))
+        # Clear any cached stdin to ensure property is called
+        if 'stdin' in sys.__dict__:
+            del sys.__dict__['stdin']
 
         # Check if the endpoint is read_error_message
         path = headers.get(':path', '')
@@ -181,8 +187,6 @@ class H2Protocol(asyncio.Protocol):
         response_headers = (
             (':status', '200'),
             ('content-type', 'text/plain'),
-            #('content-length', str(len(data))),
-            #('server', 'asyncio-h2-calq-cmd'),
         )
         self.conn.send_headers(stream_id, response_headers)
 
