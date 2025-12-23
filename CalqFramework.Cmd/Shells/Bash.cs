@@ -22,8 +22,8 @@ public class Bash : ShellBase {
 
     internal static bool IsRunningBashOnWSL { get; }
 
-    public override ProcessWorkerBase CreateShellWorker(ShellScript shellScript, Stream? inputStream) {
-        return new BashWorker(shellScript, inputStream);
+    public override ProcessWorkerBase CreateShellWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) {
+        return new BashWorker(shellScript, inputStream, disposeOnCompletion);
     }
 
     public override string MapToHostPath(string internalPath) {

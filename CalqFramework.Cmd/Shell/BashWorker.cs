@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace CalqFramework.Cmd.Shell {
 
-    public class BashWorker(ShellScript shellScript, Stream? inputStream) : ProcessWorkerBase(shellScript, inputStream) {
+    public class BashWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) : ProcessWorkerBase(shellScript, inputStream, disposeOnCompletion) {
         internal static bool IsUsingWSL => CalqFramework.Cmd.Shells.Bash.IsRunningBashOnWSL;
 
         internal override ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script) {

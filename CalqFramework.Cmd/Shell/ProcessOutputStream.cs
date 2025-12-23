@@ -2,7 +2,7 @@
 
 namespace CalqFramework.Cmd.Shell {
 
-    public class ProcessOutputStream(Process process, Task relayInputTask) : ShellWorkerOutputStream {
+    public class ProcessOutputStream(Process process, Task relayInputTask, IShellWorker shellWorker) : ShellWorkerOutputStream(shellWorker) {
         private readonly Stream _innerStream = process.StandardOutput.BaseStream;
         private readonly Process _process = process;
         private readonly Task _realyInputTask = relayInputTask;

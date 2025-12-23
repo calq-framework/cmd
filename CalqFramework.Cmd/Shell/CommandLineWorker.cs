@@ -1,6 +1,6 @@
 ﻿namespace CalqFramework.Cmd.Shell {
 
-    public class CommandLineWorker(ShellScript shellScript, Stream? inputStream) : ProcessWorkerBase(shellScript, inputStream) {
+    public class CommandLineWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) : ProcessWorkerBase(shellScript, inputStream, disposeOnCompletion) {
         internal override ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script) {
             int spaceIndex = script.IndexOf(' ');
             string command = script.Substring(0, spaceIndex);

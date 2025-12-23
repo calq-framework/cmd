@@ -89,13 +89,13 @@ namespace CalqFramework.Cmd {
         }
 
         public async Task<IShellWorker> StartAsync(CancellationToken cancellationToken = default) {
-            IShellWorker worker = Shell.CreateShellWorker(this, Shell.In);
+            IShellWorker worker = Shell.CreateShellWorker(this, Shell.In, disposeOnCompletion: false);
             await worker.StartAsync(cancellationToken);
             return worker;
         }
 
         public async Task<IShellWorker> StartAsync(Stream? inputStream, CancellationToken cancellationToken = default) {
-            IShellWorker worker = Shell.CreateShellWorker(this, inputStream);
+            IShellWorker worker = Shell.CreateShellWorker(this, inputStream, disposeOnCompletion: false);
             await worker.StartAsync(cancellationToken);
             return worker;
         }

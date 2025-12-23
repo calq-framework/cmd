@@ -5,9 +5,9 @@
         Stream? In { get; }
         IShellScriptPostprocessor Postprocessor { get; }
 
-        IShellWorker CreateShellWorker(ShellScript shellScript);
+        IShellWorker CreateShellWorker(ShellScript shellScript, bool disposeOnCompletion = true);
 
-        IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream);
+        IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true);
 
         string MapToHostPath(string internalPath);
 

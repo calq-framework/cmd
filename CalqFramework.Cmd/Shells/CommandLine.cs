@@ -4,8 +4,8 @@ namespace CalqFramework.Cmd.Shells;
 
 public class CommandLine : ShellBase {
 
-    public override ProcessWorkerBase CreateShellWorker(ShellScript shellScript, Stream? inputStream) {
-        return new CommandLineWorker(shellScript, inputStream);
+    public override ProcessWorkerBase CreateShellWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) {
+        return new CommandLineWorker(shellScript, inputStream, disposeOnCompletion);
     }
 
     public override string MapToHostPath(string internalPath) {

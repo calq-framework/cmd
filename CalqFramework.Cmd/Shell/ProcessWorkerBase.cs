@@ -2,7 +2,7 @@
 
 namespace CalqFramework.Cmd.Shell {
 
-    public abstract class ProcessWorkerBase(ShellScript shellScript, Stream? inputStream) : ShellWorkerBase(shellScript, inputStream) {
+    public abstract class ProcessWorkerBase(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) : ShellWorkerBase(shellScript, inputStream, disposeOnCompletion) {
         private bool _disposed;
         private AutoTerminatingProcess _process = null!;
         private ProcessOutputStream? _processOutputStream;
@@ -54,7 +54,7 @@ namespace CalqFramework.Cmd.Shell {
                 relayInputTask = Task.Run(async () => await StreamUtils.RelayInput(_process.StandardInput!, new StreamReader(InputStream!), relayInputTaskAbortCts.Token), cancellationToken).WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
             }
 
-            _processOutputStream = new ProcessOutputStream(_process, relayInputTask);
+            _processOutputStream = new ProcessOutputStream(_process, relayInputTask, this);
 
             return Task.CompletedTask;
         }
