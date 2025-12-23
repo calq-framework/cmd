@@ -1,6 +1,8 @@
 ﻿namespace CalqFramework.Cmd.Shell {
 
     public abstract class ShellWorkerBase(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) : IShellWorker {
+        private readonly SemaphoreSlim _hasStartedSemaphore = new SemaphoreSlim(1, 1);
+        private volatile bool _hasStarted;
         private bool _disposed;
 
         ~ShellWorkerBase() {
@@ -32,16 +34,34 @@
         public abstract Task<string> ReadErrorMessageAsync(CancellationToken cancellationToken = default);
 
         public async Task StartAsync(CancellationToken cancellationToken = default) {
-            if (ShellScript.PipedShellScript != null) {
-                PipedWorker = await ShellScript.PipedShellScript.StartAsync(cancellationToken);
-                InputStream = PipedWorker.StandardOutput;
+            if (_hasStarted) {
+                return;
             }
 
-            await InitializeAsync(ShellScript, cancellationToken);
+            await _hasStartedSemaphore.WaitAsync(cancellationToken);
+            try {
+                if (_hasStarted) {
+                    return;
+                }
+
+                if (ShellScript.PipedShellScript != null) {
+                    PipedWorker = await ShellScript.PipedShellScript.StartAsync(cancellationToken);
+                    InputStream = PipedWorker.StandardOutput;
+                }
+
+                await InitializeAsync(ShellScript, cancellationToken);
+                _hasStarted = true;
+            } finally {
+                _hasStartedSemaphore.Release();
+            }
         }
 
         protected virtual void Dispose(bool disposing) {
             if (!_disposed) {
+                if (disposing) {
+                    _hasStartedSemaphore?.Dispose();
+                }
+                
                 PipedWorker?.Dispose();
 
                 _disposed = true;
