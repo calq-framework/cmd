@@ -173,14 +173,25 @@ class H2Protocol(asyncio.Protocol):
         path = headers.get(':path', '')
         if path == '/read_error_message':
             error_code_str = headers.get("error_code")
-            response_data = self.EXCEPTION_CACHE.get(error_code_str, "")
+            response_data = self.EXCEPTION_CACHE.get(error_code_str)
             
-            response_headers = (
-                (':status', '200'),
-                ('content-type', 'text/plain'),
-            )
-            self.conn.send_headers(stream_id, response_headers)
-            self.stream_task[stream_id] = asyncio.ensure_future(self.send_data(response_data.encode("utf8"), stream_id))
+            if response_data is not None:
+                # Error code found
+                response_headers = (
+                    (':status', '200'),
+                    ('content-type', 'text/plain'),
+                )
+                self.conn.send_headers(stream_id, response_headers)
+                self.stream_task[stream_id] = asyncio.ensure_future(self.send_data(response_data.encode("utf8"), stream_id))
+            else:
+                # Error code not found
+                response_headers = (
+                    (':status', '404'),
+                    ('content-type', 'text/plain'),
+                )
+                self.conn.send_headers(stream_id, response_headers)
+                error_message = f"Error code '{error_code_str}' not found"
+                self.stream_task[stream_id] = asyncio.ensure_future(self.send_data(error_message.encode("utf8"), stream_id))
             return
 
         # Otherwise run script
