@@ -1,19 +1,55 @@
 ﻿using System.Net;
+using System.Text;
 
 namespace CalqFramework.Cmd.Shell;
 
 public class HttpToolWorker(HttpClient httpClient, ShellScript shellScript, Stream? inputStream) : ShellWorkerBase(shellScript, inputStream) {
     private bool _disposed;
-    private ShellWorkerOutputStream? _executionOutputStream;
+    private HttpToolOutputStream? _executionOutputStream;
     private readonly HttpClient _httpClient = httpClient;
     private HttpResponseMessage? _response;
 
     public override ShellWorkerOutputStream StandardOutput => _executionOutputStream!;
 
-    private HttpStatusCode? StatusCode => _response!.StatusCode; // TODO separate error handler
+    private HttpStatusCode? StatusCode => _response!.StatusCode;
 
     public override async Task<string> ReadErrorMessageAsync(CancellationToken cancellationToken = default) {
-        return await Task.FromResult("");
+        try {
+            var buffer = new byte[1024];
+            while (await _executionOutputStream!.ReadAsync(buffer, 0, buffer.Length, cancellationToken) > 0) {
+            }
+            return "";
+        } catch (ShellWorkerException ex) when (ex.ErrorCode.HasValue && ex.ErrorCode.Value != 0) {
+            var errorCode = ex.ErrorCode.Value;
+
+            try {
+                var request = new HttpRequestMessage {
+                    Version = new Version(2, 0),
+                    Method = HttpMethod.Post,
+                    RequestUri = new Uri("/read_error_message", UriKind.Relative),
+                    Content = new StringContent("")
+                };
+
+                // Cast to unsigned 32-bit for consistency with Python's 32-bit unsigned range
+                uint unsignedErrorCode = (uint)errorCode;
+                request.Headers.Add("error_code", unsignedErrorCode.ToString());
+
+                using var errorResponse = await _httpClient.SendAsync(request, cancellationToken);
+
+                if (errorResponse.StatusCode == HttpStatusCode.NotFound) {
+                    var notFoundMessage = await errorResponse.Content.ReadAsStringAsync(cancellationToken);
+                    return $"Error occurred (code: {errorCode}), but error details not available: {notFoundMessage}";
+                }
+
+                errorResponse.EnsureSuccessStatusCode();
+
+                return await errorResponse.Content.ReadAsStringAsync(cancellationToken);
+            } catch (HttpRequestException retrievalEx) {
+                return $"Error occurred (code: {errorCode}), but could not retrieve detailed error message: {retrievalEx.Message}";
+            } catch (TaskCanceledException retrievalEx) when (retrievalEx.InnerException is TimeoutException) {
+                return $"Error occurred (code: {errorCode}), but timed out retrieving detailed error message: {retrievalEx.Message}";
+            }
+        }
     }
 
     protected override void Dispose(bool disposing) {
