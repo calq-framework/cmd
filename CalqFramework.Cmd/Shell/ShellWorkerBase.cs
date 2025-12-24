@@ -1,5 +1,10 @@
 ﻿namespace CalqFramework.Cmd.Shell {
 
+    /// <summary>
+    /// Base implementation for shell workers. Handles piping, lifecycle management,
+    /// and provides common functionality for both process and HTTP workers.
+    /// </summary>
+
     public abstract class ShellWorkerBase(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) : IShellWorker {
         private readonly SemaphoreSlim _hasStartedSemaphore = new SemaphoreSlim(1, 1);
         private volatile bool _hasStarted;

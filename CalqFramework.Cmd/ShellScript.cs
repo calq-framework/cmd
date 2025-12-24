@@ -4,8 +4,17 @@ using CalqFramework.Cmd.Shell;
 
 namespace CalqFramework.Cmd {
 
+    /// <summary>
+    /// Represents a shell command that can be executed, piped, and chained.
+    /// Supports the | operator for creating command pipelines that run in parallel.
+    /// Provides unified interface for Process and HttpClient execution.
+    /// </summary>
+
     [DebuggerDisplay("{Script}")]
     public class ShellScript(IShell shell, string script) {
+        /// <summary>
+        /// AsyncLocal storage for working directory, enabling thread/task isolation.
+        /// </summary>
         public static AsyncLocal<string> LocalWorkingDirectory { get; set; } = new();
 
         public ShellScript? PipedShellScript { get; private init; }
@@ -17,6 +26,10 @@ namespace CalqFramework.Cmd {
             return obj.Evaluate();
         }
 
+        /// <summary>
+        /// Pipeline operator for chaining commands. Creates a new ShellScript with the left side piped to the right.
+        /// Pipeline steps run in parallel for improved performance.
+        /// </summary>
         public static ShellScript operator |(ShellScript a, ShellScript b) {
             var c = new ShellScript(b.Shell, b.Script) {
                 WorkingDirectory = b.WorkingDirectory,
@@ -88,6 +101,10 @@ namespace CalqFramework.Cmd {
             cancellationToken.ThrowIfCancellationRequested();
         }
 
+        /// <summary>
+        /// Starts the shell script asynchronously and returns a worker for stream control.
+        /// Provides access to StandardOutput and error handling via ReadErrorMessageAsync.
+        /// </summary>
         public async Task<IShellWorker> StartAsync(CancellationToken cancellationToken = default) {
             IShellWorker worker = Shell.CreateShellWorker(this, Shell.In, disposeOnCompletion: false);
             await worker.StartAsync(cancellationToken);

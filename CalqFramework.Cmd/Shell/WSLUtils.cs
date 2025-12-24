@@ -5,8 +5,18 @@ using Microsoft.Win32;
 namespace CalqFramework.Cmd.Shell {
 #pragma warning disable CA1416 // Validate platform compatibility
 
+    /// <summary>
+    /// Utilities for Windows Subsystem for Linux (WSL) path conversion.
+    /// Handles mapping between Windows paths (C:\Users) and WSL paths (/mnt/c/Users).
+    /// Supports both WSL and network drive scenarios.
+    /// </summary>
+
     internal static class WSLUtils {
 
+        /// <summary>
+        /// Converts Windows path to WSL path format.
+        /// Examples: C:\Users → /mnt/c/Users, \\wsl$\Ubuntu\home → /home
+        /// </summary>
         internal static string WindowsToWslPath(string windowsPath) {
             const string wslPrefix = @"\\wsl$\";
 
@@ -50,6 +60,10 @@ namespace CalqFramework.Cmd.Shell {
             return null;
         }
 
+        /// <summary>
+        /// Converts WSL path to Windows path format.
+        /// Examples: /mnt/c/Users → C:\Users, /home/user → \\wsl$\distro\home\user
+        /// </summary>
         internal static string WslToWindowsPath(string wslPath) {
             if (string.IsNullOrWhiteSpace(wslPath)) {
                 throw new ArgumentException("WSL path cannot be null, empty, or whitespace.", nameof(wslPath));

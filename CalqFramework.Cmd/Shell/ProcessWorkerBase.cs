@@ -2,6 +2,11 @@
 
 namespace CalqFramework.Cmd.Shell {
 
+    /// <summary>
+    /// Base class for process-based shell workers (CommandLine, Bash).
+    /// Manages process lifecycle, stream handling, and error reporting.
+    /// </summary>
+
     public abstract class ProcessWorkerBase(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) : ShellWorkerBase(shellScript, inputStream, disposeOnCompletion) {
         private bool _disposed;
         private AutoTerminatingProcess _process = null!;

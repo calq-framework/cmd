@@ -3,6 +3,12 @@ using System.Text;
 
 namespace CalqFramework.Cmd.Shell;
 
+/// <summary>
+/// HTTP-based shell worker for distributed command execution.
+/// Communicates with HTTP servers via HTTP/2, supports streaming and error handling.
+/// Used by HttpTool and PythonTool for remote execution.
+/// </summary>
+
 public class HttpToolWorker(HttpClient httpClient, ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) : ShellWorkerBase(shellScript, inputStream, disposeOnCompletion) {
     private bool _disposed;
     private HttpToolOutputStream? _executionOutputStream;
