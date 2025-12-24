@@ -1,5 +1,10 @@
 ﻿namespace CalqFramework.Cmd.Shell;
 
+/// <summary>
+/// Base class for all shell implementations. Provides common functionality for
+/// exception handling, input/output streams, and postprocessing.
+/// </summary>
+
 public abstract class ShellBase : IShell {
     public IShellScriptExceptionFactory ExceptionFactory { get; init; } = new ShellScriptExceptionFactory();
     public Stream? In { get; init; } = null;

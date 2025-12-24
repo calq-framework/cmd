@@ -3,6 +3,12 @@ using CalqFramework.Cmd.Shell;
 
 namespace CalqFramework.Cmd.Shells;
 
+/// <summary>
+/// Python shell implementation using HTTP/2 communication with PythonToolServer.
+/// Supports Python Fire compatibility and real-time streaming via async generators.
+/// Provides sub-millisecond latency for Python script execution.
+/// </summary>
+
 public class PythonTool : ShellBase {
 
     public PythonTool(IPythonToolServer pythonServer) {

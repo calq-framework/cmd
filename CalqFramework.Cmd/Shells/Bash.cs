@@ -2,9 +2,16 @@
 
 namespace CalqFramework.Cmd.Shells;
 
+/// <summary>
+/// Bash shell implementation with WSL support on Windows.
+/// Automatically detects WSL environment and handles Windows↔WSL path mapping.
+/// Supports Cygwin, MinGW, and MSYS2 environments.
+/// </summary>
+
 public class Bash : ShellBase {
 
     static Bash() {
+        // Detect if running Bash on WSL by checking uname output
         if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
             var shell = new CommandLine();
             var script = new ShellScript(shell, @"bash -c ""uname -s""");
@@ -20,6 +27,9 @@ public class Bash : ShellBase {
         }
     }
 
+    /// <summary>
+    /// True if Bash is running on WSL, enabling automatic path translation.
+    /// </summary>
     internal static bool IsRunningBashOnWSL { get; }
 
     public override ProcessWorkerBase CreateShellWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) {

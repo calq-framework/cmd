@@ -2,6 +2,12 @@
 
 namespace CalqFramework.Cmd.Shells;
 
+/// <summary>
+/// Shell wrapper that prepends a command to all executed scripts.
+/// Useful for sudo, git, docker, and other command prefixes.
+/// Example: new ShellTool(new Bash(), "sudo") makes all commands run with sudo.
+/// </summary>
+
 public class ShellTool(IShell shell, string command) : ShellBase {
     public string Command { get; init; } = command;
     public IShell Shell { get; } = shell;

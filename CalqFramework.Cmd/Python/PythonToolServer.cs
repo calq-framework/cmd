@@ -5,6 +5,12 @@ using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.Python;
 
+/// <summary>
+/// HTTPS server for executing Python scripts compatible with Python Fire.
+/// Embeds server.py, generates SSL certificates, and provides streaming support.
+/// Input is consumed entirely before execution; output streams in real-time over HTTP/2.
+/// </summary>
+
 public class PythonToolServer(string toolScriptPath) : IPythonToolServer {
     private int? _port;
     private bool _started;

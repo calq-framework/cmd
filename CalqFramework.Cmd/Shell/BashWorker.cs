@@ -3,6 +3,11 @@ using System.Text.RegularExpressions;
 
 namespace CalqFramework.Cmd.Shell {
 
+    /// <summary>
+    /// Process worker for Bash shell execution with WSL support.
+    /// Handles script encoding, error trapping, and WSL path conversion.
+    /// </summary>
+
     public class BashWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) : ProcessWorkerBase(shellScript, inputStream, disposeOnCompletion) {
         internal static bool IsUsingWSL => CalqFramework.Cmd.Shells.Bash.IsRunningBashOnWSL;
 

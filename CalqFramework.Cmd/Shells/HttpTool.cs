@@ -2,6 +2,11 @@
 
 namespace CalqFramework.Cmd.Shells;
 
+/// <summary>
+/// HTTP-based shell for distributed computing via HttpToolWorker protocol.
+/// Enables execution on remote HTTP servers that comply with HttpToolWorker interface.
+/// </summary>
+
 public class HttpTool(HttpClient httpClient) : ShellBase {
     public HttpClient HttpClient { get; } = httpClient;
 
