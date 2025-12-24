@@ -77,11 +77,15 @@ RUN($"echo {echo}"); // prints "Hello World"
 string echo = await CMDAsync("echo Hello World");
 await RUNAsync($"echo {echo}"); // prints "Hello World"
 ```
+
+### Parallel Pipeline Execution
 Pipelines are internally run asynchronously, and each pipeline step is run in parallel.  
 The following returns "Hello World" after 1 second.
 ```csharp
 string output = CMDV("echo Hello World") | CMDV("sleep 1; cat") | CMDV("sleep 1; cat") | CMDV("sleep 1; cat");
 ```
+
+### Thread/Task Isolation with AsyncLocal
 `LocalTerminal` settings are stored in `AsyncLocal<T>` so threads and tasks can be used like subshells.
 ```csharp
 CD("/tmp");  
@@ -91,6 +95,8 @@ Task.Run(() => {
 });  
 Console.WriteLine(PWD); // prints "/tmp"
 ```
+
+### Unified Process and HTTP Interface
 Calq CMD provides unified interfaces that wrap `Process` and `HttpClient`, simplifying direct stream operations.
 ```csharp
 ShellScript cmd = CMDV("tail -F /var/log/messages") | CMDV("grep -i 'error'");
@@ -101,6 +107,97 @@ try {
 } catch (ShellWorkerException ex) {
     var errorCode = ex.ErrorCode; // returns exit code
     var errorMessage = await worker.ReadErrorMessageAsync(); // reads STDERR
+}
+```
+
+### Automatic Resource Management
+Workers support automatic disposal when output reading completes:
+```csharp
+// Auto-dispose enabled by default
+using var worker = await cmd.StartAsync();
+// Worker automatically disposed when pipeline completes
+
+// Manual control when needed
+using var worker = await cmd.StartAsync(disposeOnCompletion: false);
+```
+
+#### Streaming from C# Controller Endpoints
+Auto-disposal enables direct stream returns without manual worker management:
+```csharp
+[ApiController]
+public class DataController : ControllerBase {
+    private readonly PythonTool _pythonTool;
+    
+    public DataController(PythonTool pythonTool) {
+        _pythonTool = pythonTool;
+    }
+    
+    [HttpGet("stream-data")]
+    [Produces("text/plain")]
+    public async Task<Stream> StreamData() => ExecutePython("process_large_dataset");
+    
+    [HttpPost("process-upload")]
+    [Produces("application/json")]
+    public async Task<Stream> ProcessUpload(IFormFile file) => ExecutePython("analyze_file", file.OpenReadStream());
+    
+    [HttpPost("process-stream")]
+    [Produces("application/json")]
+    public async Task<Stream> ProcessStream([FromBody] Stream data) => ExecutePython("transform_data", data);
+    
+    private async Task<Stream> ExecutePython(string command, Stream? input = null) {
+        LocalTerminal.Shell = _pythonTool;
+        var worker = await CMDV(command).StartAsync(input);
+        return worker.StandardOutput;
+    }
+}
+```
+
+### Automatic Process Cleanup
+All spawned processes are automatically terminated when the application exits, preventing orphaned processes:
+```csharp
+// Processes are automatically tracked and cleaned up
+CMD("long-running-command");
+// If application exits unexpectedly, child processes are automatically killed
+```
+
+### Working Directory and Path Mapping
+  
+**LocalTerminal.WorkingDirectory** - the host’s absolute path of the current working directory.  
+**PWD** - `LocalTerminal.WorkingDirectory` mapped to the shell’s internal path.  
+
+Shell implementations automatically handle path translation between host and internal formats.
+When using Bash on Windows via WSL, PWD is automatically mapped to the WSL path of the current working directory.  
+On Linux, these are effectively the same.
+
+```csharp
+// Working directory examples
+Console.WriteLine(LocalTerminal.WorkingDirectory); // e.g. "C:\Users"
+Console.WriteLine(PWD);                            // e.g. "/mnt/c/Users"
+
+// Programmatic path mapping
+LocalTerminal.Shell.MapToInternalPath("C:\\temp");  // "/mnt/c/temp"
+LocalTerminal.Shell.MapToHostPath("/mnt/c/temp");   // "C:\temp"
+```
+
+### Automatic Output Processing
+Command output is automatically cleaned up by shell-specific postprocessors:
+```csharp
+// CMD automatically trims trailing newlines
+string result = CMD("echo 'hello world'"); // "hello world" (no \n)
+
+// Custom postprocessing available via IShellScriptPostprocessor
+```
+
+### Enriched Exception Handling
+Failed commands automatically generate enriched exceptions with context:
+```csharp
+try {
+    CMD("nonexistent-command");
+} catch (ShellScriptException ex) {
+    // Exception includes command text, error output, and execution context
+    Console.WriteLine(ex.Command);     // "nonexistent-command"
+    Console.WriteLine(ex.ErrorOutput); // stderr content
+    Console.WriteLine(ex.ExitCode);    // process exit code
 }
 ```
 
@@ -139,16 +236,6 @@ LocalTerminal.Shell = new ShellTool(new Bash(), "sudo");
 RUN("apt update");
 LocalTerminal.Shell = new ShellTool(new Bash(), "git");
 RUN("commit -m 'automated message'"); 
-```
-
-### Working Directory and WSL
-**LocalTerminal.WorkingDirectory** - the host’s absolute path of the current working directory.  
-**PWD** - `LocalTerminal.WorkingDirectory` mapped to the shell’s internal path.  
-When using Bash on Windows via WSL, PWD is automatically mapped to the WSL path of the current working directory.  
-On Linux, these are effectively the same.
-```csharp
-Console.WriteLine(LocalTerminal.WorkingDirectory); // e.g. "C:\Users"
-Console.WriteLine(PWD);                            // e.g. "/mnt/c/Users"
 ```
 
 ### Python
