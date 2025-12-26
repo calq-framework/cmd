@@ -1,4 +1,5 @@
-﻿using CalqFramework.Cmd.TerminalComponents;
+﻿using CalqFramework.Cmd.Shell;
+using CalqFramework.Cmd.TerminalComponents;
 
 namespace CalqFramework.Cmd;
 
@@ -57,6 +58,36 @@ public static class Terminal {
 
     public static Task<string> CMDAsync(string script, Stream? inputStream, CancellationToken cancellationToken = default) {
         return CMDV(script).EvaluateAsync(inputStream, cancellationToken);
+    }
+
+    /// <summary>
+    /// Executes a shell command and returns the output as a stream for real-time processing.
+    /// Provides direct access to the command's StandardOutput stream.
+    /// Worker is auto-disposed when stream reading completes.
+    /// </summary>
+    public static ShellWorkerOutputStream CMDStream(string script, TimeSpan? timeout = null) {
+        var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
+        return CMDStreamAsync(script, cancellationTokenSource.Token).ConfigureAwait(false).GetAwaiter().GetResult();
+    }
+
+    public static ShellWorkerOutputStream CMDStream(string script, Stream? inputStream, TimeSpan? timeout = null) {
+        var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
+        return CMDStreamAsync(script, inputStream, cancellationTokenSource.Token).ConfigureAwait(false).GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// Asynchronously executes a shell command and returns the output as a stream for real-time processing.
+    /// Provides direct access to the command's StandardOutput stream.
+    /// Worker is auto-disposed when stream reading completes.
+    /// </summary>
+    public static async Task<ShellWorkerOutputStream> CMDStreamAsync(string script, CancellationToken cancellationToken = default) {
+        return await CMDStreamAsync(script, null, cancellationToken);
+    }
+
+    public static async Task<ShellWorkerOutputStream> CMDStreamAsync(string script, Stream? inputStream, CancellationToken cancellationToken = default) {
+        ShellScript cmd = CMDV(script);
+        var worker = await cmd.StartAsync(inputStream, disposeOnCompletion: true, cancellationToken);
+        return worker.StandardOutput;
     }
 
     /// <summary>
