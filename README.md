@@ -144,38 +144,6 @@ var worker = await cmd.StartAsync();
 using var worker = await cmd.StartAsync(disposeOnCompletion: false);
 ```
 
-#### Streaming from C# Controller Endpoints
-Auto-disposal enables direct stream returns without manual worker management:
-```csharp
-[ApiController]
-public class DataController : ControllerBase {
-    private readonly PythonTool _pythonTool;
-    
-    public DataController(PythonTool pythonTool) {
-        _pythonTool = pythonTool;
-    }
-    
-    [HttpGet("stream-data")]
-    [Produces("text/plain")]
-    public async Task<Stream> StreamData() => ExecutePython("process_large_dataset");
-    
-    [HttpPost("process-upload")]
-    [Produces("application/json")]
-    public async Task<Stream> ProcessUpload(IFormFile file) => ExecutePython("analyze_file", file.OpenReadStream());
-    
-    [HttpPost("process-stream")]
-    [Produces("application/json")]
-    public async Task<Stream> ProcessStream([FromBody] Stream data) => ExecutePython("transform_data", data);
-    
-    private async Task<Stream> ExecutePython(string command, Stream? input = null) {
-        LocalTerminal.Shell = _pythonTool;
-        // StartAsync() defaults to disposeOnCompletion: true for automatic cleanup
-        var worker = await CMDV(command).StartAsync(input);
-        return worker.StandardOutput; // Worker auto-disposed when stream reading completes
-    }
-}
-```
-
 ### Automatic Process Cleanup
 All spawned processes are automatically terminated when the application exits, preventing orphaned processes:
 ```csharp
@@ -229,11 +197,19 @@ try {
 Currently available built-in shells: `CommandLine`, `Bash`, `PythonTool`, `HttpTool`, and `ShellTool`.
 
 ### CMD/RUN
-CMD by default doesn't read from any stream and returns a string with the last newline trimmed by `LocalTerminal.Shell.ShellScriptPostprocessor`.
+**CMD** by default doesn't read from any stream and returns output as a string, with the last newline trimmed by `LocalTerminal.Shell.ShellScriptPostprocessor`.
 ```csharp
-CMD("echo Hello World");
+string result = CMD("echo Hello World");
 ```
-RUN by default reads from `LocalTerminal.Shell.In` and writes into `LocalTerminal.Out`.
+**CMDStream** is just like CMD but returns streams for real-time processing scenarios.
+```csharp
+using var stream = await CMDStream("tail -f logfile");
+```
+**CMDV** is just like CMD but returns `ShellScript` instances for pipeline chaining with the `|` operator.
+```csharp
+string output = CMDV("echo data") | CMDV("grep pattern"); // implicit conversion evaluates the command into output
+```
+**RUN** by default reads from `LocalTerminal.Shell.In` and writes into `LocalTerminal.Out`. RUN operations are automatically logged via `LocalTerminal.TerminalLogger`.
 ```csharp
 RUN("read -r input; echo $input");
 ```
@@ -319,6 +295,33 @@ LocalTerminal.Shell = new PythonTool(pts) {
     In = new MemoryStream(Encoding.ASCII.GetBytes(" one\n two\n three\n"));
 };
 RUN("test") // prints each line every second
+```
+
+### ASP.NET Core Integration
+Calq CMD integrates seamlessly with ASP.NET Core applications, enabling cloud-native web APIs that leverage shell-style scripting for data processing and streaming operations.
+
+```csharp
+public class UseMyPythonToolShellAttribute : ActionFilterAttribute {
+    public override void OnActionExecuting(ActionExecutingContext context) {
+        var tool = context.HttpContext.RequestServices.GetRequiredService<MyPythonTool>();
+        LocalTerminal.Shell = tool; // Sets Shell for this request scope
+    }
+}
+
+[ApiController, UseMyPythonToolShell]
+public class DataController : ControllerBase {
+    [HttpGet("stream-data")]
+    [Produces("text/plain")]
+    public async Task<Stream> StreamData() => await CMDStreamAsync("process_large_dataset");
+
+    [HttpPost("process-upload")]
+    [Produces("application/json")]
+    public async Task<Stream> ProcessUpload(IFormFile file) => await CMDStreamAsync("analyze_file", file.OpenReadStream());
+
+    [HttpPost("process-stream")]
+    [Produces("application/json")]
+    public async Task<Stream> ProcessStream([FromBody] Stream data) => await CMDStreamAsync("transform_data", data);
+}
 ```
 
 ### Quick Start  
