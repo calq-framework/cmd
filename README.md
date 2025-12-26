@@ -78,6 +78,29 @@ string echo = await CMDAsync("echo Hello World");
 await RUNAsync($"echo {echo}"); // prints "Hello World"
 ```
 
+### CMD/RUN
+
+*   **CMD** by default doesn't read from any stream and returns output as a string, with the last newline trimmed by `LocalTerminal.Shell.Postprocessor`.
+    ```csharp
+    string result = CMD("echo Hello World");
+    ```
+
+*   **CMDStream** is just like CMD but returns streams for real-time processing scenarios.
+    ```csharp
+    using var stream = CMDStream("tail -f logfile");
+    ```
+
+*   **CMDV** is just like CMD but returns `ShellScript` instances for pipeline chaining with the `|` operator. `ShellScripts` have implicit conversion to string that triggers processing and returns output.
+    ```csharp
+    string output = CMDV("echo data") | CMDV("grep pattern");
+    ```
+
+*   **RUN** by default reads from `LocalTerminal.Shell.In` and writes into `LocalTerminal.Out`. RUN operations are automatically logged via `LocalTerminal.TerminalLogger`.
+    ```csharp
+    RUN("read -r input; echo $input");
+    ```
+See [Terminal.cs](https://github.com/calq-framework/cmd/blob/main/CalqFramework.Cmd/Terminal.cs) for all available overloads.
+
 ### Working with ShellScript Instances
 For advanced scenarios, you can work directly with `ShellScript` instances for more control:
 ```csharp
@@ -102,6 +125,8 @@ using var worker = await script.StartAsync();
 using var reader = new StreamReader(worker.StandardOutput);
 string line = await reader.ReadLineAsync();
 ```
+
+## Key Features
 
 ### Parallel Pipeline Execution
 Pipelines are internally run asynchronously, and each pipeline step is run in parallel.  
@@ -128,7 +153,7 @@ ShellScript cmd = CMDV("tail -F /var/log/messages") | CMDV("grep -i 'error'");
 using var worker = await cmd.StartAsync();
 using var reader = new StreamReader(worker.StandardOutput);
 try {
-    var line = reader.ReadLine()
+    var line = await reader.ReadLineAsync();
 } catch (ShellWorkerException ex) {
     var errorCode = ex.ErrorCode; // returns exit code
     var errorMessage = await worker.ReadErrorMessageAsync(); // reads STDERR
@@ -154,8 +179,8 @@ CMD("long-running-command");
 
 ### Working Directory and Path Mapping
   
-**LocalTerminal.WorkingDirectory** - the host’s absolute path of the current working directory.  
-**PWD** - `LocalTerminal.WorkingDirectory` mapped to the shell’s internal path.  
+**LocalTerminal.WorkingDirectory** - the host's absolute path of the current working directory.  
+**PWD** - `LocalTerminal.WorkingDirectory` mapped to the shell's internal path.  
 
 Shell implementations automatically handle path translation between host and internal formats.
 When using Bash on Windows via WSL, PWD is automatically mapped to the WSL path of the current working directory.  
@@ -176,44 +201,37 @@ Command output is automatically cleaned up by shell-specific postprocessors:
 ```csharp
 // CMD automatically trims trailing newlines
 string result = CMD("echo 'hello world'"); // "hello world" (no \n)
-
 // Custom postprocessing available via IShellScriptPostprocessor
 ```
 
-### Enriched Exception Handling
-Failed commands automatically generate enriched exceptions with context:
+### Exception Handling
+Failed commands throw `ShellScriptException` with contextual information:
 ```csharp
 try {
     CMD("nonexistent-command");
 } catch (ShellScriptException ex) {
-    // Exception includes command text, error output, and execution context
-    Console.WriteLine(ex.Command);     // "nonexistent-command"
-    Console.WriteLine(ex.ErrorOutput); // stderr content
-    Console.WriteLine(ex.ExitCode);    // process exit code
+    Console.WriteLine($"Exit Code: {ex.ErrorCode}");
+    Console.WriteLine($"Details: {ex.Message}");
+    // Message contains: command text, error details, and stderr output
 }
 ```
 
-## Usage
-Currently available built-in shells: `CommandLine`, `Bash`, `PythonTool`, `HttpTool`, and `ShellTool`.
+When working with workers directly, catch `ShellWorkerException` for lower-level control:
+```csharp
+var script = new ShellScript(LocalTerminal.Shell, "failing-command");
+try {
+    using var worker = await script.StartAsync();
+    using var reader = new StreamReader(worker.StandardOutput);
+    string output = await reader.ReadToEndAsync();
+} catch (ShellWorkerException ex) {
+    Console.WriteLine($"Worker failed with code: {ex.ErrorCode}");
+    string errorDetails = await worker.ReadErrorMessageAsync();
+    Console.WriteLine($"Error output: {errorDetails}");
+}
+```
 
-### CMD/RUN
-**CMD** by default doesn't read from any stream and returns output as a string, with the last newline trimmed by `LocalTerminal.Shell.ShellScriptPostprocessor`.
-```csharp
-string result = CMD("echo Hello World");
-```
-**CMDStream** is just like CMD but returns streams for real-time processing scenarios.
-```csharp
-using var stream = await CMDStream("tail -f logfile");
-```
-**CMDV** is just like CMD but returns `ShellScript` instances for pipeline chaining with the `|` operator.
-```csharp
-string output = CMDV("echo data") | CMDV("grep pattern"); // implicit conversion evaluates the command into output
-```
-**RUN** by default reads from `LocalTerminal.Shell.In` and writes into `LocalTerminal.Out`. RUN operations are automatically logged via `LocalTerminal.TerminalLogger`.
-```csharp
-RUN("read -r input; echo $input");
-```
-See [Terminal.cs](https://github.com/calq-framework/cmd/blob/main/CalqFramework.Cmd/Terminal.cs) for all available overloads.
+## Shell Configuration & Tools
+Currently available built-in shells: `CommandLine`, `Bash`, `PythonTool`, `HttpTool`, and `ShellTool`.
 
 ### LocalTerminal
 `LocalTerminal` settings are stored in an `AsyncLocal<T>` so that each logical context (thread or async task) keeps its own configuration.  
@@ -237,6 +255,8 @@ RUN("apt update");
 LocalTerminal.Shell = new ShellTool(new Bash(), "git");
 RUN("commit -m 'automated message'"); 
 ```
+
+## Integrations
 
 ### Python
 Python scripts compatible with [Python Fire](https://github.com/google/python-fire) can be run identically via PythonTool shell.
@@ -324,7 +344,7 @@ public class DataController : ControllerBase {
 }
 ```
 
-### Quick Start  
+## Quick Start  
 ```csharp
 using static CalqFramework.Cmd.Terminal;  
 
@@ -332,8 +352,8 @@ class QuickStart {
     static async Task Main() {  
         Console.WriteLine("PWD: " + PWD);  
         RUN("echo Hello Calq CMD!");  
-        string date = CMD("date");  
-        Console.WriteLine(date);  
+        string version = CMD("curl --version");  
+        Console.WriteLine(version);  
     }  
 }  
 ```  
