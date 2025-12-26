@@ -104,7 +104,7 @@ public class TerminalTest {
         string input = "hello world";
 
         ShellScript command = CMDV($"sleep 2; echo {input}");
-        using Cmd.Shell.IShellWorker proc = await command.StartAsync();
+        using Cmd.Shell.IShellWorker proc = await command.StartAsync(disposeOnCompletion: false);
         GC.Collect();
         GC.WaitForPendingFinalizers();
         using var reader = new StreamReader(proc.StandardOutput);
@@ -307,7 +307,7 @@ EOF");
         };
 
         ShellScript echo = CMDV("");
-        using Cmd.Shell.IShellWorker requestWorker = await echo.StartAsync();
+        using Cmd.Shell.IShellWorker requestWorker = await echo.StartAsync(disposeOnCompletion: false);
         var reader = new StreamReader(requestWorker.StandardOutput);
         string output = "";
         Assert.Throws<ShellWorkerException>(() => {

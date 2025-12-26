@@ -1,11 +1,21 @@
 ﻿namespace CalqFramework.Cmd.Shell {
 
+    /// <summary>
+    /// Stream wrapper for shell worker output that handles automatic disposal and error detection.
+    /// Disposes the underlying worker when DisposeOnCompletion is enabled and reading completes.
+    /// </summary>
     // INFO throwing with only ErrorCode is OK, stderr might contain diagnostics/info instead of error errorMessage so don't throw just because not empty
     public abstract class ShellWorkerOutputStream : Stream {
+        /// <summary>
+        /// Error information with optional error code and exception.
+        /// </summary>
         protected readonly record struct Error(long? ErrorCode, Exception? Exception);
 
         private readonly IShellWorker _shellWorker;
 
+        /// <summary>
+        /// Creates a new shell worker output stream wrapper.
+        /// </summary>
         public ShellWorkerOutputStream(IShellWorker shellWorker) {
             _shellWorker = shellWorker;
         }
@@ -88,9 +98,16 @@
             InnerStream.Write(buffer, offset, count);
         }
 
+        /// <summary>
+        /// Disposes the stream and optionally the underlying worker when DisposeOnCompletion is enabled.
+        /// </summary>
         protected override void Dispose(bool disposing) {
             if (disposing) {
                 InnerStream.Dispose();
+                
+                if (_shellWorker.DisposeOnCompletion) {
+                    _shellWorker.Dispose();
+                }
             }
             base.Dispose(disposing);
         }
