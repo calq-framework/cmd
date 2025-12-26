@@ -91,7 +91,7 @@ namespace CalqFramework.Cmd {
         /// <param name="cancellationToken">Token to cancel the operation</param>
         /// <returns>Task containing the complete command output as a string</returns>
         public async Task<string> EvaluateAsync(Stream? inputStream, CancellationToken cancellationToken = default) {
-            using IShellWorker worker = await StartAsync(inputStream, cancellationToken);
+            using IShellWorker worker = await StartAsync(inputStream, disposeOnCompletion: false, cancellationToken);
             using var reader = new StreamReader(worker.StandardOutput);
 
             var sb = new StringBuilder();
@@ -165,7 +165,7 @@ namespace CalqFramework.Cmd {
         /// <param name="cancellationToken">Token to cancel the operation</param>
         /// <returns>Task that completes when the command finishes execution</returns>
         public async Task RunAsync(Stream? inputStream, Stream outputStream, CancellationToken cancellationToken = default) {
-            using IShellWorker worker = await StartAsync(inputStream, cancellationToken);
+            using IShellWorker worker = await StartAsync(inputStream, disposeOnCompletion: false, cancellationToken);
             var relayOutputCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
             try {
@@ -181,9 +181,23 @@ namespace CalqFramework.Cmd {
         /// <summary>
         /// Starts the shell script asynchronously and returns a worker for stream control.
         /// Provides access to StandardOutput and error handling via ReadErrorMessageAsync.
+        /// Uses disposeOnCompletion: true by default.
         /// </summary>
+        /// <param name="cancellationToken">Token to cancel the start operation</param>
+        /// <returns>A worker instance providing access to StandardOutput and error handling</returns>
         public async Task<IShellWorker> StartAsync(CancellationToken cancellationToken = default) {
-            IShellWorker worker = Shell.CreateShellWorker(this, Shell.In, disposeOnCompletion: false);
+            return await StartAsync(disposeOnCompletion: true, cancellationToken);
+        }
+
+        /// <summary>
+        /// Starts the shell script asynchronously and returns a worker for stream control.
+        /// Provides access to StandardOutput and error handling via ReadErrorMessageAsync.
+        /// </summary>
+        /// <param name="disposeOnCompletion">Whether to auto-dispose the worker when output reading completes</param>
+        /// <param name="cancellationToken">Token to cancel the start operation</param>
+        /// <returns>A worker instance providing access to StandardOutput and error handling</returns>
+        public async Task<IShellWorker> StartAsync(bool disposeOnCompletion, CancellationToken cancellationToken = default) {
+            IShellWorker worker = Shell.CreateShellWorker(this, Shell.In, disposeOnCompletion);
             await worker.StartAsync(cancellationToken);
             return worker;
         }
@@ -191,12 +205,25 @@ namespace CalqFramework.Cmd {
         /// <summary>
         /// Starts the shell script asynchronously with custom input and returns a worker for stream control.
         /// Allows providing input data and accessing StandardOutput for manual stream handling.
+        /// Uses disposeOnCompletion: true by default.
         /// </summary>
         /// <param name="inputStream">Input stream to pipe to the command's stdin</param>
         /// <param name="cancellationToken">Token to cancel the start operation</param>
         /// <returns>A worker instance providing access to StandardOutput and error handling</returns>
         public async Task<IShellWorker> StartAsync(Stream? inputStream, CancellationToken cancellationToken = default) {
-            IShellWorker worker = Shell.CreateShellWorker(this, inputStream, disposeOnCompletion: false);
+            return await StartAsync(inputStream, disposeOnCompletion: true, cancellationToken);
+        }
+
+        /// <summary>
+        /// Starts the shell script asynchronously with custom input and returns a worker for stream control.
+        /// Allows providing input data and accessing StandardOutput for manual stream handling.
+        /// </summary>
+        /// <param name="inputStream">Input stream to pipe to the command's stdin</param>
+        /// <param name="disposeOnCompletion">Whether to auto-dispose the worker when output reading completes</param>
+        /// <param name="cancellationToken">Token to cancel the start operation</param>
+        /// <returns>A worker instance providing access to StandardOutput and error handling</returns>
+        public async Task<IShellWorker> StartAsync(Stream? inputStream, bool disposeOnCompletion, CancellationToken cancellationToken = default) {
+            IShellWorker worker = Shell.CreateShellWorker(this, inputStream, disposeOnCompletion);
             await worker.StartAsync(cancellationToken);
             return worker;
         }

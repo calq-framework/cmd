@@ -136,14 +136,15 @@ try {
 ```
 
 ### Automatic Resource Management
-Workers support automatic disposal when output reading completes:
+Workers support automatic disposal when output stream reading reaches end-of-stream:
 ```csharp
-// Auto-dispose enabled by default
+// Auto-dispose enabled by default when using StartAsync()
 using var worker = await cmd.StartAsync();
-// Worker automatically disposed when pipeline completes
+// Worker automatically disposed when StandardOutput.Read() returns 0 (end of stream)
 
 // Manual control when needed
 using var worker = await cmd.StartAsync(disposeOnCompletion: false);
+// Worker must be disposed manually via using statement
 ```
 
 #### Streaming from C# Controller Endpoints
@@ -171,8 +172,9 @@ public class DataController : ControllerBase {
     
     private async Task<Stream> ExecutePython(string command, Stream? input = null) {
         LocalTerminal.Shell = _pythonTool;
+        // StartAsync() defaults to disposeOnCompletion: true for automatic cleanup
         var worker = await CMDV(command).StartAsync(input);
-        return worker.StandardOutput;
+        return worker.StandardOutput; // Worker auto-disposed when stream reading completes
     }
 }
 ```
