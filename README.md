@@ -136,15 +136,12 @@ try {
 ```
 
 ### Automatic Resource Management
-Workers support automatic disposal when output stream reading reaches end-of-stream:
+Workers support automatic disposal when output stream reading reaches end-of-stream or the output stream is disposed:
 ```csharp
-// Auto-dispose enabled by default when using StartAsync()
-using var worker = await cmd.StartAsync();
-// Worker automatically disposed when StandardOutput.Read() returns 0 (end of stream)
+var worker = await cmd.StartAsync();
 
-// Manual control when needed
+// Disables automatic disposal
 using var worker = await cmd.StartAsync(disposeOnCompletion: false);
-// Worker must be disposed manually via using statement
 ```
 
 #### Streaming from C# Controller Endpoints

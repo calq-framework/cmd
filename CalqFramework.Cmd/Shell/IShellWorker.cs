@@ -8,8 +8,8 @@
 
     public interface IShellWorker : IDisposable {
         /// <summary>
-        /// Indicates whether this worker should be automatically disposed when output reading completes.
-        /// Used to manage resource cleanup in pipeline scenarios.
+        /// Indicates whether this worker should be automatically disposed when output reading completes
+        /// or when the output stream is disposed.
         /// </summary>
         bool DisposeOnCompletion { get; }
         

@@ -53,7 +53,7 @@ public class PythonToolTest {
         var shell = new PythonTool(pythonServer);
 
         var shellScript = new ShellScript(shell, "test_throw_exception");
-        using var worker = await shellScript.StartAsync(GetStream(input));
+        using var worker = await shellScript.StartAsync(GetStream(input), disposeOnCompletion: false);
 
         var outputBuffer = new byte[1024];
         var totalOutput = new List<byte>();
