@@ -78,6 +78,31 @@ string echo = await CMDAsync("echo Hello World");
 await RUNAsync($"echo {echo}"); // prints "Hello World"
 ```
 
+### Working with ShellScript Instances
+For advanced scenarios, you can work directly with `ShellScript` instances for more control:
+```csharp
+// Create script instances
+var script = new ShellScript(LocalTerminal.Shell, "echo Hello World");
+
+// Evaluate vs Run - choose based on your needs
+string result = script.Evaluate();           // Returns output as string
+script.Run(Console.OpenStandardOutput());    // Streams output to provided stream
+
+// Async versions for better performance
+string result = await script.EvaluateAsync();
+await script.RunAsync(outputStream);
+
+// Custom input handling
+using var inputStream = new MemoryStream(Encoding.UTF8.GetBytes("input data"));
+string result = script.Evaluate(inputStream);
+await script.RunAsync(inputStream, outputStream);
+
+// Advanced control with workers
+using var worker = await script.StartAsync();
+using var reader = new StreamReader(worker.StandardOutput);
+string line = await reader.ReadLineAsync();
+```
+
 ### Parallel Pipeline Execution
 Pipelines are internally run asynchronously, and each pipeline step is run in parallel.  
 The following returns "Hello World" after 1 second.
