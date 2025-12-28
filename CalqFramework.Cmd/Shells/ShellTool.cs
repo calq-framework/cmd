@@ -9,7 +9,14 @@ namespace CalqFramework.Cmd.Shells;
 /// </summary>
 
 public class ShellTool(IShell shell, string command) : ShellBase {
+    /// <summary>
+    /// Command prefix that will be prepended to all executed scripts.
+    /// </summary>
     public string Command { get; init; } = command;
+    
+    /// <summary>
+    /// Underlying shell implementation that will execute the prefixed commands.
+    /// </summary>
     public IShell Shell { get; } = shell;
 
     public override IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) {

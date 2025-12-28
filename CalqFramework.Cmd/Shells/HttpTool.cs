@@ -8,6 +8,9 @@ namespace CalqFramework.Cmd.Shells;
 /// </summary>
 
 public class HttpTool(HttpClient httpClient) : ShellBase {
+    /// <summary>
+    /// HTTP client used for communicating with remote HTTP-based shell servers.
+    /// </summary>
     public HttpClient HttpClient { get; } = httpClient;
 
     public override IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) {

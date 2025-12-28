@@ -35,7 +35,6 @@
         /// Ensures all piped commands in the pipeline have completed execution.
         /// Waits for the entire command chain to finish before returning.
         /// </summary>
-        /// <param name="cancellationToken">Token to cancel the wait operation</param>
         /// <returns>Task that completes when the entire pipeline is finished</returns>
         Task EnsurePipeIsCompletedAsync(CancellationToken cancellationToken = default);
 
@@ -43,7 +42,6 @@
         /// Reads error messages from the command's standard error stream.
         /// Used for diagnostics and exception creation when commands fail.
         /// </summary>
-        /// <param name="cancellationToken">Token to cancel the read operation</param>
         /// <returns>Error message text from stderr</returns>
         Task<string> ReadErrorMessageAsync(CancellationToken cancellationToken = default);
 
@@ -51,7 +49,6 @@
         /// Starts the shell command execution asynchronously.
         /// Initializes the process or HTTP request and begins command execution.
         /// </summary>
-        /// <param name="cancellationToken">Token to cancel the start operation</param>
         /// <returns>Task that completes when the command has started</returns>
         Task StartAsync(CancellationToken cancellationToken = default);
     }

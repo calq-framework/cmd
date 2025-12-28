@@ -3,8 +3,16 @@ using System.Runtime.InteropServices;
 
 namespace CalqFramework.Cmd.Shell {
 
+    /// <summary>
+    /// Utility methods for stream handling and input/output relay operations.
+    /// Provides functionality for relaying data between streams and detecting console input redirection.
+    /// </summary>
     internal class StreamUtils {
 
+        /// <summary>
+        /// Relays input from a StreamReader to a process's standard input.
+        /// Handles both console input (character by character) and redirected input (buffered).
+        /// </summary>
         public static async Task RelayInput(TextWriter processInput, StreamReader inputReader, CancellationToken cancellationToken) {
             bool isInputRedirected = IsInputRedirected(inputReader);
             if (isInputRedirected == false) {
@@ -45,6 +53,10 @@ namespace CalqFramework.Cmd.Shell {
             }
         }
 
+        /// <summary>
+        /// Relays data from one stream to another in chunks.
+        /// Copies all available data from the reader stream to the writer stream.
+        /// </summary>
         public static async Task RelayStream(Stream reader, Stream writer, CancellationToken cancellationToken) {
             byte[] bufferArray = new byte[4096];
 
@@ -61,6 +73,11 @@ namespace CalqFramework.Cmd.Shell {
         // assumes one of the following
         // https://github.com/dotnet/runtime/blob/464e5fe6fbe499012445cbd6371010748b89dba3/src/libraries/System.Console/src/System/ConsolePal.Unix.ConsoleStream.cs#L13
         // https://github.com/dotnet/runtime/blob/464e5fe6fbe499012445cbd6371010748b89dba3/src/libraries/System.Console/src/System/ConsolePal.Windows.cs#L1149
+        /// <summary>
+        /// Checks if two streams have the same underlying handle using reflection.
+        /// Used to determine if streams represent the same resource (e.g., console input).
+        /// </summary>
+        /// <returns>True if streams have matching underlying handles</returns>
         private static bool HasMatchingUnderlyingStream(Stream stream1, Stream stream2) {
             if (stream1.GetType() != stream2.GetType()) {
                 return false;
@@ -78,10 +95,19 @@ namespace CalqFramework.Cmd.Shell {
             };
         }
 
+        /// <summary>
+        /// Determines if input is redirected by checking console redirection status and stream type.
+        /// </summary>
+        /// <returns>True if input is redirected from console</returns>
         private static bool IsInputRedirected(TextReader reader) {
             return Console.IsInputRedirected || IsStandardInputStream(reader) == false;
         }
 
+        /// <summary>
+        /// Checks if a TextReader represents the standard console input stream.
+        /// Uses reflection to compare underlying stream handles across different .NET implementations.
+        /// </summary>
+        /// <returns>True if the reader represents standard console input</returns>
         private static bool IsStandardInputStream(TextReader reader) {
             if (reader is StreamReader sr) {
                 using Stream standardInput = Console.OpenStandardInput();

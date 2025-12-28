@@ -19,7 +19,6 @@ namespace CalqFramework.Cmd.Python {
         /// Embeds the Python server script, generates certificates, and begins listening for requests.
         /// Returns a worker that manages the server process lifecycle.
         /// </summary>
-        /// <param name="cancellationToken">Token to cancel the server startup</param>
         /// <returns>A shell worker managing the Python server process</returns>
         Task<IShellWorker> StartAsync(CancellationToken cancellationToken = default);
     }
