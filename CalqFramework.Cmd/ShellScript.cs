@@ -153,7 +153,7 @@ namespace CalqFramework.Cmd {
             var relayOutputCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
             try {
-                await StreamUtils.RelayStream(worker.StandardOutput, outputStream, relayOutputCts.Token);
+                await worker.StandardOutput.CopyToAsync(outputStream, relayOutputCts.Token);
                 await worker.EnsurePipeIsCompletedAsync(cancellationToken);
             } catch (ShellWorkerException ex) {
                 throw await Shell.ExceptionFactory.CreateAsync(this, worker, ex, null, cancellationToken);

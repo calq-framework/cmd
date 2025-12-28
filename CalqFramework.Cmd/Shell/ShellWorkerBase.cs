@@ -76,7 +76,7 @@
         protected abstract Task InitializeAsync(ShellScript shellScript, CancellationToken cancellationToken = default);
 
         private async Task EnsureStandardOutputIsReadToEndAsync(CancellationToken cancellationToken = default) {
-            await StreamUtils.RelayStream(StandardOutput, Stream.Null, cancellationToken);
+            await StandardOutput.CopyToAsync(Stream.Null, cancellationToken);
         }
     }
 }
