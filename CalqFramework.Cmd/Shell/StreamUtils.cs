@@ -53,23 +53,6 @@ namespace CalqFramework.Cmd.Shell {
             }
         }
 
-        /// <summary>
-        /// Relays data from one stream to another in chunks.
-        /// Copies all available data from the reader stream to the writer stream.
-        /// </summary>
-        public static async Task RelayStream(Stream reader, Stream writer, CancellationToken cancellationToken) {
-            byte[] bufferArray = new byte[4096];
-
-            while (!cancellationToken.IsCancellationRequested) {
-                int bytesRead = await reader.ReadAsync(bufferArray, cancellationToken);
-                if (bytesRead == 0) {
-                    break;
-                }
-                await writer.WriteAsync(bufferArray, 0, bytesRead, cancellationToken);
-            }
-            await writer.FlushAsync(cancellationToken);
-        }
-
         // assumes one of the following
         // https://github.com/dotnet/runtime/blob/464e5fe6fbe499012445cbd6371010748b89dba3/src/libraries/System.Console/src/System/ConsolePal.Unix.ConsoleStream.cs#L13
         // https://github.com/dotnet/runtime/blob/464e5fe6fbe499012445cbd6371010748b89dba3/src/libraries/System.Console/src/System/ConsolePal.Windows.cs#L1149
