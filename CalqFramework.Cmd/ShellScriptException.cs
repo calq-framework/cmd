@@ -10,5 +10,8 @@ public class ShellScriptException(long? errorCode, string? message, Exception? i
     public ShellScriptException(long? errorCode, string? message) : this(errorCode, message, null) {
     }
 
+    /// <summary>
+    /// Exit code returned by the failed shell command, or null if not available.
+    /// </summary>
     public long? ErrorCode { get; } = errorCode;
 }

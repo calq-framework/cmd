@@ -11,6 +11,10 @@ namespace CalqFramework.Cmd.Shells;
 
 public class PythonTool : ShellBase {
 
+    /// <summary>
+    /// Initializes a new PythonTool shell with SSL certificate validation disabled for local development.
+    /// Creates an HTTP client configured to communicate with the Python tool server.
+    /// </summary>
     public PythonTool(IPythonToolServer pythonServer) {
         var handler = new HttpClientHandler {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
@@ -22,6 +26,9 @@ public class PythonTool : ShellBase {
         HttpClient = httpClient;
     }
 
+    /// <summary>
+    /// HTTP client configured to communicate with the Python tool server over HTTPS.
+    /// </summary>
     public HttpClient HttpClient { get; }
 
     public override IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) {

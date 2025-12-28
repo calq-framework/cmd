@@ -36,6 +36,10 @@ namespace CalqFramework.Cmd.TerminalComponents {
             set => _localShell.Value = value;
         }
 
+        /// <summary>
+        /// Logger for terminal operations. Defaults to TerminalLogger that formats commands as "RUN: command".
+        /// Used to log commands executed via RUN operations for debugging and monitoring.
+        /// </summary>
         public ITerminalLogger TerminalLogger {
             get {
                 _localTerminalLogger.Value ??= new TerminalLogger();
