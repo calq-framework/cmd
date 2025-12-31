@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>CalqFramework.Cmd</RootNamespace>
     <PackageId>CalqFramework.Cmd</PackageId>
-    <Version>0.23.3</Version>
+    <Version>0.26.5</Version>
     <PackageProjectUrl>https://github.com/calq-framework</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
@@ -33,3 +33,4 @@
   </ItemGroup>
 
 </Project>
+
