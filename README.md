@@ -320,27 +320,87 @@ RUN("test") // prints each line every second
 ### ASP.NET Core Integration
 Calq CMD integrates seamlessly with ASP.NET Core applications, enabling cloud-native web APIs that leverage shell-style scripting for data processing and streaming operations.
 
-```csharp
-public class UseMyPythonToolShellAttribute : ActionFilterAttribute {
-    public override void OnActionExecuting(ActionExecutingContext context) {
-        var tool = context.HttpContext.RequestServices.GetRequiredService<MyPythonTool>();
-        LocalTerminal.Shell = tool; // Sets Shell for this request scope
-    }
-}
+#### Installation
+```bash
+dotnet add package CalqFramework.Cmd.AspNetCore
+```
 
-[ApiController, UseMyPythonToolShell]
-public class DataController : ControllerBase {
+#### PythonTool Registration
+Register PythonTool services for dependency injection:
+
+```csharp
+using CalqFramework.Cmd.AspNetCore;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Register PythonTool with dependency injection
+builder.Services.AddPythonTool("path/to/your/script.py");
+
+// Or use a factory for more complex scenarios
+builder.Services.AddPythonTool(provider => 
+{
+    var config = provider.GetRequiredService<IConfiguration>();
+    var scriptPath = config["PythonScript:Path"];
+    return new PythonToolServer(scriptPath);
+});
+
+var app = builder.Build();
+
+// Start the Python server during application startup
+await app.Services.StartPythonToolServerAsync();
+
+app.Run();
+```
+
+#### Basic Usage with Built-in Attributes
+Built-in attributes automatically configure shell context per request. No additional registration required:
+
+```csharp
+[ApiController, UseBashShell] // Applied to entire controller
+public class DataController : ControllerBase 
+{
     [HttpGet("stream-data")]
     [Produces("text/plain")]
     public async Task<Stream> StreamData() => await CMDStreamAsync("process_large_dataset");
 
     [HttpPost("process-upload")]
     [Produces("application/json")]
-    public async Task<Stream> ProcessUpload(IFormFile file) => await CMDStreamAsync("analyze_file", file.OpenReadStream());
+    public async Task<Stream> ProcessUpload(IFormFile file) 
+    {
+        LocalTerminal.Shell = new CommandLine(); // Override controller-level attribute
+        return await CMDStreamAsync("analyze_file", file.OpenReadStream());
+    }
 
-    [HttpPost("process-stream")]
+    [HttpPost("process-stream"), UseCommandLineShell] // Override controller-level attribute
     [Produces("application/json")]
     public async Task<Stream> ProcessStream([FromBody] Stream data) => await CMDStreamAsync("transform_data", data);
+}
+```
+
+#### Custom Action Filters
+Create custom action filters for specific shell configurations:
+
+```csharp
+public class UseMyCustomShellAttribute : ActionFilterAttribute 
+{
+    private readonly IShell _shell;
+
+    public UseMyCustomShellAttribute()
+    {
+        _shell = new Bash(); // Or any shell configuration
+    }
+
+    public override void OnActionExecuting(ActionExecutingContext context)
+    {
+        LocalTerminal.Shell = _shell; // Set shell for this request
+    }
+}
+
+[ApiController, UseMyCustomShell]
+public class CustomController : ControllerBase 
+{
+    [HttpGet("process")]
+    public async Task<Stream> ProcessData() => await CMDStreamAsync("custom_function");
 }
 ```
 
