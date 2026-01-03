@@ -325,6 +325,64 @@ Calq CMD integrates seamlessly with ASP.NET Core applications, enabling cloud-na
 dotnet add package CalqFramework.Cmd.AspNetCore
 ```
 
+#### CalqCmdController - Local HTTP Shell Backend
+The `CalqCmdController` provides a local HTTP endpoint that can be used as a shell backend for distributed processing scenarios. This enables HttpTool to communicate with local ASP.NET Core applications:
+
+```csharp
+using CalqFramework.Cmd.AspNetCore;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Register the CalqCmdController
+builder.Services.AddCalqCmdController();
+
+// Register LocalHttpToolFactory for automatic URL discovery
+builder.Services.AddLocalHttpToolFactory();
+
+// Add MVC services
+builder.Services.AddControllers();
+
+var app = builder.Build();
+
+app.MapControllers();
+app.Run();
+```
+
+#### LocalHttpToolFactory Registration
+Register LocalHttpToolFactory for creating HttpTool instances that connect to CalqCmdController:
+
+```csharp
+// Automatic URL discovery (recommended)
+builder.Services.AddLocalHttpToolFactory();
+
+// Manual URL configuration
+builder.Services.AddLocalHttpToolFactory("https://localhost:5001", "CalqCmd");
+
+// With custom HttpClient configuration
+builder.Services.AddLocalHttpToolFactory("https://localhost:5001", "CalqCmd", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("User-Agent", "CalqFramework");
+});
+```
+
+#### UseLocalHttpToolShell Attribute
+Use the `UseLocalHttpToolShellAttribute` to automatically configure HttpTool shell for requests:
+
+```csharp
+[ApiController, UseLocalHttpToolShell] // Applied to entire controller
+public class ProcessingController : ControllerBase 
+{
+    [HttpGet("process-data")]
+    [Produces("text/plain")]
+    public async Task<Stream> ProcessData() => await CMDStreamAsync("process_command");
+
+    [HttpPost("transform")]
+    [Produces("application/json")]
+    public async Task<Stream> Transform([FromBody] Stream data) => await CMDStreamAsync("transform_data", data);
+}
+```
+
 #### PythonTool Registration
 Register PythonTool services for dependency injection:
 
