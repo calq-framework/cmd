@@ -5,10 +5,100 @@ using Microsoft.Extensions.DependencyInjection;
 namespace CalqFramework.Cmd.AspNetCore;
 
 /// <summary>
+/// Configuration options for CalqCmdController routing
+/// </summary>
+public class CalqCmdControllerOptions
+{
+    /// <summary>
+    /// Route prefix for the CalqCmdController. If null or empty, uses default "CalqCmd"
+    /// </summary>
+    public string? RoutePrefix { get; set; }
+}
+
+/// <summary>
 /// Extension methods for registering CalqFramework.Cmd services with ASP.NET Core dependency injection.
 /// </summary>
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Registers the CalqCmdController for ASP.NET Core MVC.
+    /// This controller provides streaming endpoints with hardcoded responses.
+    /// </summary>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="routePrefix">Optional route prefix for the controller. If provided, controller will be available at /{routePrefix}/ instead of /CalqCmd/</param>
+    /// <returns>The service collection for method chaining.</returns>
+    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, string? routePrefix = null)
+    {
+        // Register the options for later retrieval
+        services.Configure<CalqCmdControllerOptions>(options =>
+        {
+            options.RoutePrefix = routePrefix;
+        });
+
+        // Configure MVC options to use custom route prefix if provided
+        if (!string.IsNullOrEmpty(routePrefix))
+        {
+            services.Configure<Microsoft.AspNetCore.Mvc.MvcOptions>(options =>
+            {
+                options.Conventions.Add(new CalqCmdControllerRouteConvention(routePrefix));
+            });
+        }
+        
+        // Register the controller as a service - the host application needs to configure MVC
+        services.AddTransient<CalqCmdController>();
+        return services;
+    }
+
+    /// <summary>
+    /// Registers a LocalHttpToolFactory that automatically discovers CalqCmdController URL from ASP.NET Core
+    /// </summary>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    public static IServiceCollection AddLocalHttpToolFactory(this IServiceCollection services)
+    {
+        services.AddSingleton<LocalHttpToolFactory>();
+        return services;
+    }
+
+    /// <summary>
+    /// Registers a LocalHttpToolFactory for creating HttpTool instances that connect to CalqCmdController
+    /// </summary>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="host">Host URL where the application is running (e.g., "https://localhost:5000")</param>
+    /// <param name="routePrefix">Route prefix used when registering CalqCmdController. Should match the prefix used in AddCalqCmdController</param>
+    /// <returns>The service collection for method chaining.</returns>
+    public static IServiceCollection AddLocalHttpToolFactory(this IServiceCollection services, string host, string? routePrefix = null)
+    {
+        var baseUrl = BuildBaseUrl(host, routePrefix);
+        services.AddSingleton(provider => new LocalHttpToolFactory(baseUrl));
+        return services;
+    }
+
+    /// <summary>
+    /// Registers a LocalHttpToolFactory with a shared HttpClient for creating HttpTool instances
+    /// </summary>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="host">Host URL where the application is running (e.g., "https://localhost:5000")</param>
+    /// <param name="routePrefix">Route prefix used when registering CalqCmdController. Should match the prefix used in AddCalqCmdController</param>
+    /// <param name="configureHttpClient">Action to configure the shared HttpClient</param>
+    /// <returns>The service collection for method chaining.</returns>
+    public static IServiceCollection AddLocalHttpToolFactory(this IServiceCollection services, string host, string? routePrefix, Action<HttpClient> configureHttpClient)
+    {
+        var httpClient = new HttpClient();
+        configureHttpClient(httpClient);
+        
+        var baseUrl = BuildBaseUrl(host, routePrefix);
+        services.AddSingleton(provider => new LocalHttpToolFactory(baseUrl, httpClient));
+        return services;
+    }
+
+    private static string BuildBaseUrl(string host, string? routePrefix)
+    {
+        var trimmedHost = host.TrimEnd('/');
+        var prefix = string.IsNullOrEmpty(routePrefix) ? "CalqCmd" : routePrefix.Trim('/');
+        return $"{trimmedHost}/{prefix}";
+    }
+
     /// <summary>
     /// Registers PythonToolServer and PythonTool services for dependency injection.
     /// PythonToolServer is registered as a singleton to manage the Python process lifecycle.
@@ -120,5 +210,35 @@ public static class ServiceProviderExtensions
         var server = services.GetRequiredService<PythonToolServer>();
         await server.StartAsync(cancellationToken);
         return services;
+    }
+}
+
+/// <summary>
+/// Route convention to customize CalqCmdController route prefix
+/// </summary>
+internal class CalqCmdControllerRouteConvention : Microsoft.AspNetCore.Mvc.ApplicationModels.IControllerModelConvention
+{
+    private readonly string _routePrefix;
+
+    public CalqCmdControllerRouteConvention(string routePrefix)
+    {
+        _routePrefix = routePrefix.TrimStart('/').TrimEnd('/');
+    }
+
+    public void Apply(Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerModel controller)
+    {
+        if (controller.ControllerType == typeof(CalqCmdController))
+        {
+            // Remove existing route attributes
+            controller.Selectors.Clear();
+            
+            // Add new selector with custom prefix
+            var selector = new Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel();
+            selector.AttributeRouteModel = new Microsoft.AspNetCore.Mvc.ApplicationModels.AttributeRouteModel
+            {
+                Template = _routePrefix
+            };
+            controller.Selectors.Add(selector);
+        }
     }
 }
