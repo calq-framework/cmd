@@ -50,7 +50,7 @@
                 }
 
                 if (ShellScript.PipedShellScript != null) {
-                    PipedWorker = await ShellScript.PipedShellScript.StartAsync(cancellationToken);
+                    PipedWorker = await ShellScript.PipedShellScript.StartAsync(disposeOnCompletion: DisposeOnCompletion, cancellationToken);
                     InputStream = PipedWorker.StandardOutput;
                 }
 
