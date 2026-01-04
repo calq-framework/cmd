@@ -21,21 +21,22 @@ public class CalqCmdControllerOptions
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers the CalqCmdController for ASP.NET Core MVC.
-    /// This controller provides streaming endpoints with hardcoded responses.
+    /// Registers the CalqCmdController for ASP.NET Core MVC with CalqFramework.Cli integration.
+    /// This controller provides streaming endpoints using CalqFramework.Cli for command execution.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
+    /// <param name="cliTarget">The target object to pass to CalqFramework.Cli for command execution.</param>
     /// <param name="routePrefix">Optional route prefix for the controller. If provided, controller will be available at /{routePrefix}/ instead of /CalqCmd/</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, string? routePrefix = null)
+    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, object cliTarget, string? routePrefix = null)
     {
-        // Register the options for later retrieval
+        services.AddSingleton(cliTarget);
+        
         services.Configure<CalqCmdControllerOptions>(options =>
         {
             options.RoutePrefix = routePrefix;
         });
 
-        // Configure MVC options to use custom route prefix if provided
         if (!string.IsNullOrEmpty(routePrefix))
         {
             services.Configure<Microsoft.AspNetCore.Mvc.MvcOptions>(options =>
@@ -44,8 +45,47 @@ public static class ServiceCollectionExtensions
             });
         }
         
-        // Register the controller as a service - the host application needs to configure MVC
-        services.AddTransient<CalqCmdController>();
+        services.AddTransient<CalqCmdController>(provider =>
+        {
+            var target = provider.GetRequiredService<object>();
+            return new CalqCmdController(target);
+        });
+        
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the CalqCmdController for ASP.NET Core MVC with CalqFramework.Cli integration.
+    /// This overload uses a factory function to create the CLI target.
+    /// </summary>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="cliTargetFactory">Factory function to create the CLI target object.</param>
+    /// <param name="routePrefix">Optional route prefix for the controller. If provided, controller will be available at /{routePrefix}/ instead of /CalqCmd/</param>
+    /// <returns>The service collection for method chaining.</returns>
+    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, Func<IServiceProvider, object> cliTargetFactory, string? routePrefix = null)
+    {
+        services.AddSingleton(cliTargetFactory);
+        
+        services.Configure<CalqCmdControllerOptions>(options =>
+        {
+            options.RoutePrefix = routePrefix;
+        });
+
+        if (!string.IsNullOrEmpty(routePrefix))
+        {
+            services.Configure<Microsoft.AspNetCore.Mvc.MvcOptions>(options =>
+            {
+                options.Conventions.Add(new CalqCmdControllerRouteConvention(routePrefix));
+            });
+        }
+        
+        services.AddTransient<CalqCmdController>(provider =>
+        {
+            var factory = provider.GetRequiredService<Func<IServiceProvider, object>>();
+            var target = factory(provider);
+            return new CalqCmdController(target);
+        });
+        
         return services;
     }
 
@@ -56,6 +96,29 @@ public static class ServiceCollectionExtensions
     /// <returns>The service collection for method chaining.</returns>
     public static IServiceCollection AddLocalHttpToolFactory(this IServiceCollection services)
     {
+        services.AddHttpContextAccessor();
+        
+        services.AddHttpClient("CalqFramework.Cmd.LocalHttpTool", client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
+        
+        services.AddSingleton<LocalHttpToolFactory>();
+        return services;
+    }
+
+    /// <summary>
+    /// Registers a LocalHttpToolFactory with custom HttpClient configuration
+    /// </summary>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="configureClient">Action to configure the HttpClient</param>
+    /// <returns>The service collection for method chaining.</returns>
+    public static IServiceCollection AddLocalHttpToolFactory(this IServiceCollection services, Action<HttpClient> configureClient)
+    {
+        services.AddHttpContextAccessor();
+        
+        services.AddHttpClient("CalqFramework.Cmd.LocalHttpTool", configureClient);
+        
         services.AddSingleton<LocalHttpToolFactory>();
         return services;
     }
@@ -95,8 +158,10 @@ public static class ServiceCollectionExtensions
     private static string BuildBaseUrl(string host, string? routePrefix)
     {
         var trimmedHost = host.TrimEnd('/');
-        var prefix = string.IsNullOrEmpty(routePrefix) ? "CalqCmd" : routePrefix.Trim('/');
-        return $"{trimmedHost}/{prefix}";
+        var normalizedPrefix = string.IsNullOrEmpty(routePrefix) ? 
+            nameof(CalqCmdController).Replace("Controller", "") : 
+            routePrefix.Trim('/');
+        return $"{trimmedHost}/{normalizedPrefix}";
     }
 
     /// <summary>
