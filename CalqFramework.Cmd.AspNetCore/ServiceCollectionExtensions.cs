@@ -48,7 +48,8 @@ public static class ServiceCollectionExtensions
         services.AddTransient<CalqCmdController>(provider =>
         {
             var target = provider.GetRequiredService<object>();
-            return new CalqCmdController(target);
+            var localToolFactory = provider.GetRequiredService<ILocalToolFactory>();
+            return new CalqCmdController(target, localToolFactory);
         });
         
         return services;
@@ -83,7 +84,8 @@ public static class ServiceCollectionExtensions
         {
             var factory = provider.GetRequiredService<Func<IServiceProvider, object>>();
             var target = factory(provider);
-            return new CalqCmdController(target);
+            var localToolFactory = provider.GetRequiredService<ILocalToolFactory>();
+            return new CalqCmdController(target, localToolFactory);
         });
         
         return services;
@@ -103,7 +105,7 @@ public static class ServiceCollectionExtensions
             client.Timeout = TimeSpan.FromSeconds(30);
         });
         
-        services.AddSingleton<LocalHttpToolFactory>();
+        services.AddSingleton<ILocalToolFactory, LocalHttpToolFactory>();
         return services;
     }
 
@@ -119,7 +121,7 @@ public static class ServiceCollectionExtensions
         
         services.AddHttpClient("CalqFramework.Cmd.LocalHttpTool", configureClient);
         
-        services.AddSingleton<LocalHttpToolFactory>();
+        services.AddSingleton<ILocalToolFactory, LocalHttpToolFactory>();
         return services;
     }
 
@@ -133,7 +135,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddLocalHttpToolFactory(this IServiceCollection services, string host, string? routePrefix = null)
     {
         var baseUrl = BuildBaseUrl(host, routePrefix);
-        services.AddSingleton(provider => new LocalHttpToolFactory(baseUrl));
+        services.AddSingleton<ILocalToolFactory>(provider => new LocalHttpToolFactory(baseUrl));
         return services;
     }
 
@@ -151,7 +153,7 @@ public static class ServiceCollectionExtensions
         configureHttpClient(httpClient);
         
         var baseUrl = BuildBaseUrl(host, routePrefix);
-        services.AddSingleton(provider => new LocalHttpToolFactory(baseUrl, httpClient));
+        services.AddSingleton<ILocalToolFactory>(provider => new LocalHttpToolFactory(baseUrl, httpClient));
         return services;
     }
 

@@ -1,4 +1,6 @@
 using CalqFramework.Cmd.Shells;
+using CalqFramework.Cmd.Shell;
+using CalqFramework.Cmd;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +13,7 @@ namespace CalqFramework.Cmd.AspNetCore;
 /// Factory for creating HttpTool instances that connect to local CalqCmdController endpoints
 /// Automatically discovers the controller's URL from ASP.NET Core configuration
 /// </summary>
-public class LocalHttpToolFactory : IDisposable
+public class LocalHttpToolFactory : ILocalToolFactory, IDisposable
 {
     private readonly IServiceProvider? _serviceProvider;
     private readonly string? _explicitBaseUrl;
@@ -39,11 +41,7 @@ public class LocalHttpToolFactory : IDisposable
         _sharedHttpClient = httpClient;
     }
 
-    /// <summary>
-    /// Creates an HttpTool instance configured to connect to the CalqCmdController
-    /// </summary>
-    /// <returns>HttpTool configured with the appropriate base URL</returns>
-    public HttpTool CreateHttpTool()
+    public IShell CreateLocalTool()
     {
         ThrowIfDisposed();
         
