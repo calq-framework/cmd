@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Text;
 using CalqFramework.Cli;
 using CalqFramework.Cmd.Shells;
+using CalqFramework.Cmd;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.AspNetCore;
@@ -18,10 +19,15 @@ public class CalqCmdController : ControllerBase
     private static readonly ConcurrentDictionary<string, string> ExceptionCache = new();
     
     private readonly object _cliTarget;
+    private readonly ILocalToolFactory _localToolFactory;
 
-    public CalqCmdController(object cliTarget)
+    public CalqCmdController(object cliTarget, ILocalToolFactory localToolFactory)
     {
         _cliTarget = cliTarget;
+        _localToolFactory = localToolFactory;
+        
+        // Set LocalHttpToolFactory as the default for LocalTool when used in ASP.NET Core context
+        LocalTool.Factory = localToolFactory;
     }
 
     [HttpPost]

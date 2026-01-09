@@ -68,6 +68,7 @@ public class CalqCmdControllerIntegrationTest
                     services.AddControllers()
                         .AddApplicationPart(typeof(CalqCmdController).Assembly);
                     services.AddCalqCmdController(new TestCliTarget());
+                    services.AddLocalHttpToolFactory();
                 });
                 webHost.Configure(app =>
                 {
@@ -89,7 +90,7 @@ public class CalqCmdControllerIntegrationTest
         
         var factory = new LocalHttpToolFactory(fullBaseUrl, testClient);
         
-        return factory.CreateHttpTool();
+        return (HttpTool)factory.CreateLocalTool();
     }
 
     [Fact]

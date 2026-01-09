@@ -15,7 +15,7 @@ public class LocalHttpToolFactoryTest
         services.AddLocalHttpToolFactory();
         var serviceProvider = services.BuildServiceProvider();
         
-        var factory = serviceProvider.GetRequiredService<LocalHttpToolFactory>();
+        var factory = serviceProvider.GetRequiredService<ILocalToolFactory>();
         
         Assert.NotNull(factory);
         Assert.True(factory is IDisposable);
@@ -53,7 +53,7 @@ public class LocalHttpToolFactoryTest
         services.AddLocalHttpToolFactory();
         var serviceProvider = services.BuildServiceProvider();
         
-        using var factory = serviceProvider.GetRequiredService<LocalHttpToolFactory>();
+        using var factory = (LocalHttpToolFactory)serviceProvider.GetRequiredService<ILocalToolFactory>();
         
         Assert.NotNull(factory);
         factory.Dispose();
@@ -77,7 +77,7 @@ public class LocalHttpToolFactoryTest
         services.AddLocalHttpToolFactory();
         var serviceProvider = services.BuildServiceProvider();
         
-        var factory = serviceProvider.GetRequiredService<LocalHttpToolFactory>();
+        var factory = serviceProvider.GetRequiredService<ILocalToolFactory>();
         var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
         
         Assert.NotNull(factory);
@@ -112,6 +112,6 @@ public class LocalHttpToolFactoryTest
         var factory = new LocalHttpToolFactory(baseUrl);
         factory.Dispose();
         
-        Assert.Throws<ObjectDisposedException>(() => factory.CreateHttpTool());
+        Assert.Throws<ObjectDisposedException>(() => factory.CreateLocalTool());
     }
 }
