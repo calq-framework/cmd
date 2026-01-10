@@ -103,6 +103,19 @@ await RUNAsync($"echo {echo}"); // prints "Hello World"
     ```
 See [Terminal.cs](https://github.com/calq-framework/cmd/blob/main/CalqFramework.Cmd/Terminal.cs) for all available overloads.
 
+### JSON Deserialization
+CMD and CMDAsync support automatic JSON deserialization using `System.Text.Json`.
+```csharp
+// Deserialize JSON output directly to strongly-typed objects
+var config = CMD<ConfigObject>("kubectl get configmap my-config -o json");
+var users = await CMDAsync<List<User>>("curl -s https://api.example.com/users");
+
+// Works with input streams too
+using var inputStream = new MemoryStream();
+var result = CMD<ApiResponse>("process-data", inputStream);
+var asyncResult = await CMDAsync<ApiResponse>("process-data", inputStream);
+```
+
 ### Working with ShellScript Instances
 For advanced scenarios, you can work directly with `ShellScript` instances for more control:
 ```csharp
@@ -113,6 +126,10 @@ var script = new ShellScript(LocalTerminal.Shell, "echo Hello World");
 string result = script.Evaluate();           // Returns output as string
 script.Run(Console.OpenStandardOutput());    // Streams output to provided stream
 
+// JSON deserialization support
+var data = script.Evaluate<MyDataType>();    // Deserialize JSON output
+var asyncData = await script.EvaluateAsync<MyDataType>(); // Async JSON deserialization
+
 // Async versions for better performance
 string result = await script.EvaluateAsync();
 await script.RunAsync(outputStream);
@@ -120,6 +137,7 @@ await script.RunAsync(outputStream);
 // Custom input handling
 using var inputStream = new MemoryStream(Encoding.UTF8.GetBytes("input data"));
 string result = script.Evaluate(inputStream);
+var jsonResult = script.Evaluate<MyType>(inputStream); // JSON with input stream
 await script.RunAsync(inputStream, outputStream);
 
 // Advanced control with workers
@@ -501,26 +519,96 @@ class QuickStart {
 ```csharp
 using CalqFramework.Cmd.AspNetCore;
 using static CalqFramework.Cmd.Terminal;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
-// Register command execution controller
-var myCliTarget = new MyCommands();
-builder.Services.AddCalqCmdController(myCliTarget);
+// Register distributed computing CLI target
+var distributedProcessor = new DistributedDataProcessor();
+builder.Services.AddCalqCmdController(distributedProcessor);
 
 var app = builder.Build();
 app.MapControllers();
 
-[ApiController, UseBashShell]
-public class QuickStartController : ControllerBase 
+// CLI target class showcasing distributed computing with parallelism
+public class DistributedDataProcessor
 {
-    [HttpGet("hello")]
-    public async Task<string> Hello() => await CMDAsync("echo Hello Calq CMD ASP.NET Core!");
+    // Process data in parallel chunks - reads from LocalTerminal.Shell.In
+    public async Task<string> ProcessParallel()
+    {
+        if (LocalTerminal.Shell.In == null)
+            return "No input stream provided";
+
+        using var reader = new StreamReader(LocalTerminal.Shell.In);
+        var inputData = await reader.ReadToEndAsync();
+        
+        // Split input into chunks for parallel processing
+        var lines = inputData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        var chunks = lines.Chunk(Math.Max(1, lines.Length / Environment.ProcessorCount));
+        
+        // Process chunks in parallel using LocalTool for distributed execution
+        LocalTerminal.Shell = new LocalTool();
+        
+        var tasks = chunks.Select(async chunk =>
+        {
+            var chunkData = string.Join('\n', chunk);
+            var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(chunkData));
+            
+            // Each chunk processed via distributed LocalTool
+            return await CMDAsync("process-chunk", inputStream);
+        });
+        
+        var results = await Task.WhenAll(tasks);
+        return string.Join('\n', results);
+    }
     
-    [HttpPost("process")]
-    public async Task<Stream> ProcessData([FromBody] Stream input) => 
-        await CMDStreamAsync("process-data", input);
+    // Process individual chunk - demonstrates single command execution
+    public async Task<string> ProcessChunk()
+    {
+        if (LocalTerminal.Shell.In == null)
+            return "Empty chunk";
+            
+        using var reader = new StreamReader(LocalTerminal.Shell.In);
+        var data = await reader.ReadToEndAsync();
+        
+        // Simulate processing work
+        await Task.Delay(100);
+        
+        return $"Processed: {data.Trim().ToUpper()} [Worker: {Environment.ProcessId}]";
+    }
+    
+    // Parallel pipeline processing with streaming
+    public async Task<Stream> ProcessStream()
+    {
+        if (LocalTerminal.Shell.In == null)
+            return new MemoryStream();
+            
+        // Create parallel processing pipeline using LocalTool
+        LocalTerminal.Shell = new LocalTool();
+        
+        // Pipeline: read → split → parallel process → merge
+        var pipeline = CMDV("split-data") | CMDV("process-parallel") | CMDV("merge-results");
+        
+        // Execute pipeline and return streaming results
+        return await CMDStreamAsync("execute-pipeline", LocalTerminal.Shell.In);
+    }
+}
+
+// Controller for single-line command execution
+[ApiController, UseLocalToolShell]
+public class DistributedController : ControllerBase 
+{
+    [HttpPost("process-parallel")]
+    public async Task<string> ProcessParallel([FromBody] Stream input)
+    {
+        LocalTerminal.Shell = new LocalTool() { In = input };
+        return await CMDAsync("process-parallel");
+    }
+    
+    [HttpPost("process-stream")]
+    public async Task<Stream> ProcessStream([FromBody] Stream input) => 
+        await CMDStreamAsync("process-stream", input);
 }
 
 app.Run();

@@ -5,25 +5,20 @@ using static CalqFramework.Cmd.Terminal;
 namespace CalqFramework.Cmd.AspNetCore;
 
 /// <summary>
-/// ActionFilter attribute that sets LocalTerminal.Shell to use LocalTool shell for the request scope.
-/// LocalTool executes the current executable as a shell command, enabling self-hosting scenarios.
+/// Action filter attribute that configures LocalTool shell for the request.
+/// LocalTool automatically adapts between local process execution and distributed HTTP execution
+/// based on the runtime context, enabling seamless local-to-distributed scaling.
 /// </summary>
 public class UseLocalToolShellAttribute : ActionFilterAttribute
 {
-    private readonly LocalTool _shell;
-
-    public UseLocalToolShellAttribute()
-    {
-        _shell = new LocalTool();
-    }
-
-    public UseLocalToolShellAttribute(LocalTool shell)
-    {
-        _shell = shell;
-    }
-
+    /// <summary>
+    /// Sets LocalTerminal.Shell to LocalTool before action execution.
+    /// LocalTool uses LocalToolFactory to determine the appropriate underlying shell:
+    /// - In development: uses local process execution via CommandLine shell
+    /// - In production with CalqCmdController: uses HTTP-based distributed execution
+    /// </summary>
     public override void OnActionExecuting(ActionExecutingContext context)
     {
-        LocalTerminal.Shell = _shell;
+        LocalTerminal.Shell = new LocalTool();
     }
 }

@@ -1,4 +1,5 @@
 ﻿using CalqFramework.Cmd.Shells;
+using System.Text.Json;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.CmdTest;
@@ -55,5 +56,88 @@ public class TerminalTest {
             Assert.NotEqual(currentDirectory, PWD);
         });
         Assert.Equal(currentDirectory, PWD);
+    }
+
+    [Fact]
+    public void CMD_WithJsonOutput_DeserializesCorrectly() {
+        LocalTerminal.Shell = new Bash();
+
+        var result = CMD<TestData>("echo '{\"Name\":\"Test\",\"Value\":42}'");
+
+        Assert.NotNull(result);
+        Assert.Equal("Test", result.Name);
+        Assert.Equal(42, result.Value);
+    }
+
+    [Fact]
+    public async Task CMDAsync_WithJsonOutput_DeserializesCorrectly() {
+        LocalTerminal.Shell = new Bash();
+
+        var result = await CMDAsync<TestData>("echo '{\"Name\":\"AsyncTest\",\"Value\":123}'");
+
+        Assert.NotNull(result);
+        Assert.Equal("AsyncTest", result.Name);
+        Assert.Equal(123, result.Value);
+    }
+
+    [Fact]
+    public void CMD_WithInputStreamAndJsonOutput_DeserializesCorrectly() {
+        LocalTerminal.Shell = new Bash();
+        using var inputStream = new MemoryStream();
+
+        var result = CMD<TestData>("echo '{\"Name\":\"InputTest\",\"Value\":999}'", inputStream);
+
+        Assert.NotNull(result);
+        Assert.Equal("InputTest", result.Name);
+        Assert.Equal(999, result.Value);
+    }
+
+    [Fact]
+    public async Task CMDAsync_WithInputStreamAndJsonOutput_DeserializesCorrectly() {
+        LocalTerminal.Shell = new Bash();
+        using var inputStream = new MemoryStream();
+
+        var result = await CMDAsync<TestData>("echo '{\"Name\":\"AsyncInputTest\",\"Value\":777}'", inputStream);
+
+        Assert.NotNull(result);
+        Assert.Equal("AsyncInputTest", result.Name);
+        Assert.Equal(777, result.Value);
+    }
+
+    [Fact]
+    public void CMD_WithInvalidJson_ThrowsJsonException() {
+        LocalTerminal.Shell = new Bash();
+
+        Assert.Throws<JsonException>(() => CMD<TestData>("echo 'invalid-json'"));
+    }
+
+    [Fact]
+    public async Task CMDAsync_WithInvalidJson_ThrowsJsonException() {
+        LocalTerminal.Shell = new Bash();
+
+        await Assert.ThrowsAsync<JsonException>(() => CMDAsync<TestData>("echo 'invalid-json'"));
+    }
+
+    [Fact]
+    public void CMD_WithNullJson_ReturnsNull() {
+        LocalTerminal.Shell = new Bash();
+
+        var result = CMD<TestData>("echo 'null'");
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task CMDAsync_WithNullJson_ReturnsNull() {
+        LocalTerminal.Shell = new Bash();
+
+        var result = await CMDAsync<TestData>("echo 'null'");
+
+        Assert.Null(result);
+    }
+
+    private class TestData {
+        public string Name { get; set; } = string.Empty;
+        public int Value { get; set; }
     }
 }

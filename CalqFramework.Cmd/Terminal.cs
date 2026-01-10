@@ -50,6 +50,33 @@ public static class Terminal {
     }
 
     /// <summary>
+    /// Executes a shell command and deserializes the JSON output to the specified type.
+    /// </summary>
+    /// <typeparam name="T">The type to deserialize the JSON output to</typeparam>
+    /// <param name="script">The shell command to execute</param>
+    /// <param name="timeout">Optional timeout for command execution</param>
+    /// <returns>The deserialized object of type T, or null if deserialization returns null</returns>
+    /// <exception cref="JsonException">Thrown when the output is not valid JSON</exception>
+    public static T? CMD<T>(string script, TimeSpan? timeout = null) {
+        var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
+        return CMDV(script).Evaluate<T>(cancellationTokenSource.Token);
+    }
+
+    /// <summary>
+    /// Executes a shell command with custom input and deserializes the JSON output to the specified type.
+    /// </summary>
+    /// <typeparam name="T">The type to deserialize the JSON output to</typeparam>
+    /// <param name="script">The shell command to execute</param>
+    /// <param name="inputStream">Input stream to feed to the command's stdin</param>
+    /// <param name="timeout">Optional timeout for command execution</param>
+    /// <returns>The deserialized object of type T, or null if deserialization returns null</returns>
+    /// <exception cref="JsonException">Thrown when the output is not valid JSON</exception>
+    public static T? CMD<T>(string script, Stream? inputStream, TimeSpan? timeout = null) {
+        var cancellationTokenSource = new CancellationTokenSource(timeout ?? Timeout.InfiniteTimeSpan);
+        return CMDV(script).Evaluate<T>(inputStream, cancellationTokenSource.Token);
+    }
+
+    /// <summary>
     /// Asynchronously executes a shell command and returns the output as a string.
     /// </summary>
     public static Task<string> CMDAsync(string script, CancellationToken cancellationToken = default) {
@@ -58,6 +85,31 @@ public static class Terminal {
 
     public static Task<string> CMDAsync(string script, Stream? inputStream, CancellationToken cancellationToken = default) {
         return CMDV(script).EvaluateAsync(inputStream, cancellationToken);
+    }
+
+    /// <summary>
+    /// Asynchronously executes a shell command and deserializes the JSON output to the specified type.
+    /// </summary>
+    /// <typeparam name="T">The type to deserialize the JSON output to</typeparam>
+    /// <param name="script">The shell command to execute</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>Task containing the deserialized object of type T, or null if deserialization returns null</returns>
+    /// <exception cref="JsonException">Thrown when the output is not valid JSON</exception>
+    public static Task<T?> CMDAsync<T>(string script, CancellationToken cancellationToken = default) {
+        return CMDV(script).EvaluateAsync<T>(cancellationToken);
+    }
+
+    /// <summary>
+    /// Asynchronously executes a shell command with custom input and deserializes the JSON output to the specified type.
+    /// </summary>
+    /// <typeparam name="T">The type to deserialize the JSON output to</typeparam>
+    /// <param name="script">The shell command to execute</param>
+    /// <param name="inputStream">Input stream to feed to the command's stdin</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>Task containing the deserialized object of type T, or null if deserialization returns null</returns>
+    /// <exception cref="JsonException">Thrown when the output is not valid JSON</exception>
+    public static Task<T?> CMDAsync<T>(string script, Stream? inputStream, CancellationToken cancellationToken = default) {
+        return CMDV(script).EvaluateAsync<T>(inputStream, cancellationToken);
     }
 
     /// <summary>
