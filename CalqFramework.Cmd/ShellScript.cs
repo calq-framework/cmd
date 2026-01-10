@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
 using CalqFramework.Cmd.Shell;
 
 namespace CalqFramework.Cmd {
@@ -116,6 +117,56 @@ namespace CalqFramework.Cmd {
         /// <returns>Task containing the complete command output as a string</returns>
         public async Task<string> EvaluateAsync(CancellationToken cancellationToken = default) {
             return await EvaluateAsync(null, cancellationToken);
+        }
+
+        /// <summary>
+        /// Executes the shell script synchronously and deserializes the JSON output to the specified type.
+        /// Uses the shell's default input stream and processes the entire output.
+        /// </summary>
+        /// <typeparam name="T">The type to deserialize the JSON output to</typeparam>
+        /// <returns>The deserialized object of type T, or null if deserialization returns null</returns>
+        /// <exception cref="JsonException">Thrown when the output is not valid JSON</exception>
+        public T? Evaluate<T>(CancellationToken cancellationToken = default) {
+            string json = Evaluate(cancellationToken);
+            return JsonSerializer.Deserialize<T>(json);
+        }
+
+        /// <summary>
+        /// Executes the shell script synchronously with custom input and deserializes the JSON output to the specified type.
+        /// Allows providing input data to be fed to the command's stdin.
+        /// </summary>
+        /// <typeparam name="T">The type to deserialize the JSON output to</typeparam>
+        /// <param name="inputStream">Input stream to feed to the command's stdin</param>
+        /// <returns>The deserialized object of type T, or null if deserialization returns null</returns>
+        /// <exception cref="JsonException">Thrown when the output is not valid JSON</exception>
+        public T? Evaluate<T>(Stream? inputStream, CancellationToken cancellationToken = default) {
+            string json = Evaluate(inputStream, cancellationToken);
+            return JsonSerializer.Deserialize<T>(json);
+        }
+
+        /// <summary>
+        /// Executes the shell script asynchronously and deserializes the JSON output to the specified type.
+        /// Uses the shell's default input stream and processes the entire output.
+        /// </summary>
+        /// <typeparam name="T">The type to deserialize the JSON output to</typeparam>
+        /// <returns>Task containing the deserialized object of type T, or null if deserialization returns null</returns>
+        /// <exception cref="JsonException">Thrown when the output is not valid JSON</exception>
+        public async Task<T?> EvaluateAsync<T>(CancellationToken cancellationToken = default) {
+            string json = await EvaluateAsync(cancellationToken);
+            return JsonSerializer.Deserialize<T>(json);
+        }
+
+        /// <summary>
+        /// Executes the shell script asynchronously with custom input and deserializes the JSON output to the specified type.
+        /// Allows providing input data to be fed to the command's stdin.
+        /// </summary>
+        /// <typeparam name="T">The type to deserialize the JSON output to</typeparam>
+        /// <param name="inputStream">Input stream to feed to the command's stdin</param>
+        /// <returns>Task containing the deserialized object of type T, or null if deserialization returns null</returns>
+        /// <exception cref="JsonException">Thrown when the output is not valid JSON</exception>
+        public async Task<T?> EvaluateAsync<T>(Stream? inputStream, CancellationToken cancellationToken = default) {
+            string json = await EvaluateAsync(inputStream, cancellationToken);
+            return JsonSerializer.Deserialize<T>(json);
         }
 
         /// <summary>
