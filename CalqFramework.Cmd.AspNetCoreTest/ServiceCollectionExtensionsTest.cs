@@ -2,11 +2,136 @@ using CalqFramework.Cmd.AspNetCore;
 using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shells;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace CalqFramework.Cmd.AspNetCoreTest;
 
 public class ServiceCollectionExtensionsTest
 {
+    private class TestCliTarget
+    {
+        public string TestMethod() => "test";
+    }
+
+    #region AddCalqCmdController Tests
+
+    [Fact]
+    public void AddCalqCmdController_RegistersLocalToolFactory()
+    {
+        var services = new ServiceCollection();
+        services.AddCalqCmdController(new TestCliTarget());
+        var serviceProvider = services.BuildServiceProvider();
+        
+        var factory = serviceProvider.GetRequiredService<ILocalToolFactory>();
+        
+        Assert.NotNull(factory);
+        Assert.True(factory is IDisposable);
+    }
+
+    [Fact]
+    public void AddCalqCmdController_WithFactory_RegistersLocalToolFactory()
+    {
+        var services = new ServiceCollection();
+        services.AddCalqCmdController(provider => new TestCliTarget());
+        var serviceProvider = services.BuildServiceProvider();
+        
+        var factory = serviceProvider.GetRequiredService<ILocalToolFactory>();
+        
+        Assert.NotNull(factory);
+        Assert.True(factory is IDisposable);
+    }
+
+    [Fact]
+    public void AddCalqCmdController_RegistersHttpClientFactory()
+    {
+        var services = new ServiceCollection();
+        services.AddCalqCmdController(new TestCliTarget());
+        var serviceProvider = services.BuildServiceProvider();
+        
+        var factory = serviceProvider.GetRequiredService<ILocalToolFactory>();
+        var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+        
+        Assert.NotNull(factory);
+        Assert.NotNull(httpClientFactory);
+        
+        var namedClient = httpClientFactory.CreateClient("CalqFramework.Cmd.LocalHttpTool");
+        Assert.NotNull(namedClient);
+        Assert.Equal(TimeSpan.FromSeconds(30), namedClient.Timeout);
+    }
+
+    [Fact]
+    public void AddCalqCmdController_WithCustomHttpClientOptions_ConfiguresCorrectly()
+    {
+        var services = new ServiceCollection();
+        services.AddCalqCmdController(new TestCliTarget(), options =>
+        {
+            options.HttpClientTimeout = TimeSpan.FromMinutes(2);
+            options.HttpClientName = "CustomHttpClient";
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        
+        var factory = serviceProvider.GetRequiredService<ILocalToolFactory>();
+        var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+        
+        Assert.NotNull(factory);
+        Assert.NotNull(httpClientFactory);
+        
+        var customClient = httpClientFactory.CreateClient("CustomHttpClient");
+        Assert.NotNull(customClient);
+        Assert.Equal(TimeSpan.FromMinutes(2), customClient.Timeout);
+    }
+
+    [Fact]
+    public void AddCalqCmdController_WithRoutePrefix_ConfiguresOptions()
+    {
+        var services = new ServiceCollection();
+        services.AddCalqCmdController(new TestCliTarget(), options =>
+        {
+            options.RoutePrefix = "api/commands";
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        
+        var options = serviceProvider.GetRequiredService<IOptions<CalqCmdControllerOptions>>();
+        
+        Assert.NotNull(options.Value);
+        Assert.Equal("api/commands", options.Value.RoutePrefix);
+    }
+
+    [Fact]
+    public void AddCalqCmdController_WithCacheOptions_ConfiguresCorrectly()
+    {
+        var services = new ServiceCollection();
+        services.AddCalqCmdController(new TestCliTarget(), null, cacheOptions =>
+        {
+            cacheOptions.ErrorCacheExpiration = TimeSpan.FromMinutes(30);
+            cacheOptions.ErrorCacheKeyPrefix = "MyApp.Errors:";
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        
+        var cacheOptions = serviceProvider.GetRequiredService<IOptions<CalqCmdCacheOptions>>();
+        
+        Assert.NotNull(cacheOptions.Value);
+        Assert.Equal(TimeSpan.FromMinutes(30), cacheOptions.Value.ErrorCacheExpiration);
+        Assert.Equal("MyApp.Errors:", cacheOptions.Value.ErrorCacheKeyPrefix);
+    }
+
+    [Fact]
+    public void AddCalqCmdController_LocalToolFactory_DoesNotOwnHttpClients()
+    {
+        var services = new ServiceCollection();
+        services.AddCalqCmdController(new TestCliTarget());
+        var serviceProvider = services.BuildServiceProvider();
+        
+        using var factory = (LocalHttpToolFactory)serviceProvider.GetRequiredService<ILocalToolFactory>();
+        
+        Assert.NotNull(factory);
+        factory.Dispose();
+    }
+
+    #endregion
+
+    #region AddPythonTool Tests
+
     [Fact]
     public void AddPythonTool_WithScriptPath_RegistersServices()
     {
@@ -125,4 +250,6 @@ public class ServiceCollectionExtensionsTest
         
         Assert.True(extensionMethodExists);
     }
+
+    #endregion
 }

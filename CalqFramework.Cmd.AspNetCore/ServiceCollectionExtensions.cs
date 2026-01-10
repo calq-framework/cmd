@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 namespace CalqFramework.Cmd.AspNetCore;
 
 /// <summary>
-/// Configuration options for CalqCmdController routing
+/// Configuration options for CalqCmdController
 /// </summary>
 public class CalqCmdControllerOptions
 {
@@ -15,6 +15,16 @@ public class CalqCmdControllerOptions
     /// Route prefix for the CalqCmdController. If null or empty, uses default "CalqCmd"
     /// </summary>
     public string? RoutePrefix { get; set; }
+    
+    /// <summary>
+    /// HTTP client timeout for LocalHttpTool connections. Default is 30 seconds.
+    /// </summary>
+    public TimeSpan HttpClientTimeout { get; set; } = TimeSpan.FromSeconds(30);
+    
+    /// <summary>
+    /// Named HTTP client configuration for CalqFramework.Cmd.LocalHttpTool
+    /// </summary>
+    public string HttpClientName { get; set; } = "CalqFramework.Cmd.LocalHttpTool";
 }
 
 /// <summary>
@@ -26,96 +36,82 @@ public static class ServiceCollectionExtensions
     /// Registers the CalqCmdController for ASP.NET Core MVC with CalqFramework.Cli integration.
     /// This controller provides streaming endpoints using CalqFramework.Cli for command execution.
     /// Automatically registers DistributedMemoryCache if no distributed cache is already registered.
+    /// Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="cliTarget">The target object to pass to CalqFramework.Cli for command execution.</param>
-    /// <param name="routePrefix">Optional route prefix for the controller. If provided, controller will be available at /{routePrefix}/ instead of /CalqCmd/</param>
+    /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, object cliTarget, string? routePrefix = null)
+    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, object cliTarget, Action<CalqCmdControllerOptions>? configure = null)
     {
-        return AddCalqCmdController(services, cliTarget, routePrefix, null);
+        return AddCalqCmdController(services, _ => cliTarget, configure);
     }
 
     /// <summary>
     /// Registers the CalqCmdController for ASP.NET Core MVC with CalqFramework.Cli integration.
     /// This controller provides streaming endpoints using CalqFramework.Cli for command execution.
     /// Automatically registers DistributedMemoryCache if no distributed cache is already registered.
+    /// Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="cliTarget">The target object to pass to CalqFramework.Cli for command execution.</param>
-    /// <param name="routePrefix">Optional route prefix for the controller. If provided, controller will be available at /{routePrefix}/ instead of /CalqCmd/</param>
+    /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <param name="configureCacheOptions">Optional action to configure cache options.</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, object cliTarget, string? routePrefix, Action<CalqCmdCacheOptions>? configureCacheOptions)
+    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, object cliTarget, Action<CalqCmdControllerOptions>? configure, Action<CalqCmdCacheOptions>? configureCacheOptions)
     {
-        services.AddSingleton(cliTarget);
-        
-        // Register cache options
-        if (configureCacheOptions != null)
-        {
-            services.Configure(configureCacheOptions);
-        }
-        else
-        {
-            services.Configure<CalqCmdCacheOptions>(_ => { });
-        }
-        
-        // Ensure distributed cache is available - register memory cache as fallback if none registered
-        EnsureDistributedCacheRegistered(services);
-        
-        services.Configure<CalqCmdControllerOptions>(options =>
-        {
-            options.RoutePrefix = routePrefix;
-        });
-
-        if (!string.IsNullOrEmpty(routePrefix))
-        {
-            services.Configure<Microsoft.AspNetCore.Mvc.MvcOptions>(options =>
-            {
-                options.Conventions.Add(new CalqCmdControllerRouteConvention(routePrefix));
-            });
-        }
-        
-        services.AddTransient<CalqCmdController>(provider =>
-        {
-            var target = provider.GetRequiredService<object>();
-            var localToolFactory = provider.GetRequiredService<ILocalToolFactory>();
-            var distributedCache = provider.GetRequiredService<IDistributedCache>();
-            var cacheOptions = provider.GetRequiredService<IOptions<CalqCmdCacheOptions>>();
-            return new CalqCmdController(target, localToolFactory, distributedCache, cacheOptions);
-        });
-        
-        return services;
+        return AddCalqCmdController(services, _ => cliTarget, configure, configureCacheOptions);
     }
 
     /// <summary>
     /// Registers the CalqCmdController for ASP.NET Core MVC with CalqFramework.Cli integration.
-    /// This overload uses a factory function to create the CLI target.
+    /// This controller provides streaming endpoints using CalqFramework.Cli for command execution.
     /// Automatically registers DistributedMemoryCache if no distributed cache is already registered.
+    /// Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="cliTargetFactory">Factory function to create the CLI target object.</param>
-    /// <param name="routePrefix">Optional route prefix for the controller. If provided, controller will be available at /{routePrefix}/ instead of /CalqCmd/</param>
+    /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, Func<IServiceProvider, object> cliTargetFactory, string? routePrefix = null)
+    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, Func<IServiceProvider, object> cliTargetFactory, Action<CalqCmdControllerOptions>? configure = null)
     {
-        return AddCalqCmdController(services, cliTargetFactory, routePrefix, null);
+        return AddCalqCmdControllerInternal(services, cliTargetFactory, configure, null);
     }
 
     /// <summary>
     /// Registers the CalqCmdController for ASP.NET Core MVC with CalqFramework.Cli integration.
-    /// This overload uses a factory function to create the CLI target.
+    /// This controller provides streaming endpoints using CalqFramework.Cli for command execution.
     /// Automatically registers DistributedMemoryCache if no distributed cache is already registered.
+    /// Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="cliTargetFactory">Factory function to create the CLI target object.</param>
-    /// <param name="routePrefix">Optional route prefix for the controller. If provided, controller will be available at /{routePrefix}/ instead of /CalqCmd/</param>
+    /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <param name="configureCacheOptions">Optional action to configure cache options.</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, Func<IServiceProvider, object> cliTargetFactory, string? routePrefix, Action<CalqCmdCacheOptions>? configureCacheOptions)
+    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, Func<IServiceProvider, object> cliTargetFactory, Action<CalqCmdControllerOptions>? configure, Action<CalqCmdCacheOptions>? configureCacheOptions)
+    {
+        return AddCalqCmdControllerInternal(services, cliTargetFactory, configure, configureCacheOptions);
+    }
+
+    /// <summary>
+    /// Internal implementation for registering CalqCmdController with shared logic.
+    /// </summary>
+    private static IServiceCollection AddCalqCmdControllerInternal(IServiceCollection services, Func<IServiceProvider, object> cliTargetFactory, Action<CalqCmdControllerOptions>? configure, Action<CalqCmdCacheOptions>? configureCacheOptions)
     {
         services.AddSingleton(cliTargetFactory);
         
+        // Configure controller options
+        var options = new CalqCmdControllerOptions();
+        configure?.Invoke(options);
+        
+        services.Configure<CalqCmdControllerOptions>(opts =>
+        {
+            opts.RoutePrefix = options.RoutePrefix;
+            opts.HttpClientTimeout = options.HttpClientTimeout;
+            opts.HttpClientName = options.HttpClientName;
+        });
+        
         // Register cache options
         if (configureCacheOptions != null)
         {
@@ -129,16 +125,15 @@ public static class ServiceCollectionExtensions
         // Ensure distributed cache is available - register memory cache as fallback if none registered
         EnsureDistributedCacheRegistered(services);
         
-        services.Configure<CalqCmdControllerOptions>(options =>
+        // Register LocalHttpToolFactory that automatically discovers CalqCmdController URL
+        AddLocalToolFactoryInternal(services, options);
+        
+        // Configure routing if custom prefix is specified
+        if (!string.IsNullOrEmpty(options.RoutePrefix))
         {
-            options.RoutePrefix = routePrefix;
-        });
-
-        if (!string.IsNullOrEmpty(routePrefix))
-        {
-            services.Configure<Microsoft.AspNetCore.Mvc.MvcOptions>(options =>
+            services.Configure<Microsoft.AspNetCore.Mvc.MvcOptions>(mvcOptions =>
             {
-                options.Conventions.Add(new CalqCmdControllerRouteConvention(routePrefix));
+                mvcOptions.Conventions.Add(new CalqCmdControllerRouteConvention(options.RoutePrefix));
             });
         }
         
@@ -159,75 +154,19 @@ public static class ServiceCollectionExtensions
     /// Registers a LocalHttpToolFactory that automatically discovers CalqCmdController URL from ASP.NET Core
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
+    /// <param name="options">Controller options containing HTTP client configuration.</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddLocalHttpToolFactory(this IServiceCollection services)
+    private static IServiceCollection AddLocalToolFactoryInternal(this IServiceCollection services, CalqCmdControllerOptions options)
     {
         services.AddHttpContextAccessor();
         
-        services.AddHttpClient("CalqFramework.Cmd.LocalHttpTool", client =>
+        services.AddHttpClient(options.HttpClientName, client =>
         {
-            client.Timeout = TimeSpan.FromSeconds(30);
+            client.Timeout = options.HttpClientTimeout;
         });
         
         services.AddSingleton<ILocalToolFactory, LocalHttpToolFactory>();
         return services;
-    }
-
-    /// <summary>
-    /// Registers a LocalHttpToolFactory with custom HttpClient configuration
-    /// </summary>
-    /// <param name="services">The service collection to add services to.</param>
-    /// <param name="configureClient">Action to configure the HttpClient</param>
-    /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddLocalHttpToolFactory(this IServiceCollection services, Action<HttpClient> configureClient)
-    {
-        services.AddHttpContextAccessor();
-        
-        services.AddHttpClient("CalqFramework.Cmd.LocalHttpTool", configureClient);
-        
-        services.AddSingleton<ILocalToolFactory, LocalHttpToolFactory>();
-        return services;
-    }
-
-    /// <summary>
-    /// Registers a LocalHttpToolFactory for creating HttpTool instances that connect to CalqCmdController
-    /// </summary>
-    /// <param name="services">The service collection to add services to.</param>
-    /// <param name="host">Host URL where the application is running (e.g., "https://localhost:5000")</param>
-    /// <param name="routePrefix">Route prefix used when registering CalqCmdController. Should match the prefix used in AddCalqCmdController</param>
-    /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddLocalHttpToolFactory(this IServiceCollection services, string host, string? routePrefix = null)
-    {
-        var baseUrl = BuildBaseUrl(host, routePrefix);
-        services.AddSingleton<ILocalToolFactory>(provider => new LocalHttpToolFactory(baseUrl));
-        return services;
-    }
-
-    /// <summary>
-    /// Registers a LocalHttpToolFactory with a shared HttpClient for creating HttpTool instances
-    /// </summary>
-    /// <param name="services">The service collection to add services to.</param>
-    /// <param name="host">Host URL where the application is running (e.g., "https://localhost:5000")</param>
-    /// <param name="routePrefix">Route prefix used when registering CalqCmdController. Should match the prefix used in AddCalqCmdController</param>
-    /// <param name="configureHttpClient">Action to configure the shared HttpClient</param>
-    /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddLocalHttpToolFactory(this IServiceCollection services, string host, string? routePrefix, Action<HttpClient> configureHttpClient)
-    {
-        var httpClient = new HttpClient();
-        configureHttpClient(httpClient);
-        
-        var baseUrl = BuildBaseUrl(host, routePrefix);
-        services.AddSingleton<ILocalToolFactory>(provider => new LocalHttpToolFactory(baseUrl, httpClient));
-        return services;
-    }
-
-    private static string BuildBaseUrl(string host, string? routePrefix)
-    {
-        var trimmedHost = host.TrimEnd('/');
-        var normalizedPrefix = string.IsNullOrEmpty(routePrefix) ? 
-            nameof(CalqCmdController).Replace("Controller", "") : 
-            routePrefix.Trim('/');
-        return $"{trimmedHost}/{normalizedPrefix}";
     }
 
     private static void EnsureDistributedCacheRegistered(IServiceCollection services)
