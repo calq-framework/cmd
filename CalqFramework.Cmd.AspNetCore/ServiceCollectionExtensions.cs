@@ -1,6 +1,8 @@
 using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shells;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace CalqFramework.Cmd.AspNetCore;
 
@@ -23,6 +25,7 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// Registers the CalqCmdController for ASP.NET Core MVC with CalqFramework.Cli integration.
     /// This controller provides streaming endpoints using CalqFramework.Cli for command execution.
+    /// Automatically registers DistributedMemoryCache if no distributed cache is already registered.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="cliTarget">The target object to pass to CalqFramework.Cli for command execution.</param>
@@ -30,7 +33,35 @@ public static class ServiceCollectionExtensions
     /// <returns>The service collection for method chaining.</returns>
     public static IServiceCollection AddCalqCmdController(this IServiceCollection services, object cliTarget, string? routePrefix = null)
     {
+        return AddCalqCmdController(services, cliTarget, routePrefix, null);
+    }
+
+    /// <summary>
+    /// Registers the CalqCmdController for ASP.NET Core MVC with CalqFramework.Cli integration.
+    /// This controller provides streaming endpoints using CalqFramework.Cli for command execution.
+    /// Automatically registers DistributedMemoryCache if no distributed cache is already registered.
+    /// </summary>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="cliTarget">The target object to pass to CalqFramework.Cli for command execution.</param>
+    /// <param name="routePrefix">Optional route prefix for the controller. If provided, controller will be available at /{routePrefix}/ instead of /CalqCmd/</param>
+    /// <param name="configureCacheOptions">Optional action to configure cache options.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, object cliTarget, string? routePrefix, Action<CalqCmdCacheOptions>? configureCacheOptions)
+    {
         services.AddSingleton(cliTarget);
+        
+        // Register cache options
+        if (configureCacheOptions != null)
+        {
+            services.Configure(configureCacheOptions);
+        }
+        else
+        {
+            services.Configure<CalqCmdCacheOptions>(_ => { });
+        }
+        
+        // Ensure distributed cache is available - register memory cache as fallback if none registered
+        EnsureDistributedCacheRegistered(services);
         
         services.Configure<CalqCmdControllerOptions>(options =>
         {
@@ -49,7 +80,9 @@ public static class ServiceCollectionExtensions
         {
             var target = provider.GetRequiredService<object>();
             var localToolFactory = provider.GetRequiredService<ILocalToolFactory>();
-            return new CalqCmdController(target, localToolFactory);
+            var distributedCache = provider.GetRequiredService<IDistributedCache>();
+            var cacheOptions = provider.GetRequiredService<IOptions<CalqCmdCacheOptions>>();
+            return new CalqCmdController(target, localToolFactory, distributedCache, cacheOptions);
         });
         
         return services;
@@ -58,6 +91,7 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// Registers the CalqCmdController for ASP.NET Core MVC with CalqFramework.Cli integration.
     /// This overload uses a factory function to create the CLI target.
+    /// Automatically registers DistributedMemoryCache if no distributed cache is already registered.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="cliTargetFactory">Factory function to create the CLI target object.</param>
@@ -65,7 +99,35 @@ public static class ServiceCollectionExtensions
     /// <returns>The service collection for method chaining.</returns>
     public static IServiceCollection AddCalqCmdController(this IServiceCollection services, Func<IServiceProvider, object> cliTargetFactory, string? routePrefix = null)
     {
+        return AddCalqCmdController(services, cliTargetFactory, routePrefix, null);
+    }
+
+    /// <summary>
+    /// Registers the CalqCmdController for ASP.NET Core MVC with CalqFramework.Cli integration.
+    /// This overload uses a factory function to create the CLI target.
+    /// Automatically registers DistributedMemoryCache if no distributed cache is already registered.
+    /// </summary>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="cliTargetFactory">Factory function to create the CLI target object.</param>
+    /// <param name="routePrefix">Optional route prefix for the controller. If provided, controller will be available at /{routePrefix}/ instead of /CalqCmd/</param>
+    /// <param name="configureCacheOptions">Optional action to configure cache options.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, Func<IServiceProvider, object> cliTargetFactory, string? routePrefix, Action<CalqCmdCacheOptions>? configureCacheOptions)
+    {
         services.AddSingleton(cliTargetFactory);
+        
+        // Register cache options
+        if (configureCacheOptions != null)
+        {
+            services.Configure(configureCacheOptions);
+        }
+        else
+        {
+            services.Configure<CalqCmdCacheOptions>(_ => { });
+        }
+        
+        // Ensure distributed cache is available - register memory cache as fallback if none registered
+        EnsureDistributedCacheRegistered(services);
         
         services.Configure<CalqCmdControllerOptions>(options =>
         {
@@ -85,7 +147,9 @@ public static class ServiceCollectionExtensions
             var factory = provider.GetRequiredService<Func<IServiceProvider, object>>();
             var target = factory(provider);
             var localToolFactory = provider.GetRequiredService<ILocalToolFactory>();
-            return new CalqCmdController(target, localToolFactory);
+            var distributedCache = provider.GetRequiredService<IDistributedCache>();
+            var cacheOptions = provider.GetRequiredService<IOptions<CalqCmdCacheOptions>>();
+            return new CalqCmdController(target, localToolFactory, distributedCache, cacheOptions);
         });
         
         return services;
@@ -164,6 +228,18 @@ public static class ServiceCollectionExtensions
             nameof(CalqCmdController).Replace("Controller", "") : 
             routePrefix.Trim('/');
         return $"{trimmedHost}/{normalizedPrefix}";
+    }
+
+    private static void EnsureDistributedCacheRegistered(IServiceCollection services)
+    {
+        // Check if IDistributedCache is already registered
+        var distributedCacheDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IDistributedCache));
+        
+        if (distributedCacheDescriptor == null)
+        {
+            // No distributed cache registered, add memory cache as default
+            services.AddDistributedMemoryCache();
+        }
     }
 
     /// <summary>

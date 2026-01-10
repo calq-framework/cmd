@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.Features;
-using System.Collections.Concurrent;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
 using System.Text;
 using CalqFramework.Cli;
 using CalqFramework.Cmd.Shells;
@@ -16,15 +17,21 @@ namespace CalqFramework.Cmd.AspNetCore;
 [Route("[controller]")]
 public class CalqCmdController : ControllerBase
 {
-    private static readonly ConcurrentDictionary<string, string> ExceptionCache = new();
-    
     private readonly object _cliTarget;
     private readonly ILocalToolFactory _localToolFactory;
+    private readonly IDistributedCache _distributedCache;
+    private readonly CalqCmdCacheOptions _cacheOptions;
 
-    public CalqCmdController(object cliTarget, ILocalToolFactory localToolFactory)
+    public CalqCmdController(
+        object cliTarget, 
+        ILocalToolFactory localToolFactory,
+        IDistributedCache distributedCache,
+        IOptions<CalqCmdCacheOptions> cacheOptions)
     {
         _cliTarget = cliTarget;
         _localToolFactory = localToolFactory;
+        _distributedCache = distributedCache;
+        _cacheOptions = cacheOptions.Value;
         
         // Set LocalHttpToolFactory as the default for LocalTool when used in ASP.NET Core context
         LocalTool.Factory = localToolFactory;
@@ -82,7 +89,7 @@ public class CalqCmdController : ControllerBase
 
     [HttpGet("read_error_message")]
     [HttpPost("read_error_message")]
-    public IActionResult ReadErrorMessage()
+    public async Task<IActionResult> ReadErrorMessage()
     {
         if (!Request.Headers.TryGetValue("error_code", out var errorCodeValues))
         {
@@ -90,9 +97,12 @@ public class CalqCmdController : ControllerBase
         }
 
         string errorCode = errorCodeValues.FirstOrDefault() ?? "";
+        string cacheKey = GetErrorCacheKey(errorCode);
         
-        if (ExceptionCache.TryGetValue(errorCode, out var errorMessage))
+        var bytes = await _distributedCache.GetAsync(cacheKey);
+        if (bytes != null)
         {
+            var errorMessage = Encoding.UTF8.GetString(bytes);
             return Ok(errorMessage);
         }
         
@@ -107,7 +117,16 @@ public class CalqCmdController : ControllerBase
         uint normalizedHash = (uint)Math.Abs(hashCode);
         uint errorCode = 256 + (normalizedHash % (0xFFFFFFFF - 256));
         
-        ExceptionCache[errorCode.ToString()] = stackTrace;
+        string errorCodeStr = errorCode.ToString();
+        string cacheKey = GetErrorCacheKey(errorCodeStr);
+        
+        var cacheOptions = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = _cacheOptions.ErrorCacheExpiration
+        };
+        
+        var bytes = Encoding.UTF8.GetBytes(stackTrace);
+        await _distributedCache.SetAsync(cacheKey, bytes, cacheOptions);
         
         var resetFeature = HttpContext.Features.Get<IHttpResetFeature>();
         if (resetFeature != null)
@@ -122,6 +141,11 @@ public class CalqCmdController : ControllerBase
         Response.StatusCode = 500;
         var errorResponse = System.Text.Json.JsonSerializer.Serialize(new { error_code = errorCode, message = ex.Message });
         return CreateStringStream(errorResponse);
+    }
+
+    private string GetErrorCacheKey(string errorCode)
+    {
+        return $"{_cacheOptions.ErrorCacheKeyPrefix}{errorCode}";
     }
 
     private Stream CreateStringStream(string content)
