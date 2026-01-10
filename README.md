@@ -256,9 +256,9 @@ LocalTerminal.Shell = new ShellTool(new Bash(), "git");
 RUN("commit -m 'automated message'"); 
 ```
 
-## Integrations
+## Python Shell Integration
 
-### Python
+### Python Tool Execution
 Python scripts compatible with [Python Fire](https://github.com/google/python-fire) can be run identically via PythonTool shell.
 ```python
 # tool.py
@@ -317,15 +317,15 @@ LocalTerminal.Shell = new PythonTool(pts) {
 RUN("test") // prints each line every second
 ```
 
-### ASP.NET Core Integration
+## Calq CMD ASP.NET Core
 Calq CMD integrates seamlessly with ASP.NET Core applications, enabling cloud-native web APIs that leverage shell-style scripting for data processing and streaming operations.
 
-#### Installation
+### Installation
 ```bash
 dotnet add package CalqFramework.Cmd.AspNetCore
 ```
 
-#### PythonTool Registration
+### PythonTool Registration
 Register PythonTool services for dependency injection:
 
 ```csharp
@@ -352,7 +352,7 @@ await app.Services.StartPythonToolServerAsync();
 app.Run();
 ```
 
-#### Basic Usage with Built-in Attributes
+### Basic Usage with Built-in Attributes
 Built-in attributes automatically configure shell context per request. No additional registration required:
 
 ```csharp
@@ -377,7 +377,7 @@ public class DataController : ControllerBase
 }
 ```
 
-#### Custom Action Filters
+### Custom Action Filters
 Create custom action filters for specific shell configurations:
 
 ```csharp
@@ -404,7 +404,9 @@ public class CustomController : ControllerBase
 }
 ```
 
-## Quick Start  
+## Quick Start
+
+### Calq CMD
 ```csharp
 using static CalqFramework.Cmd.Terminal;  
 
@@ -416,6 +418,27 @@ class QuickStart {
         Console.WriteLine(version);  
     }  
 }  
+```
+
+### Calq CMD ASP.NET Core
+```csharp
+using CalqFramework.Cmd.AspNetCore;
+using static CalqFramework.Cmd.Terminal;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddControllers();
+
+var app = builder.Build();
+app.MapControllers();
+
+[ApiController, UseBashShell]
+public class QuickStartController : ControllerBase 
+{
+    [HttpGet("hello")]
+    public async Task<string> Hello() => await CMDAsync("echo Hello Calq CMD ASP.NET Core!");
+}
+
+app.Run();
 ```  
 
 ## License  
