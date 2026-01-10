@@ -4,6 +4,8 @@
 # Calq CMD  
 Calq CMD introduces distributed, shell-style scripting to C#, turning complex systems into simple scripts. Build cross-platform tools, streaming data pipelines, parallel batch workloads, HPC processes, and AI-powered systems with unprecedented simplicity.
 
+Easy cloud-native distributed computing - scale from single-process development to distributed microservices without changing your code.
+
 Supports Bash on Windows via WSL and Cygwin/MinGW/MSYS2. Python interoperability provided via high-performance asynchronous HTTP/2 server.
 
 ## How Calq CMD Stacks Up
@@ -231,7 +233,7 @@ try {
 ```
 
 ## Shell Configuration & Tools
-Currently available built-in shells: `CommandLine`, `Bash`, `PythonTool`, `HttpTool`, and `ShellTool`.
+Currently available built-in shells: `CommandLine`, `Bash`, `PythonTool`, `HttpTool`, `LocalTool`, and `ShellTool`.
 
 ### LocalTerminal
 `LocalTerminal` settings are stored in an `AsyncLocal<T>` so that each logical context (thread or async task) keeps its own configuration.  
@@ -241,6 +243,20 @@ LocalTerminal.Shell = new CommandLine() {
     In =  Console.OpenStandardInput(); // default is `null`
 }
 LocalTerminal.Out = Console.OpenStandardOutput(); // default
+```
+
+### LocalTool
+`LocalTool` provides seamless local-to-distributed execution. It automatically uses `LocalToolFactory` to create the appropriate underlying shell - either local process execution or HTTP-based remote execution via `CalqCmdController`.
+
+```csharp
+// LocalTool automatically adapts based on context
+LocalTerminal.Shell = new LocalTool();
+
+// In development: executes locally via CommandLine shell
+string result = CMD("echo Hello World");
+
+// In production with CalqCmdController: executes via HTTP
+// Same code, different execution context - no changes needed
 ```
 
 ### HttpTool
@@ -325,14 +341,79 @@ Calq CMD integrates seamlessly with ASP.NET Core applications, enabling cloud-na
 dotnet add package CalqFramework.Cmd.AspNetCore
 ```
 
+### HTTP Command Execution Controller
+Register the CalqCmdController to expose your CLI commands as HTTP endpoints with streaming support and distributed error caching:
+
+```csharp
+using CalqFramework.Cmd.AspNetCore;
+using static CalqFramework.Cmd.Terminal;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Your CLI target object
+var myCliTarget = new MyCliCommands();
+
+// Register CalqCmdController with automatic service discovery
+builder.Services.AddCalqCmdController(myCliTarget);
+
+// Optional: Configure controller options
+builder.Services.AddCalqCmdController(myCliTarget, options =>
+{
+    options.RoutePrefix = "api/cmd";           // Custom route prefix
+    options.HttpClientTimeout = TimeSpan.FromMinutes(5); // HTTP timeout
+});
+
+// Optional: Configure distributed error caching
+builder.Services.AddCalqCmdController(myCliTarget, null, cacheOptions =>
+{
+    cacheOptions.ErrorCacheExpiration = TimeSpan.FromHours(2);
+    cacheOptions.ErrorCacheKeyPrefix = "MyApp.Errors:";
+});
+
+var app = builder.Build();
+app.MapControllers();
+app.Run();
+```
+
+### Distributed Command Execution
+The CalqCmdController automatically handles:
+- **Streaming Command Execution**: Commands stream results in real-time via HTTP
+- **Distributed Error Caching**: Errors are cached with unique codes for later retrieval
+- **Automatic Service Discovery**: LocalTool automatically discovers controller endpoints
+- **HTTP/2 Performance**: Optimized for high-throughput streaming scenarios
+
+```csharp
+// Client code - LocalTool automatically discovers and connects to CalqCmdController
+LocalTerminal.Shell = new LocalTool();
+string result = CMD("my-command --param value"); // Executes via HTTP on remote service
+
+// Or use HttpTool directly for custom endpoints
+var httpClient = new HttpClient { BaseAddress = new Uri("https://api.example.com/cmd/") };
+LocalTerminal.Shell = new HttpTool(httpClient);
+```
+
+### Error Handling
+Errors are automatically cached with unique error codes and can be retrieved later:
+
+```csharp
+// When a command fails, the error is cached and an error code is returned
+try {
+    CMD("failing-command");
+} catch (ShellWorkerException ex) {
+    var errorCode = ex.ErrorCode; // e.g., 1234567890
+    
+    // Later, retrieve the full error details via HTTP
+    var httpClient = new HttpClient();
+    var response = await httpClient.GetAsync($"https://api.example.com/CalqCmd/read_error_message", 
+        new Dictionary<string, string> { ["error_code"] = errorCode.ToString() });
+    var fullErrorMessage = await response.Content.ReadAsStringAsync();
+}
+```
+
 ### PythonTool Registration
 Register PythonTool services for dependency injection:
 
 ```csharp
-using CalqFramework.Cmd.AspNetCore;
-
-var builder = WebApplication.CreateBuilder(args);
-
 // Register PythonTool with dependency injection
 builder.Services.AddPythonTool("path/to/your/script.py");
 
@@ -344,12 +425,8 @@ builder.Services.AddPythonTool(provider =>
     return new PythonToolServer(scriptPath);
 });
 
-var app = builder.Build();
-
 // Start the Python server during application startup
 await app.Services.StartPythonToolServerAsync();
-
-app.Run();
 ```
 
 ### Basic Usage with Built-in Attributes
@@ -428,6 +505,10 @@ using static CalqFramework.Cmd.Terminal;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
+// Register command execution controller
+var myCliTarget = new MyCommands();
+builder.Services.AddCalqCmdController(myCliTarget);
+
 var app = builder.Build();
 app.MapControllers();
 
@@ -436,6 +517,10 @@ public class QuickStartController : ControllerBase
 {
     [HttpGet("hello")]
     public async Task<string> Hello() => await CMDAsync("echo Hello Calq CMD ASP.NET Core!");
+    
+    [HttpPost("process")]
+    public async Task<Stream> ProcessData([FromBody] Stream input) => 
+        await CMDStreamAsync("process-data", input);
 }
 
 app.Run();
