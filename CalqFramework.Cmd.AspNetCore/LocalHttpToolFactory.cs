@@ -79,11 +79,12 @@ public class LocalHttpToolFactory : ILocalToolFactory, IDisposable
             var httpClientFactory = _serviceProvider.GetService<IHttpClientFactory>();
             if (httpClientFactory != null)
             {
-                return httpClientFactory.CreateClient("CalqFramework.Cmd.LocalHttpTool");
+                var httpClientName = GetHttpClientName();
+                return httpClientFactory.CreateClient(httpClientName);
             }
             
             throw new InvalidOperationException(
-                "IHttpClientFactory is not registered. Ensure AddLocalHttpToolFactory() is called to register required services.");
+                "IHttpClientFactory is not registered. Ensure AddLocalToolFactory() is called to register required services.");
         }
 
         return new HttpClient();
@@ -155,6 +156,24 @@ public class LocalHttpToolFactory : ILocalToolFactory, IDisposable
         catch
         {
             return null;
+        }
+    }
+
+    private string GetHttpClientName()
+    {
+        if (_serviceProvider == null)
+        {
+            return "CalqFramework.Cmd.LocalHttpTool";
+        }
+
+        try
+        {
+            var options = _serviceProvider.GetService<IOptions<CalqCmdControllerOptions>>();
+            return options?.Value?.HttpClientName ?? "CalqFramework.Cmd.LocalHttpTool";
+        }
+        catch
+        {
+            return "CalqFramework.Cmd.LocalHttpTool";
         }
     }
 

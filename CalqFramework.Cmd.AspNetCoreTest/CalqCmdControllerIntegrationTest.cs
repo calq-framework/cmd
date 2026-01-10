@@ -68,7 +68,6 @@ public class CalqCmdControllerIntegrationTest
                     services.AddControllers()
                         .AddApplicationPart(typeof(CalqCmdController).Assembly);
                     services.AddCalqCmdController(new TestCliTarget());
-                    services.AddLocalHttpToolFactory();
                 });
                 webHost.Configure(app =>
                 {
