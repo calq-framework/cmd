@@ -354,11 +354,6 @@ RUN("test") // prints each line every second
 ## Calq CMD ASP.NET Core
 Calq CMD integrates seamlessly with ASP.NET Core applications, enabling cloud-native web APIs that leverage shell-style scripting for data processing and streaming operations.
 
-### Installation
-```bash
-dotnet add package CalqFramework.Cmd.AspNetCore
-```
-
 ### HTTP Command Execution Controller
 Register the CalqCmdController to expose your commands as HTTP endpoints with streaming support and distributed error caching:
 
@@ -445,17 +440,18 @@ LocalTerminal.Shell = new HttpTool(httpClient);
 Errors are automatically cached with unique error codes and can be retrieved later:
 
 ```csharp
-// When a command fails, the error is cached and an error code is returned
+// When working with workers directly, use ReadErrorMessageAsync to get full error details
+var script = new ShellScript(LocalTerminal.Shell, "failing-command");
 try {
-    CMD("failing-command");
+    using var worker = await script.StartAsync();
+    using var reader = new StreamReader(worker.StandardOutput);
+    string output = await reader.ReadToEndAsync();
 } catch (ShellWorkerException ex) {
     var errorCode = ex.ErrorCode; // e.g., 1234567890
     
-    // Later, retrieve the full error details via HTTP
-    var httpClient = new HttpClient();
-    var response = await httpClient.GetAsync($"https://api.example.com/CalqCmd/read_error_message", 
-        new Dictionary<string, string> { ["error_code"] = errorCode.ToString() });
-    var fullErrorMessage = await response.Content.ReadAsStringAsync();
+    // ReadErrorMessageAsync automatically retrieves cached error details
+    string fullErrorMessage = await worker.ReadErrorMessageAsync();
+    Console.WriteLine($"Error {errorCode}: {fullErrorMessage}");
 }
 ```
 
@@ -485,21 +481,21 @@ Built-in attributes automatically configure shell context per request. No additi
 [ApiController, UseBashShell] // Applied to entire controller
 public class DataController : ControllerBase 
 {
-    [HttpGet("stream-data")]
+    [HttpGet]
     [Produces("text/plain")]
-    public async Task<Stream> StreamData() => await CMDStreamAsync("process_large_dataset");
+    public async Task<Stream> StreamData() => await CMDStreamAsync("process-large-dataset");
 
-    [HttpPost("process-upload")]
+    [HttpPost]
     [Produces("application/json")]
     public async Task<Stream> ProcessUpload(IFormFile file) 
     {
         LocalTerminal.Shell = new CommandLine(); // Override controller-level attribute
-        return await CMDStreamAsync("analyze_file", file.OpenReadStream());
+        return await CMDStreamAsync("analyze-file", file.OpenReadStream());
     }
 
-    [HttpPost("process-stream"), UseCommandLineShell] // Override controller-level attribute
+    [HttpPost, UseCommandLineShell] // Override controller-level attribute
     [Produces("application/json")]
-    public async Task<Stream> ProcessStream([FromBody] Stream data) => await CMDStreamAsync("transform_data", data);
+    public async Task<Stream> ProcessStream([FromBody] Stream data) => await CMDStreamAsync("transform-data", data);
 }
 ```
 
@@ -525,14 +521,17 @@ public class UseMyCustomShellAttribute : ActionFilterAttribute
 [ApiController, UseMyCustomShell]
 public class CustomController : ControllerBase 
 {
-    [HttpGet("process")]
-    public async Task<Stream> ProcessData() => await CMDStreamAsync("custom_function");
+    public async Task<Stream> ProcessData() => await CMDStreamAsync("custom-function");
 }
 ```
 
 ## Quick Start
 
 ### Calq CMD
+```bash
+dotnet add package CalqFramework.Cmd
+```
+
 ```csharp
 using static CalqFramework.Cmd.Terminal;  
 
@@ -547,6 +546,10 @@ class QuickStart {
 ```
 
 ### Calq CMD ASP.NET Core
+```bash
+dotnet add package CalqFramework.Cmd.AspNetCore
+```
+
 ```csharp
 using CalqFramework.Cmd.AspNetCore;
 using static CalqFramework.Cmd.Terminal;
