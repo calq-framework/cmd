@@ -524,15 +524,15 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
-// Register distributed computing CLI target
-var distributedProcessor = new DistributedDataProcessor();
-builder.Services.AddCalqCmdController(distributedProcessor);
+// Register CLI target for CalqCmdController
+var cliCommands = new DataProcessingCommands();
+builder.Services.AddCalqCmdController(cliCommands);
 
 var app = builder.Build();
 app.MapControllers();
 
-// CLI target class showcasing distributed computing with parallelism
-public class DistributedDataProcessor
+// CLI target class - methods become executable commands via CalqCmdController
+public class DataProcessingCommands
 {
     // Process data in parallel chunks - reads from LocalTerminal.Shell.In
     public async Task<string> ProcessParallel()
@@ -555,7 +555,7 @@ public class DistributedDataProcessor
             var chunkData = string.Join('\n', chunk);
             var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(chunkData));
             
-            // Each chunk processed via distributed LocalTool
+            // Each chunk processed via distributed LocalTool - calls process-chunk command
             return await CMDAsync("process-chunk", inputStream);
         });
         
@@ -578,37 +578,36 @@ public class DistributedDataProcessor
         return $"Processed: {data.Trim().ToUpper()} [Worker: {Environment.ProcessId}]";
     }
     
-    // Parallel pipeline processing with streaming
-    public async Task<Stream> ProcessStream()
+    // Stream processing - demonstrates streaming output
+    public async Task<Stream> StreamResults()
     {
         if (LocalTerminal.Shell.In == null)
             return new MemoryStream();
             
-        // Create parallel processing pipeline using LocalTool
-        LocalTerminal.Shell = new LocalTool();
+        // Process input stream and return results as stream
+        using var reader = new StreamReader(LocalTerminal.Shell.In);
+        var data = await reader.ReadToEndAsync();
         
-        // Pipeline: read → split → parallel process → merge
-        var pipeline = CMDV("split-data") | CMDV("process-parallel") | CMDV("merge-results");
-        
-        // Execute pipeline and return streaming results
-        return await CMDStreamAsync("execute-pipeline", LocalTerminal.Shell.In);
+        var result = $"Streaming result: {data.Trim()}";
+        var resultBytes = Encoding.UTF8.GetBytes(result);
+        return new MemoryStream(resultBytes);
     }
 }
 
-// Controller for single-line command execution
+// Controller for HTTP endpoint access - calls DataProcessingCommands via CMD
 [ApiController, UseLocalToolShell]
-public class DistributedController : ControllerBase 
+public class DataController : ControllerBase 
 {
-    [HttpPost("process-parallel")]
-    public async Task<string> ProcessParallel([FromBody] Stream input)
+    [HttpPost]
+    public async Task<string> RunParallel([FromBody] Stream input)
     {
         LocalTerminal.Shell = new LocalTool() { In = input };
         return await CMDAsync("process-parallel");
     }
     
-    [HttpPost("process-stream")]
-    public async Task<Stream> ProcessStream([FromBody] Stream input) => 
-        await CMDStreamAsync("process-stream", input);
+    [HttpPost]
+    public async Task<Stream> GetStreamResults([FromBody] Stream input) => 
+        await CMDStreamAsync("stream-results", input);
 }
 
 app.Run();
