@@ -25,6 +25,11 @@ public class CalqCmdControllerOptions
     /// Named HTTP client configuration for CalqFramework.Cmd.LocalHttpTool
     /// </summary>
     public string HttpClientName { get; set; } = "CalqFramework.Cmd.LocalHttpTool";
+    
+    /// <summary>
+    /// Custom command executor. If null, uses CliCommandExecutor (CalqFramework.Cli) by default.
+    /// </summary>
+    public ICalqCommandExecutor? CommandExecutor { get; set; }
 }
 
 /// <summary>
@@ -33,13 +38,14 @@ public class CalqCmdControllerOptions
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers the CalqCmdController for ASP.NET Core MVC with CalqFramework.Cli integration.
-    /// This controller provides streaming endpoints using CalqFramework.Cli for command execution.
+    /// Registers the CalqCmdController for ASP.NET Core MVC with command execution support.
+    /// This controller provides streaming endpoints for command execution.
+    /// Uses CliCommandExecutor (CalqFramework.Cli) by default, but can be customized via options.
     /// Automatically registers DistributedMemoryCache if no distributed cache is already registered.
     /// Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
-    /// <param name="cliTarget">The target object to pass to CalqFramework.Cli for command execution.</param>
+    /// <param name="cliTarget">The target object to pass to the command executor.</param>
     /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <returns>The service collection for method chaining.</returns>
     public static IServiceCollection AddCalqCmdController(this IServiceCollection services, object cliTarget, Action<CalqCmdControllerOptions>? configure = null)
@@ -48,13 +54,14 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Registers the CalqCmdController for ASP.NET Core MVC with CalqFramework.Cli integration.
-    /// This controller provides streaming endpoints using CalqFramework.Cli for command execution.
+    /// Registers the CalqCmdController for ASP.NET Core MVC with command execution support.
+    /// This controller provides streaming endpoints for command execution.
+    /// Uses CliCommandExecutor (CalqFramework.Cli) by default, but can be customized via options.
     /// Automatically registers DistributedMemoryCache if no distributed cache is already registered.
     /// Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
-    /// <param name="cliTarget">The target object to pass to CalqFramework.Cli for command execution.</param>
+    /// <param name="cliTarget">The target object to pass to the command executor.</param>
     /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <param name="configureCacheOptions">Optional action to configure cache options.</param>
     /// <returns>The service collection for method chaining.</returns>
@@ -64,8 +71,9 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Registers the CalqCmdController for ASP.NET Core MVC with CalqFramework.Cli integration.
-    /// This controller provides streaming endpoints using CalqFramework.Cli for command execution.
+    /// Registers the CalqCmdController for ASP.NET Core MVC with command execution support.
+    /// This controller provides streaming endpoints for command execution.
+    /// Uses CliCommandExecutor (CalqFramework.Cli) by default, but can be customized via options.
     /// Automatically registers DistributedMemoryCache if no distributed cache is already registered.
     /// Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
     /// </summary>
@@ -79,8 +87,9 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Registers the CalqCmdController for ASP.NET Core MVC with CalqFramework.Cli integration.
-    /// This controller provides streaming endpoints using CalqFramework.Cli for command execution.
+    /// Registers the CalqCmdController for ASP.NET Core MVC with command execution support.
+    /// This controller provides streaming endpoints for command execution.
+    /// Uses CliCommandExecutor (CalqFramework.Cli) by default, but can be customized via options.
     /// Automatically registers DistributedMemoryCache if no distributed cache is already registered.
     /// Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
     /// </summary>
@@ -110,7 +119,18 @@ public static class ServiceCollectionExtensions
             opts.RoutePrefix = options.RoutePrefix;
             opts.HttpClientTimeout = options.HttpClientTimeout;
             opts.HttpClientName = options.HttpClientName;
+            opts.CommandExecutor = options.CommandExecutor;
         });
+        
+        // Register command executor - use custom if provided, otherwise default to CliCommandExecutor
+        if (options.CommandExecutor != null)
+        {
+            services.AddSingleton(options.CommandExecutor);
+        }
+        else
+        {
+            services.AddSingleton<ICalqCommandExecutor, CliCommandExecutor>();
+        }
         
         // Register cache options
         if (configureCacheOptions != null)
@@ -141,10 +161,11 @@ public static class ServiceCollectionExtensions
         {
             var factory = provider.GetRequiredService<Func<IServiceProvider, object>>();
             var target = factory(provider);
+            var commandExecutor = provider.GetRequiredService<ICalqCommandExecutor>();
             var localToolFactory = provider.GetRequiredService<ILocalToolFactory>();
             var distributedCache = provider.GetRequiredService<IDistributedCache>();
             var cacheOptions = provider.GetRequiredService<IOptions<CalqCmdCacheOptions>>();
-            return new CalqCmdController(target, localToolFactory, distributedCache, cacheOptions);
+            return new CalqCmdController(target, commandExecutor, localToolFactory, distributedCache, cacheOptions);
         });
         
         return services;
