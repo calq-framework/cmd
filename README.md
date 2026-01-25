@@ -360,7 +360,7 @@ dotnet add package CalqFramework.Cmd.AspNetCore
 ```
 
 ### HTTP Command Execution Controller
-Register the CalqCmdController to expose your CLI commands as HTTP endpoints with streaming support and distributed error caching:
+Register the CalqCmdController to expose your commands as HTTP endpoints with streaming support and distributed error caching:
 
 ```csharp
 using CalqFramework.Cmd.AspNetCore;
@@ -372,6 +372,7 @@ var builder = WebApplication.CreateBuilder(args);
 var myCliTarget = new MyCliCommands();
 
 // Register CalqCmdController with automatic service discovery
+// Uses CliCommandExecutor (CalqFramework.Cli) by default
 builder.Services.AddCalqCmdController(myCliTarget);
 
 // Optional: Configure controller options
@@ -392,6 +393,36 @@ var app = builder.Build();
 app.MapControllers();
 app.Run();
 ```
+
+### Custom Command Executors
+By default, CalqCmdController uses `CliCommandExecutor` which leverages CalqFramework.Cli for command-line style parsing. You can provide a custom `ICalqCommandExecutor` implementation for different command execution strategies:
+
+```csharp
+// Custom executor example
+public class JsonRpcCommandExecutor : ICalqCommandExecutor
+{
+    public object? Execute(object target, string[] args)
+    {
+        var methodName = args[0];
+        var method = target.GetType().GetMethod(methodName, 
+            BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+        
+        var parameters = args.Length > 1 
+            ? JsonSerializer.Deserialize<object[]>(args[1]) 
+            : Array.Empty<object>();
+            
+        return method?.Invoke(target, parameters);
+    }
+}
+
+// Register with custom executor
+builder.Services.AddCalqCmdController(myCliTarget, options =>
+{
+    options.CommandExecutor = new JsonRpcCommandExecutor();
+});
+```
+
+Use cases: custom argument parsing, integration with other CLI frameworks, message-based routing (JSON-RPC, gRPC), or domain-specific command languages.
 
 ### Distributed Command Execution
 The CalqCmdController automatically handles:

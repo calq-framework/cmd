@@ -11,24 +11,27 @@ using static CalqFramework.Cmd.Terminal;
 namespace CalqFramework.Cmd.AspNetCore;
 
 /// <summary>
-/// ASP.NET Core controller that executes CLI commands using CalqFramework.Cli
+/// ASP.NET Core controller that executes commands using a configurable command executor
 /// </summary>
 [ApiController]
 [Route("[controller]")]
 public class CalqCmdController : ControllerBase
 {
     private readonly object _cliTarget;
+    private readonly ICalqCommandExecutor _commandExecutor;
     private readonly ILocalToolFactory _localToolFactory;
     private readonly IDistributedCache _distributedCache;
     private readonly CalqCmdCacheOptions _cacheOptions;
 
     public CalqCmdController(
-        object cliTarget, 
+        object cliTarget,
+        ICalqCommandExecutor commandExecutor,
         ILocalToolFactory localToolFactory,
         IDistributedCache distributedCache,
         IOptions<CalqCmdCacheOptions> cacheOptions)
     {
         _cliTarget = cliTarget;
+        _commandExecutor = commandExecutor;
         _localToolFactory = localToolFactory;
         _distributedCache = distributedCache;
         _cacheOptions = cacheOptions.Value;
@@ -53,8 +56,7 @@ public class CalqCmdController : ControllerBase
             LocalTerminal.Shell = new CommandLine() { In = Request.Body };
             
             var args = script.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            var cli = new CommandLineInterface();
-            var result = cli.Execute(_cliTarget, args);
+            var result = _commandExecutor.Execute(_cliTarget, args);
             
             if (result is Task task)
             {

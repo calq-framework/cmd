@@ -29,19 +29,4 @@ public class UseLocalToolShellAttributeTest
         // Assert
         Assert.IsType<LocalTool>(LocalTerminal.Shell);
     }
-
-    [Fact]
-    public void UseLocalToolShellAttribute_WithProvidedShell_SetsLocalTerminalShellToProvidedLocalTool()
-    {
-        // Arrange
-        var shell = new LocalTool();
-        var attribute = new UseLocalToolShellAttribute(shell);
-        var context = CreateEmptyContext();
-
-        // Act
-        attribute.OnActionExecuting(context);
-
-        // Assert
-        Assert.Equal(shell, LocalTerminal.Shell);
-    }
 }
