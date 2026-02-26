@@ -4,7 +4,7 @@ using CalqFramework.Cmd.Shells;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace CalqFramework.Cmd.AspNetCoreTest;
+namespace CalqFramework.Cmd.AspNetCore.Test;
 
 public class ServiceCollectionExtensionsTest
 {

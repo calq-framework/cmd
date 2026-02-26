@@ -1,15 +1,13 @@
 using CalqFramework.Cmd.AspNetCore;
-using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shells;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Moq;
 using static CalqFramework.Cmd.Terminal;
 
-namespace CalqFramework.Cmd.AspNetCoreTest;
+namespace CalqFramework.Cmd.AspNetCore.Test;
 
-public class UsePythonToolShellAttributeTest
+public class UseCommandLineShellAttributeTest
 {
     private static ActionExecutingContext CreateEmptyContext()
     {
@@ -19,13 +17,25 @@ public class UsePythonToolShellAttributeTest
     }
 
     [Fact]
-    public void UsePythonToolShellAttribute_WithProvidedShell_SetsLocalTerminalShellToProvidedPythonTool()
+    public void UseCommandLineShellAttribute_SetsLocalTerminalShellToCommandLine()
     {
         // Arrange
-        var mockPythonServer = new Mock<IPythonToolServer>();
-        mockPythonServer.Setup(x => x.Uri).Returns(new Uri("https://localhost:8000"));
-        var shell = new PythonTool(mockPythonServer.Object);
-        var attribute = new UsePythonToolShellAttribute(shell);
+        var attribute = new UseCommandLineShellAttribute();
+        var context = CreateEmptyContext();
+
+        // Act
+        attribute.OnActionExecuting(context);
+
+        // Assert
+        Assert.IsType<CommandLine>(LocalTerminal.Shell);
+    }
+
+    [Fact]
+    public void UseCommandLineShellAttribute_WithProvidedShell_SetsLocalTerminalShellToProvidedCommandLine()
+    {
+        // Arrange
+        var shell = new CommandLine();
+        var attribute = new UseCommandLineShellAttribute(shell);
         var context = CreateEmptyContext();
 
         // Act

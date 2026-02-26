@@ -1,7 +1,7 @@
 using CalqFramework.Cmd.AspNetCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace CalqFramework.Cmd.AspNetCoreTest;
+namespace CalqFramework.Cmd.AspNetCore.Test;
 
 /// <summary>
 /// Tests for LocalHttpToolFactory class behavior (constructors, disposal, etc.)

@@ -1,7 +1,7 @@
 ﻿using CalqFramework.Cmd.Shells;
 using static CalqFramework.Cmd.Terminal;
 
-namespace CalqFramework.CmdTest;
+namespace CalqFramework.Cmd.Test;
 
 public class ShellToolTest {
 

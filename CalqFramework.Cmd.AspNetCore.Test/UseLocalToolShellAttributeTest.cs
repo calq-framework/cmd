@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using static CalqFramework.Cmd.Terminal;
 
-namespace CalqFramework.Cmd.AspNetCoreTest;
+namespace CalqFramework.Cmd.AspNetCore.Test;
 
-public class UseCommandLineShellAttributeTest
+public class UseLocalToolShellAttributeTest
 {
     private static ActionExecutingContext CreateEmptyContext()
     {
@@ -17,31 +17,16 @@ public class UseCommandLineShellAttributeTest
     }
 
     [Fact]
-    public void UseCommandLineShellAttribute_SetsLocalTerminalShellToCommandLine()
+    public void UseLocalToolShellAttribute_SetsLocalTerminalShellToLocalTool()
     {
         // Arrange
-        var attribute = new UseCommandLineShellAttribute();
+        var attribute = new UseLocalToolShellAttribute();
         var context = CreateEmptyContext();
 
         // Act
         attribute.OnActionExecuting(context);
 
         // Assert
-        Assert.IsType<CommandLine>(LocalTerminal.Shell);
-    }
-
-    [Fact]
-    public void UseCommandLineShellAttribute_WithProvidedShell_SetsLocalTerminalShellToProvidedCommandLine()
-    {
-        // Arrange
-        var shell = new CommandLine();
-        var attribute = new UseCommandLineShellAttribute(shell);
-        var context = CreateEmptyContext();
-
-        // Act
-        attribute.OnActionExecuting(context);
-
-        // Assert
-        Assert.Equal(shell, LocalTerminal.Shell);
+        Assert.IsType<LocalTool>(LocalTerminal.Shell);
     }
 }

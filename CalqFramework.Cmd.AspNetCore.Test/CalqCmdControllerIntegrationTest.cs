@@ -8,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 using System.Text;
 using static CalqFramework.Cmd.Terminal;
 
-namespace CalqFramework.Cmd.AspNetCoreTest;
+namespace CalqFramework.Cmd.AspNetCore.Test;
 
 /// <summary>
 /// Integration tests for CalqCmdController using HttpTool from LocalHttpToolFactory
