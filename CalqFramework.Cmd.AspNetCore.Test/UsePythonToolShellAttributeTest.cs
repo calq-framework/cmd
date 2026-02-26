@@ -1,13 +1,15 @@
 using CalqFramework.Cmd.AspNetCore;
+using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shells;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Moq;
 using static CalqFramework.Cmd.Terminal;
 
-namespace CalqFramework.Cmd.AspNetCoreTest;
+namespace CalqFramework.Cmd.AspNetCore.Test;
 
-public class UseBashShellAttributeTest
+public class UsePythonToolShellAttributeTest
 {
     private static ActionExecutingContext CreateEmptyContext()
     {
@@ -17,25 +19,13 @@ public class UseBashShellAttributeTest
     }
 
     [Fact]
-    public void UseBashShellAttribute_SetsLocalTerminalShellToBash()
+    public void UsePythonToolShellAttribute_WithProvidedShell_SetsLocalTerminalShellToProvidedPythonTool()
     {
         // Arrange
-        var attribute = new UseBashShellAttribute();
-        var context = CreateEmptyContext();
-
-        // Act
-        attribute.OnActionExecuting(context);
-
-        // Assert
-        Assert.IsType<Bash>(LocalTerminal.Shell);
-    }
-
-    [Fact]
-    public void UseBashShellAttribute_WithProvidedShell_SetsLocalTerminalShellToProvidedBash()
-    {
-        // Arrange
-        var shell = new Bash();
-        var attribute = new UseBashShellAttribute(shell);
+        var mockPythonServer = new Mock<IPythonToolServer>();
+        mockPythonServer.Setup(x => x.Uri).Returns(new Uri("https://localhost:8000"));
+        var shell = new PythonTool(mockPythonServer.Object);
+        var attribute = new UsePythonToolShellAttribute(shell);
         var context = CreateEmptyContext();
 
         // Act

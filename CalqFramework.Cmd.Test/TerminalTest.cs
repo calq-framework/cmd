@@ -2,7 +2,7 @@
 using System.Text.Json;
 using static CalqFramework.Cmd.Terminal;
 
-namespace CalqFramework.CmdTest;
+namespace CalqFramework.Cmd.Test;
 
 public class TerminalTest {
 
