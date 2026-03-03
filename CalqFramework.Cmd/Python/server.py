@@ -1,4 +1,7 @@
-﻿# -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2015-2020 Cory Benfield and contributors
+# SPDX-FileCopyrightText: 2024 Calq Framework
+#
+# SPDX-License-Identifier: MIT AND (AGPL-3.0-or-later OR LicenseRef-CCL)
 """
 Modified asyncio-server.py
 ~~~~~~~~~~~~~~~~~
