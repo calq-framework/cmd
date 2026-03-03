@@ -1,0 +1,100 @@
+Calq Framework Evaluation Grant
+
+Version 1.0.0
+
+https://github.com/calq-framework/license
+
+TERMS AND CONDITIONS
+
+1. Purpose
+
+This additional permission ("Evaluation Grant") supplements the
+PolyForm Noncommercial License 1.0.0 under which the Software is
+made available. It grants a limited, time-bound permission for
+Commercial Entities to use the Software solely for evaluation
+purposes, subject to the conditions below.
+
+2. Definitions
+
+"Commercial Entity" means any individual, sole proprietorship,
+partnership, corporation, limited liability company, or other
+organization that engages in activity directed toward commercial
+advantage or monetary compensation, or that employs more than one
+individual.
+
+"Evaluation Period" means a period of thirty (30) consecutive
+calendar days beginning on the date the Commercial Entity first
+uses, downloads, installs, or otherwise accesses the Software.
+
+"Evaluation Purpose" means use of the Software strictly to assess
+its suitability for the Commercial Entity's needs, including
+testing compatibility, building prototypes, conducting benchmarks,
+and performing technical evaluations. Evaluation Purpose expressly
+excludes use in production systems, revenue-generating activities,
+client-facing services, or any deployment that processes live
+data for business operations.
+
+3. Grant
+
+Notwithstanding the noncommercial restriction in the base license,
+the Licensor grants each Commercial Entity a non-exclusive,
+non-transferable, royalty-free, worldwide copyright and patent
+license to use the Software for an Evaluation Purpose during the
+Evaluation Period.
+
+4. Restrictions
+
+a. No Commercial Entity may use the Software under this Evaluation
+   Grant after the Evaluation Period has expired.
+
+b. No Commercial Entity may use the Software under this Evaluation
+   Grant for any purpose other than an Evaluation Purpose.
+
+c. This Evaluation Grant does not permit sublicensing, transfer,
+   or assignment of any rights to any third party.
+
+d. The distribution and modification rights granted under this
+   Evaluation Grant are limited to those necessary to achieve an
+   Evaluation Purpose and are subject to the same time limitation
+   as the Evaluation Period.
+
+5. Expiration and Commercial License
+
+Upon expiration of the Evaluation Period, all rights granted under
+this Evaluation Grant terminate automatically without notice. Any
+continued use of the Software by a Commercial Entity after the
+Evaluation Period requires a separate commercial license agreement
+obtained directly from the Licensor, regardless of whether such
+use occurs in development, staging, testing, or production
+environments.
+
+6. No Extension or Renewal
+
+The Evaluation Period may not be extended, renewed, or restarted
+by re-downloading, re-installing, or otherwise re-accessing the
+Software, or by accessing the Software through a different
+individual, department, or subsidiary within the same Commercial
+Entity.
+
+7. Notices
+
+Commercial Entities using the Software under this Evaluation Grant
+must retain all copyright notices, license notices, and this
+Evaluation Grant in all copies or substantial portions of the
+Software.
+
+8. No Warranty
+
+THE SOFTWARE IS PROVIDED UNDER THIS EVALUATION GRANT "AS IS",
+WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+LICENSOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY
+ARISING FROM THE USE OF THE SOFTWARE UNDER THIS EVALUATION GRANT.
+
+9. Severability
+
+If any provision of this Evaluation Grant is held to be
+unenforceable, such provision shall be reformed only to the extent
+necessary to make it enforceable, and the remaining provisions
+shall continue in full force and effect.
