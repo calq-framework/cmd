@@ -649,4 +649,4 @@ app.Run();
 ```  
 
 ## License  
-Calq CMD is dual-licensed under PolyForm-Noncommercial and a commercial license.  
+Calq CMD is dual-licensed under PolyForm Noncommercial (with Evaluation Grant) and the Calq Commercial License.
