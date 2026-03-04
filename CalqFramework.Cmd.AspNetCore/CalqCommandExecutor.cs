@@ -5,7 +5,7 @@ namespace CalqFramework.Cmd.AspNetCore;
 /// <summary>
 ///     Default command executor implementation using CalqFramework.Cli for command-line style parsing.
 /// </summary>
-public class CliCommandExecutor : ICalqCommandExecutor {
+public class CalqCommandExecutor : ICalqCommandExecutor {
     private readonly CommandLineInterface _cli = new();
 
     /// <summary>

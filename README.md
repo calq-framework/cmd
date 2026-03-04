@@ -368,7 +368,7 @@ var builder = WebApplication.CreateBuilder(args);
 var myCliTarget = new MyCliCommands();
 
 // Register CalqCmdController with automatic service discovery
-// Uses CliCommandExecutor (CalqFramework.Cli) by default
+// Uses CalqCommandExecutor (CalqFramework.Cli) by default
 builder.Services.AddCalqCmdController(myCliTarget);
 
 // Optional: Configure controller options
