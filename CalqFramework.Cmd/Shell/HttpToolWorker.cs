@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Buffers;
+using System.Net;
 
 namespace CalqFramework.Cmd.Shell;
 
@@ -23,8 +24,12 @@ public class HttpToolWorker(
 
     public override async Task<string> ReadErrorMessageAsync(CancellationToken cancellationToken = default) {
         try {
-            byte[] buffer = new byte[1024];
-            while (await _executionOutputStream!.ReadAsync(buffer, cancellationToken) > 0) {
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(1024);
+            try {
+                while (await _executionOutputStream!.ReadAsync(buffer.AsMemory(0, 1024), cancellationToken) > 0) {
+                }
+            } finally {
+                ArrayPool<byte>.Shared.Return(buffer);
             }
 
             return "";

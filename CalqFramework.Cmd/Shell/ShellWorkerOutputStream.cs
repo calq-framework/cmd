@@ -28,10 +28,12 @@ public abstract class ShellWorkerOutputStream(IShellWorker shellWorker) : Stream
 
     public override void Flush() => InnerStream.Flush();
 
-    public override int Read(byte[] buffer, int offset, int count) {
+    public override int Read(byte[] buffer, int offset, int count) => Read(buffer.AsSpan(offset, count));
+
+    public override int Read(Span<byte> buffer) {
         int bytesRead;
         try {
-            bytesRead = TryRead(buffer, offset, count);
+            bytesRead = TryRead(buffer);
         } catch (OperationCanceledException) {
             throw;
         } catch (Exception ex) {
@@ -53,11 +55,11 @@ public abstract class ShellWorkerOutputStream(IShellWorker shellWorker) : Stream
         return bytesRead;
     }
 
-    public override async Task<int>
-        ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) {
+    public override async ValueTask<int>
+        ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) {
         int bytesRead;
         try {
-            bytesRead = await TryReadAsync(buffer, offset, count, cancellationToken);
+            bytesRead = await TryReadAsync(buffer, cancellationToken);
         } catch (OperationCanceledException) {
             throw;
         } catch (Exception ex) {
@@ -104,10 +106,9 @@ public abstract class ShellWorkerOutputStream(IShellWorker shellWorker) : Stream
 
     protected abstract Task<Error> GetErrorAsync();
 
-    protected abstract int TryRead(byte[] buffer, int offset, int count);
+    protected abstract int TryRead(Span<byte> buffer);
 
-    protected abstract Task<int> TryReadAsync(byte[] buffer, int offset, int count,
-        CancellationToken cancellationToken);
+    protected abstract ValueTask<int> TryReadAsync(Memory<byte> buffer, CancellationToken cancellationToken);
 
     /// <summary>
     ///     Error information with optional error code and exception.
