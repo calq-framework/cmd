@@ -137,7 +137,7 @@ public class TerminalTest {
     }
 
     private class TestData {
-        public string Name { get; } = string.Empty;
-        public int Value { get; set; }
+        public string Name { get; init; } = string.Empty;
+        public int Value { get; init; }
     }
 }
