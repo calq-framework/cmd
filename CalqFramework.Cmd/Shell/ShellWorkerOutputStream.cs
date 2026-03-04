@@ -4,14 +4,12 @@
 ///     Stream wrapper for shell worker output that handles automatic disposal and error detection.
 ///     Disposes the underlying worker when DisposeOnCompletion is enabled and reading completes.
 /// </summary>
+/// <remarks>
+///     Creates a new shell worker output stream wrapper.
+/// </remarks>
 // INFO throwing with only ErrorCode is OK, stderr might contain diagnostics/info instead of error errorMessage so don't throw just because not empty
-public abstract class ShellWorkerOutputStream : Stream {
-    private readonly IShellWorker _shellWorker;
-
-    /// <summary>
-    ///     Creates a new shell worker output stream wrapper.
-    /// </summary>
-    public ShellWorkerOutputStream(IShellWorker shellWorker) => _shellWorker = shellWorker;
+public abstract class ShellWorkerOutputStream(IShellWorker shellWorker) : Stream {
+    private readonly IShellWorker _shellWorker = shellWorker;
 
     public override bool CanRead => InnerStream.CanRead;
 

@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shells;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +8,7 @@ namespace CalqFramework.Cmd.AspNetCore.Test;
 
 public class ServiceCollectionExtensionsTest {
     private class TestCliTarget {
-        public string TestMethod() => "test";
+        public static string TestMethod() => "test";
     }
 
     #region AddCalqCmdController Tests
@@ -199,7 +199,7 @@ public class ServiceCollectionExtensionsTest {
         // Arrange
         ServiceCollection services = new();
         services.AddPythonTool("test_script.py");
-        ServiceProvider serviceProvider = services.BuildServiceProvider();
+        _ = services.BuildServiceProvider();
 
         // Act & Assert
         // Note: We can't actually test the StartAsync call because it would require Python

@@ -1,4 +1,4 @@
-using CalqFramework.Cmd.Python;
+﻿using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shells;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -298,11 +298,8 @@ public static class ServiceProviderExtensions {
 /// <summary>
 ///     Route convention to customize CalqCmdController route prefix
 /// </summary>
-internal class CalqCmdControllerRouteConvention : IControllerModelConvention {
-    private readonly string _routePrefix;
-
-    public CalqCmdControllerRouteConvention(string routePrefix) =>
-        _routePrefix = routePrefix.TrimStart('/').TrimEnd('/');
+internal class CalqCmdControllerRouteConvention(string routePrefix) : IControllerModelConvention {
+    private readonly string _routePrefix = routePrefix.TrimStart('/').TrimEnd('/');
 
     public void Apply(ControllerModel controller) {
         if (controller.ControllerType == typeof(CalqCmdController)) {
@@ -310,9 +307,10 @@ internal class CalqCmdControllerRouteConvention : IControllerModelConvention {
             controller.Selectors.Clear();
 
             // Add new selector with custom prefix
-            SelectorModel selector = new();
-            selector.AttributeRouteModel = new AttributeRouteModel {
-                Template = _routePrefix
+            SelectorModel selector = new() {
+                AttributeRouteModel = new AttributeRouteModel {
+                    Template = _routePrefix
+                }
             };
             controller.Selectors.Add(selector);
         }

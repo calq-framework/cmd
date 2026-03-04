@@ -132,7 +132,7 @@ public class CalqCmdController : ControllerBase {
 
     private string GetErrorCacheKey(string errorCode) => $"{_cacheOptions.ErrorCacheKeyPrefix}{errorCode}";
 
-    private Stream CreateStringStream(string content) {
+    private static Stream CreateStringStream(string content) {
         byte[] bytes = Encoding.UTF8.GetBytes(content);
         return new MemoryStream(bytes);
     }
@@ -142,7 +142,7 @@ public class CalqCmdController : ControllerBase {
         return CreateStringStream(json);
     }
 
-    private Stream CreateEmptyStream() => new MemoryStream();
+    private static Stream CreateEmptyStream() => new MemoryStream();
 
     private Stream CreateErrorStream(string message) {
         Response.StatusCode = 400;

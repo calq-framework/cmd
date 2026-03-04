@@ -1,4 +1,4 @@
-using CalqFramework.Cmd.Shell;
+﻿using CalqFramework.Cmd.Shell;
 
 namespace CalqFramework.Cmd;
 

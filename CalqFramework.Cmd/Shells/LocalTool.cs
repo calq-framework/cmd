@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using CalqFramework.Cmd.Shell;
 
 [assembly: InternalsVisibleTo("CalqFramework.Cmd.AspNetCore")]

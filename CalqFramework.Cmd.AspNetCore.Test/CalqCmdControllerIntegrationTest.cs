@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using CalqFramework.Cmd.Shells;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -109,11 +109,11 @@ public class CalqCmdControllerIntegrationTest {
     ///     Test CLI target class with various method signatures for testing different CLI scenarios
     /// </summary>
     private class TestCliTarget {
-        public string TestMethod() => "Test CLI output";
+        public static string TestMethod() => "Test CLI output";
 
-        public string ProcessData(string data) => $"Processed: {data.ToUpper()}";
+        public static string ProcessData(string data) => $"Processed: {data.ToUpper()}";
 
-        public async Task<string> ProcessDataFromStream() {
+        public static async Task<string> ProcessDataFromStream() {
             if (LocalTerminal.Shell.In == null) {
                 return "Processed: NO_INPUT";
             }
@@ -123,9 +123,9 @@ public class CalqCmdControllerIntegrationTest {
             return $"Processed: {inputData.Trim().ToUpper()}";
         }
 
-        public int Add(int a, int b) => a + b;
+        public static int Add(int a, int b) => a + b;
 
-        public Stream GetTestStream() {
+        public static Stream GetTestStream() {
             string content = "This is a test stream content";
             byte[] bytes = Encoding.UTF8.GetBytes(content);
             return new MemoryStream(bytes);
