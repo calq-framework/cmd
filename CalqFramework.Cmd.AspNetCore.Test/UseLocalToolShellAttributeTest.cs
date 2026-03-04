@@ -1,4 +1,4 @@
-using CalqFramework.Cmd.Shells;
+﻿using CalqFramework.Cmd.Shells;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -12,7 +12,7 @@ public class UseLocalToolShellAttributeTest {
     private static ActionExecutingContext CreateEmptyContext() {
         DefaultHttpContext httpContext = new();
         ActionContext actionContext = new(httpContext, new RouteData(), new ActionDescriptor());
-        return new ActionExecutingContext(actionContext, new List<IFilterMetadata>(), new Dictionary<string, object?>(),
+        return new ActionExecutingContext(actionContext, [], new Dictionary<string, object?>(),
             new object());
     }
 

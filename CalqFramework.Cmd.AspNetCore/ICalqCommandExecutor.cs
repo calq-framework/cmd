@@ -1,4 +1,4 @@
-namespace CalqFramework.Cmd.AspNetCore;
+﻿namespace CalqFramework.Cmd.AspNetCore;
 
 /// <summary>
 ///     Defines a contract for executing commands against a target object.

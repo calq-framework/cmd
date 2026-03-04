@@ -24,7 +24,7 @@ public class HttpToolWorker(
     public override async Task<string> ReadErrorMessageAsync(CancellationToken cancellationToken = default) {
         try {
             byte[] buffer = new byte[1024];
-            while (await _executionOutputStream!.ReadAsync(buffer, 0, buffer.Length, cancellationToken) > 0) {
+            while (await _executionOutputStream!.ReadAsync(buffer, cancellationToken) > 0) {
             }
 
             return "";

@@ -1,4 +1,4 @@
-namespace CalqFramework.Cmd.AspNetCore.Test;
+﻿namespace CalqFramework.Cmd.AspNetCore.Test;
 
 /// <summary>
 ///     Tests for LocalHttpToolFactory class behavior (constructors, disposal, etc.)

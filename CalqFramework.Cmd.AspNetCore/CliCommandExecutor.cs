@@ -1,4 +1,4 @@
-using CalqFramework.Cli;
+﻿using CalqFramework.Cli;
 
 namespace CalqFramework.Cmd.AspNetCore;
 

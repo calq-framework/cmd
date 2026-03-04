@@ -55,11 +55,11 @@ public class PythonToolTest {
         using IShellWorker worker = await shellScript.StartAsync(GetStream(input), false);
 
         byte[] outputBuffer = new byte[1024];
-        List<byte> totalOutput = new();
+        List<byte> totalOutput = [];
 
         try {
             while (true) {
-                int bytesRead = await worker.StandardOutput.ReadAsync(outputBuffer, 0, outputBuffer.Length);
+                int bytesRead = await worker.StandardOutput.ReadAsync(outputBuffer);
                 if (bytesRead == 0) {
                     break;
                 }
@@ -71,7 +71,7 @@ public class PythonToolTest {
         } catch (Exception) {
         }
 
-        string output = Encoding.UTF8.GetString(totalOutput.ToArray());
+        string output = Encoding.UTF8.GetString([.. totalOutput]);
         Assert.Contains("hello world", output);
 
         string errorMessage = await worker.ReadErrorMessageAsync();
