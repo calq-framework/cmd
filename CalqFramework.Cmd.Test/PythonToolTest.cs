@@ -1,20 +1,19 @@
 ﻿using System.Text;
-using CalqFramework.Cmd;
 using CalqFramework.Cmd.Python;
+using CalqFramework.Cmd.Shell;
 using CalqFramework.Cmd.Shells;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.Test;
 
 public class PythonToolTest {
-
     [Fact]
     public async Task PythonTool_ReadInput_EchosCorrectly() {
         string input = "hello world\nhello world\n";
-        var writer = new MemoryStream();
+        MemoryStream writer = new();
         LocalTerminal.Out = writer;
 
-        var pythonServer = new PythonToolServer("./test_tool.py");
+        PythonToolServer pythonServer = new("./test_tool.py");
         await pythonServer.StartAsync();
         LocalTerminal.Shell = new PythonTool(pythonServer) {
             In = GetStream(input)
@@ -29,10 +28,10 @@ public class PythonToolTest {
     [Fact]
     public async Task PythonTool_ThrowException_ReturnsErrorMessage() {
         string input = "hello world\nhello world\n";
-        var writer = new MemoryStream();
+        MemoryStream writer = new();
         LocalTerminal.Out = writer;
 
-        var pythonServer = new PythonToolServer("./test_tool.py");
+        PythonToolServer pythonServer = new("./test_tool.py");
         await pythonServer.StartAsync();
         LocalTerminal.Shell = new PythonTool(pythonServer) {
             In = GetStream(input)
@@ -48,20 +47,22 @@ public class PythonToolTest {
     public async Task PythonTool_ThrowException_ReadErrorMessageAsync_ReturnsDetailedError() {
         string input = "hello world\nhello world\n";
 
-        var pythonServer = new PythonToolServer("./test_tool.py");
+        PythonToolServer pythonServer = new("./test_tool.py");
         await pythonServer.StartAsync();
-        var shell = new PythonTool(pythonServer);
+        PythonTool shell = new(pythonServer);
 
-        var shellScript = new ShellScript(shell, "test_throw_exception");
-        using var worker = await shellScript.StartAsync(GetStream(input), disposeOnCompletion: false);
+        ShellScript shellScript = new(shell, "test_throw_exception");
+        using IShellWorker worker = await shellScript.StartAsync(GetStream(input), false);
 
-        var outputBuffer = new byte[1024];
-        var totalOutput = new List<byte>();
+        byte[] outputBuffer = new byte[1024];
+        List<byte> totalOutput = new();
 
         try {
             while (true) {
                 int bytesRead = await worker.StandardOutput.ReadAsync(outputBuffer, 0, outputBuffer.Length);
-                if (bytesRead == 0) break;
+                if (bytesRead == 0) {
+                    break;
+                }
 
                 totalOutput.AddRange(outputBuffer.Take(bytesRead));
             }

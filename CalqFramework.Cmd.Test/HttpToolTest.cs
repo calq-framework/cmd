@@ -1,21 +1,21 @@
 using System.Text;
+using CalqFramework.Cmd.Shell;
 using CalqFramework.Cmd.Shells;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.Test;
 
 public class HttpToolTest {
-
     [Fact]
     public async Task HttpTool_EchoContentBody_ReturnsCorrectly() {
         LocalTerminal.Shell = new CommandLine();
         ShellScript pythonScript = CMDV("python http_echo_server.py");
-        using Cmd.Shell.IShellWorker serverWorker = await pythonScript.StartAsync();
+        using IShellWorker serverWorker = await pythonScript.StartAsync();
 
         // Give the server time to start
         await Task.Delay(1000);
 
-        var httpClient = new HttpClient {
+        HttpClient httpClient = new() {
             BaseAddress = new Uri("http://127.0.0.1:8001")
         };
         string input = "hello world";
@@ -32,12 +32,12 @@ public class HttpToolTest {
     public async Task HttpTool_EvalPython_ReturnsCorrectly() {
         LocalTerminal.Shell = new CommandLine();
         ShellScript pythonScript = CMDV("python http_eval_server.py");
-        using Cmd.Shell.IShellWorker serverWorker = await pythonScript.StartAsync();
+        using IShellWorker serverWorker = await pythonScript.StartAsync();
 
         // Give the server time to start
         await Task.Delay(1000);
 
-        var httpClient = new HttpClient {
+        HttpClient httpClient = new() {
             BaseAddress = new Uri("http://127.0.0.1:8000")
         };
         LocalTerminal.Shell = new HttpTool(httpClient);
@@ -50,17 +50,18 @@ public class HttpToolTest {
     [Fact]
     public async Task HttpTool_MidStreamError_Throws() {
         LocalTerminal.Shell = new CommandLine();
-        CMD("openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj \"/CN=localhost\"");
+        CMD(
+            "openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj \"/CN=localhost\"");
         ShellScript pythonScript = CMDV("python http_h2_server.py");
-        using Cmd.Shell.IShellWorker serverWorker = await pythonScript.StartAsync();
+        using IShellWorker serverWorker = await pythonScript.StartAsync();
 
         // Give the server time to start
         await Task.Delay(2000);
 
-        var handler = new HttpClientHandler {
+        HttpClientHandler handler = new() {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
         };
-        var httpClient = new HttpClient(handler) {
+        HttpClient httpClient = new(handler) {
             BaseAddress = new Uri("https://localhost:8443")
         };
 
@@ -71,8 +72,8 @@ public class HttpToolTest {
         };
 
         ShellScript echo = CMDV("");
-        using Cmd.Shell.IShellWorker requestWorker = await echo.StartAsync(disposeOnCompletion: false);
-        var reader = new StreamReader(requestWorker.StandardOutput);
+        using IShellWorker requestWorker = await echo.StartAsync(false);
+        StreamReader reader = new(requestWorker.StandardOutput);
         string output = "";
         Assert.Throws<ShellWorkerException>(() => {
             output += reader.ReadLine() + '\n'; // ok

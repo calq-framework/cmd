@@ -1,11 +1,11 @@
-﻿using CalqFramework.Cmd.Shells;
-using System.Text.Json;
+﻿using System.Text.Json;
+using CalqFramework.Cmd.Shell;
+using CalqFramework.Cmd.Shells;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.Test;
 
 public class TerminalTest {
-
     [Fact]
     public void CMD_WithValidCommand_ReturnsNonEmpty() {
         LocalTerminal.Shell = new CommandLine();
@@ -19,8 +19,8 @@ public class TerminalTest {
     public void CMDStream_WithValidCommand_ReturnsStream() {
         LocalTerminal.Shell = new CommandLine();
 
-        using var stream = CMDStream("cmd /c echo hello world");
-        using var reader = new StreamReader(stream);
+        using ShellWorkerOutputStream stream = CMDStream("cmd /c echo hello world");
+        using StreamReader reader = new(stream);
         string output = reader.ReadToEnd().Trim();
 
         Assert.Equal("hello world", output);
@@ -30,8 +30,8 @@ public class TerminalTest {
     public async Task CMDStreamAsync_WithValidCommand_ReturnsStream() {
         LocalTerminal.Shell = new CommandLine();
 
-        using var stream = await CMDStreamAsync("cmd /c echo hello world");
-        using var reader = new StreamReader(stream);
+        using ShellWorkerOutputStream stream = await CMDStreamAsync("cmd /c echo hello world");
+        using StreamReader reader = new(stream);
         string output = (await reader.ReadToEndAsync()).Trim();
 
         Assert.Equal("hello world", output);
@@ -40,7 +40,7 @@ public class TerminalTest {
     [Fact]
     public async Task Shell_WhenChangedInTask_RevertsToOriginal() {
         LocalTerminal.Shell = new CommandLine();
-        Cmd.Shell.IShell cmd = LocalTerminal.Shell;
+        IShell cmd = LocalTerminal.Shell;
         await Task.Run(() => {
             LocalTerminal.Shell = new CommandLine(); // Changed from Bash to CommandLine
             Assert.True(LocalTerminal.Shell is CommandLine);
@@ -62,7 +62,7 @@ public class TerminalTest {
     public void CMD_WithJsonOutput_DeserializesCorrectly() {
         LocalTerminal.Shell = new Bash();
 
-        var result = CMD<TestData>("echo '{\"Name\":\"Test\",\"Value\":42}'");
+        TestData? result = CMD<TestData>("echo '{\"Name\":\"Test\",\"Value\":42}'");
 
         Assert.NotNull(result);
         Assert.Equal("Test", result.Name);
@@ -73,7 +73,7 @@ public class TerminalTest {
     public async Task CMDAsync_WithJsonOutput_DeserializesCorrectly() {
         LocalTerminal.Shell = new Bash();
 
-        var result = await CMDAsync<TestData>("echo '{\"Name\":\"AsyncTest\",\"Value\":123}'");
+        TestData? result = await CMDAsync<TestData>("echo '{\"Name\":\"AsyncTest\",\"Value\":123}'");
 
         Assert.NotNull(result);
         Assert.Equal("AsyncTest", result.Name);
@@ -83,9 +83,9 @@ public class TerminalTest {
     [Fact]
     public void CMD_WithInputStreamAndJsonOutput_DeserializesCorrectly() {
         LocalTerminal.Shell = new Bash();
-        using var inputStream = new MemoryStream();
+        using MemoryStream inputStream = new();
 
-        var result = CMD<TestData>("echo '{\"Name\":\"InputTest\",\"Value\":999}'", inputStream);
+        TestData? result = CMD<TestData>("echo '{\"Name\":\"InputTest\",\"Value\":999}'", inputStream);
 
         Assert.NotNull(result);
         Assert.Equal("InputTest", result.Name);
@@ -95,9 +95,9 @@ public class TerminalTest {
     [Fact]
     public async Task CMDAsync_WithInputStreamAndJsonOutput_DeserializesCorrectly() {
         LocalTerminal.Shell = new Bash();
-        using var inputStream = new MemoryStream();
+        using MemoryStream inputStream = new();
 
-        var result = await CMDAsync<TestData>("echo '{\"Name\":\"AsyncInputTest\",\"Value\":777}'", inputStream);
+        TestData? result = await CMDAsync<TestData>("echo '{\"Name\":\"AsyncInputTest\",\"Value\":777}'", inputStream);
 
         Assert.NotNull(result);
         Assert.Equal("AsyncInputTest", result.Name);
@@ -122,7 +122,7 @@ public class TerminalTest {
     public void CMD_WithNullJson_ReturnsNull() {
         LocalTerminal.Shell = new Bash();
 
-        var result = CMD<TestData>("echo 'null'");
+        TestData? result = CMD<TestData>("echo 'null'");
 
         Assert.Null(result);
     }
@@ -131,13 +131,13 @@ public class TerminalTest {
     public async Task CMDAsync_WithNullJson_ReturnsNull() {
         LocalTerminal.Shell = new Bash();
 
-        var result = await CMDAsync<TestData>("echo 'null'");
+        TestData? result = await CMDAsync<TestData>("echo 'null'");
 
         Assert.Null(result);
     }
 
     private class TestData {
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; } = string.Empty;
         public int Value { get; set; }
     }
 }
