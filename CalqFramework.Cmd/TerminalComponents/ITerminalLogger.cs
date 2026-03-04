@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.TerminalComponents;
+namespace CalqFramework.Cmd.TerminalComponents;
 
 public interface ITerminalLogger {
     /// <summary>

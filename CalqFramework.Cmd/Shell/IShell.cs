@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.Shell;
+namespace CalqFramework.Cmd.Shell;
 
 /// <summary>
 ///     Core interface for all shell implementations. Defines contract for

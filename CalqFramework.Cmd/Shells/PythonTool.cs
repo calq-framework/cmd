@@ -1,4 +1,4 @@
-﻿using CalqFramework.Cmd.Python;
+using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shell;
 
 namespace CalqFramework.Cmd.Shells;

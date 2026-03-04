@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.Json;
 using CalqFramework.Cli;
 using CalqFramework.Cmd.Shells;
