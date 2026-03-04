@@ -137,7 +137,7 @@ public class CalqCmdController : ControllerBase {
         return new MemoryStream(bytes);
     }
 
-    private Stream CreateObjectStream(object obj) {
+    private static Stream CreateObjectStream(object obj) {
         string json = JsonSerializer.Serialize(obj);
         return CreateStringStream(json);
     }
