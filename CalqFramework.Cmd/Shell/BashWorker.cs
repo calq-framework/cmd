@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.RegularExpressions;
 using CalqFramework.Cmd.RegexGenerator;
 using CalqFramework.Cmd.Shells;
