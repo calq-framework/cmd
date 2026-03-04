@@ -9,8 +9,14 @@
     <PackageId>CalqFramework.Cmd</PackageId>
     <Version>0.26.5</Version>
     <PackageProjectUrl>https://github.com/calq-framework</PackageProjectUrl>
-    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Copyright>2024 Calq Framework</Copyright>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE.txt" Pack="true" PackagePath=""/>
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="python\python_server.py\**" />
@@ -33,4 +39,3 @@
   </ItemGroup>
 
 </Project>
-

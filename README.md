@@ -1,5 +1,6 @@
 [![NuGet Version](https://img.shields.io/nuget/v/CalqFramework.Cmd?color=508cf0)](https://www.nuget.org/packages/CalqFramework.Cmd)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/CalqFramework.Cmd?color=508cf0)](https://www.nuget.org/packages/CalqFramework.Cmd)
+[![REUSE status](https://api.reuse.software/badge/github.com/calq-framework/cmd)](https://api.reuse.software/info/github.com/calq-framework/cmd)
 
 # Calq CMD  
 Calq CMD introduces distributed, shell-style scripting to C#, turning complex systems into simple scripts. Build cross-platform tools, streaming data pipelines, parallel batch workloads, HPC processes, and AI-powered systems with unprecedented simplicity.
