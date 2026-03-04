@@ -4,7 +4,7 @@
 ///     HTTP-based output stream that wraps HTTP response content for shell operations.
 ///     Handles HTTP protocol errors and converts them to shell worker errors.
 /// </summary>
-public class HttpToolOutputStream(Stream responseContentStream, IShellWorker shellWorker)
+internal sealed class HttpToolOutputStream(Stream responseContentStream, IShellWorker shellWorker)
     : ShellWorkerOutputStream(shellWorker) {
     private readonly Stream _innerStream = responseContentStream;
     private Error _error = new(0, null);

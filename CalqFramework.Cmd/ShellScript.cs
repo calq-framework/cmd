@@ -12,7 +12,7 @@ namespace CalqFramework.Cmd;
 ///     Provides unified interface for Process and HttpClient execution.
 /// </summary>
 [DebuggerDisplay("{Script}")]
-public class ShellScript(IShell shell, string script) {
+public sealed class ShellScript(IShell shell, string script) {
     /// <summary>
     ///     AsyncLocal storage for working directory, enabling thread/task isolation.
     /// </summary>
