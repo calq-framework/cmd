@@ -125,7 +125,7 @@ public class CalqCmdControllerIntegrationTest {
 
         public static int Add(int a, int b) => a + b;
 
-        public static Stream GetTestStream() {
+        public static MemoryStream GetTestStream() {
             string content = "This is a test stream content";
             byte[] bytes = Encoding.UTF8.GetBytes(content);
             return new MemoryStream(bytes);
