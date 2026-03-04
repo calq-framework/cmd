@@ -3,20 +3,18 @@
 namespace CalqFramework.Cmd.Shells;
 
 /// <summary>
-/// Bash shell implementation with WSL support on Windows.
-/// Automatically detects WSL environment and handles Windows↔WSL path mapping.
-/// Supports Cygwin, MinGW, and MSYS2 environments.
+///     Bash shell implementation with WSL support on Windows.
+///     Automatically detects WSL environment and handles Windows↔WSL path mapping.
+///     Supports Cygwin, MinGW, and MSYS2 environments.
 /// </summary>
-
 public class Bash : ShellBase {
-
     static Bash() {
         // Detect if running Bash on WSL by checking uname output
         if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
-            var shell = new CommandLine();
-            var script = new ShellScript(shell, @"bash -c ""uname -s""");
+            CommandLine shell = new();
+            ShellScript script = new(shell, @"bash -c ""uname -s""");
             using IShellWorker worker = script.StartAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-            using var reader = new StreamReader(worker.StandardOutput);
+            using StreamReader reader = new(worker.StandardOutput);
             IsRunningBashOnWSL = reader.ReadToEnd().TrimEnd() switch {
                 "Linux" => true,
                 "Darwin" => true,
@@ -28,13 +26,12 @@ public class Bash : ShellBase {
     }
 
     /// <summary>
-    /// True if Bash is running on WSL, enabling automatic path translation.
+    ///     True if Bash is running on WSL, enabling automatic path translation.
     /// </summary>
     internal static bool IsRunningBashOnWSL { get; }
 
-    public override ProcessWorkerBase CreateShellWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) {
-        return new BashWorker(shellScript, inputStream, disposeOnCompletion);
-    }
+    public override ProcessWorkerBase CreateShellWorker(ShellScript shellScript, Stream? inputStream,
+        bool disposeOnCompletion = true) => new BashWorker(shellScript, inputStream, disposeOnCompletion);
 
     public override string MapToHostPath(string internalPath) {
         string hostPath;

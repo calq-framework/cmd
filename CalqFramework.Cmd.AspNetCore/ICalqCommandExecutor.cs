@@ -1,13 +1,13 @@
 namespace CalqFramework.Cmd.AspNetCore;
 
 /// <summary>
-/// Defines a contract for executing commands against a target object.
-/// Implementations can use different command execution strategies (CLI parsing, JSON-RPC, direct method invocation, etc.).
+///     Defines a contract for executing commands against a target object.
+///     Implementations can use different command execution strategies (CLI parsing, JSON-RPC, direct method invocation,
+///     etc.).
 /// </summary>
-public interface ICalqCommandExecutor
-{
+public interface ICalqCommandExecutor {
     /// <summary>
-    /// Executes a command against the specified target object.
+    ///     Executes a command against the specified target object.
     /// </summary>
     /// <param name="target">The target object containing the methods to execute.</param>
     /// <param name="args">Command arguments. Interpretation depends on the implementation.</param>

@@ -4,7 +4,6 @@ using static CalqFramework.Cmd.Terminal;
 namespace CalqFramework.Cmd.Test;
 
 public class CommandLineTest {
-
     [Fact]
     public void CommandLineWorker_WithSingleWordCommand_ProcessesCorrectly() {
         LocalTerminal.Shell = new CommandLine();

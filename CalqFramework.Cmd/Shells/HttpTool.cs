@@ -3,25 +3,20 @@
 namespace CalqFramework.Cmd.Shells;
 
 /// <summary>
-/// HTTP-based shell for distributed computing via HttpToolWorker protocol.
-/// Enables execution on remote HTTP servers that comply with HttpToolWorker interface.
+///     HTTP-based shell for distributed computing via HttpToolWorker protocol.
+///     Enables execution on remote HTTP servers that comply with HttpToolWorker interface.
 /// </summary>
-
 public class HttpTool(HttpClient httpClient) : ShellBase {
     /// <summary>
-    /// HTTP client used for communicating with remote HTTP-based shell servers.
+    ///     HTTP client used for communicating with remote HTTP-based shell servers.
     /// </summary>
     public HttpClient HttpClient { get; } = httpClient;
 
-    public override IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) {
-        return new HttpToolWorker(HttpClient, shellScript, inputStream, disposeOnCompletion);
-    }
+    public override IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream,
+        bool disposeOnCompletion = true) =>
+        new HttpToolWorker(HttpClient, shellScript, inputStream, disposeOnCompletion);
 
-    public override string MapToHostPath(string internalPath) {
-        return Path.GetFullPath(internalPath); ;
-    }
+    public override string MapToHostPath(string internalPath) => Path.GetFullPath(internalPath);
 
-    public override string MapToInternalPath(string hostPath) {
-        return Path.GetFullPath(hostPath); ;
-    }
+    public override string MapToInternalPath(string hostPath) => Path.GetFullPath(hostPath);
 }
