@@ -45,6 +45,7 @@ public class LocalHttpToolFactory : ILocalToolFactory, IDisposable {
             // IHttpClientFactory manages HttpClient lifecycle - no manual disposal needed
             // Provided HttpClient instances are owned by the caller
             _disposed = true;
+            GC.SuppressFinalize(this);
         }
     }
 
@@ -104,7 +105,7 @@ public class LocalHttpToolFactory : ILocalToolFactory, IDisposable {
         ICollection<string>? addresses = server?.Features.Get<IServerAddressesFeature>()?.Addresses;
 
         string hostUrl;
-        if (addresses?.Any() == true) {
+        if (addresses?.Count > 0) {
             hostUrl = addresses.First().TrimEnd('/');
         } else {
             IHttpContextAccessor? httpContextAccessor = _serviceProvider.GetService<IHttpContextAccessor>();

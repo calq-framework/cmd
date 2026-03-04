@@ -88,7 +88,7 @@ public class BashTest {
         Assert.Equal(input, output);
     }
 
-    private static Stream GetStream(string input) {
+    private static MemoryStream GetStream(string input) {
         byte[] byteArray = Encoding.ASCII.GetBytes(input);
         MemoryStream stream = new(byteArray);
         return stream;

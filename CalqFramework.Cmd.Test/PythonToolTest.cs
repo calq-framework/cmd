@@ -84,7 +84,7 @@ public class PythonToolTest {
         Assert.True(errorMessage.Length > 10, $"Error message too short: '{errorMessage}'");
     }
 
-    private static Stream GetStream(string input) {
+    private static MemoryStream GetStream(string input) {
         byte[] byteArray = Encoding.ASCII.GetBytes(input);
         MemoryStream stream = new(byteArray);
         return stream;
