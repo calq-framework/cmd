@@ -6,7 +6,7 @@ namespace CalqFramework.Cmd.Shell;
 ///     Process-based output stream that wraps a process's standard output for shell operations.
 ///     Handles process exit codes and input relay task monitoring.
 /// </summary>
-public class ProcessOutputStream(Process process, Task relayInputTask, IShellWorker shellWorker)
+internal sealed class ProcessOutputStream(Process process, Task relayInputTask, IShellWorker shellWorker)
     : ShellWorkerOutputStream(shellWorker) {
     private readonly Stream _innerStream = process.StandardOutput.BaseStream;
     private readonly Process _process = process;
