@@ -4,7 +4,6 @@ using static CalqFramework.Cmd.Terminal;
 namespace CalqFramework.Cmd.Test;
 
 public class ShellPipingTest {
-
     [Fact]
     public void CommandPiping_AfterMultiplePipes_ReturnsCorrectly() {
         LocalTerminal.Shell = new Bash();
@@ -23,6 +22,7 @@ public class ShellPipingTest {
         if (string.Compare(echoText, echoCommand) != 0) {
             Assert.True(false);
         }
+
         if (echoText != echoCommand) {
             Assert.True(false);
         }

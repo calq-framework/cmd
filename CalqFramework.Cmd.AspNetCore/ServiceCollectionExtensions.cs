@@ -1,5 +1,7 @@
 using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shells;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -7,212 +9,193 @@ using Microsoft.Extensions.Options;
 namespace CalqFramework.Cmd.AspNetCore;
 
 /// <summary>
-/// Configuration options for CalqCmdController
+///     Configuration options for CalqCmdController
 /// </summary>
-public class CalqCmdControllerOptions
-{
+public class CalqCmdControllerOptions {
     /// <summary>
-    /// Route prefix for the CalqCmdController. If null or empty, uses default "CalqCmd"
+    ///     Route prefix for the CalqCmdController. If null or empty, uses default "CalqCmd"
     /// </summary>
     public string? RoutePrefix { get; set; }
-    
+
     /// <summary>
-    /// HTTP client timeout for LocalHttpTool connections. Default is 30 seconds.
+    ///     HTTP client timeout for LocalHttpTool connections. Default is 30 seconds.
     /// </summary>
     public TimeSpan HttpClientTimeout { get; set; } = TimeSpan.FromSeconds(30);
-    
+
     /// <summary>
-    /// Named HTTP client configuration for CalqFramework.Cmd.LocalHttpTool
+    ///     Named HTTP client configuration for CalqFramework.Cmd.LocalHttpTool
     /// </summary>
     public string HttpClientName { get; set; } = "CalqFramework.Cmd.LocalHttpTool";
-    
+
     /// <summary>
-    /// Custom command executor. If null, uses CliCommandExecutor (CalqFramework.Cli) by default.
+    ///     Custom command executor. If null, uses CliCommandExecutor (CalqFramework.Cli) by default.
     /// </summary>
     public ICalqCommandExecutor? CommandExecutor { get; set; }
 }
 
 /// <summary>
-/// Extension methods for registering CalqFramework.Cmd services with ASP.NET Core dependency injection.
+///     Extension methods for registering CalqFramework.Cmd services with ASP.NET Core dependency injection.
 /// </summary>
-public static class ServiceCollectionExtensions
-{
+public static class ServiceCollectionExtensions {
     /// <summary>
-    /// Registers the CalqCmdController for ASP.NET Core MVC with command execution support.
-    /// This controller provides streaming endpoints for command execution.
-    /// Uses CliCommandExecutor (CalqFramework.Cli) by default, but can be customized via options.
-    /// Automatically registers DistributedMemoryCache if no distributed cache is already registered.
-    /// Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
+    ///     Registers the CalqCmdController for ASP.NET Core MVC with command execution support.
+    ///     This controller provides streaming endpoints for command execution.
+    ///     Uses CliCommandExecutor (CalqFramework.Cli) by default, but can be customized via options.
+    ///     Automatically registers DistributedMemoryCache if no distributed cache is already registered.
+    ///     Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="cliTarget">The target object to pass to the command executor.</param>
     /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, object cliTarget, Action<CalqCmdControllerOptions>? configure = null)
-    {
-        return AddCalqCmdController(services, _ => cliTarget, configure);
-    }
+    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, object cliTarget,
+        Action<CalqCmdControllerOptions>? configure = null) => services.AddCalqCmdController(_ => cliTarget, configure);
 
     /// <summary>
-    /// Registers the CalqCmdController for ASP.NET Core MVC with command execution support.
-    /// This controller provides streaming endpoints for command execution.
-    /// Uses CliCommandExecutor (CalqFramework.Cli) by default, but can be customized via options.
-    /// Automatically registers DistributedMemoryCache if no distributed cache is already registered.
-    /// Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
+    ///     Registers the CalqCmdController for ASP.NET Core MVC with command execution support.
+    ///     This controller provides streaming endpoints for command execution.
+    ///     Uses CliCommandExecutor (CalqFramework.Cli) by default, but can be customized via options.
+    ///     Automatically registers DistributedMemoryCache if no distributed cache is already registered.
+    ///     Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="cliTarget">The target object to pass to the command executor.</param>
     /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <param name="configureCacheOptions">Optional action to configure cache options.</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, object cliTarget, Action<CalqCmdControllerOptions>? configure, Action<CalqCmdCacheOptions>? configureCacheOptions)
-    {
-        return AddCalqCmdController(services, _ => cliTarget, configure, configureCacheOptions);
-    }
+    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, object cliTarget,
+        Action<CalqCmdControllerOptions>? configure, Action<CalqCmdCacheOptions>? configureCacheOptions) =>
+        services.AddCalqCmdController(_ => cliTarget, configure, configureCacheOptions);
 
     /// <summary>
-    /// Registers the CalqCmdController for ASP.NET Core MVC with command execution support.
-    /// This controller provides streaming endpoints for command execution.
-    /// Uses CliCommandExecutor (CalqFramework.Cli) by default, but can be customized via options.
-    /// Automatically registers DistributedMemoryCache if no distributed cache is already registered.
-    /// Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
+    ///     Registers the CalqCmdController for ASP.NET Core MVC with command execution support.
+    ///     This controller provides streaming endpoints for command execution.
+    ///     Uses CliCommandExecutor (CalqFramework.Cli) by default, but can be customized via options.
+    ///     Automatically registers DistributedMemoryCache if no distributed cache is already registered.
+    ///     Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="cliTargetFactory">Factory function to create the CLI target object.</param>
     /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, Func<IServiceProvider, object> cliTargetFactory, Action<CalqCmdControllerOptions>? configure = null)
-    {
-        return AddCalqCmdControllerInternal(services, cliTargetFactory, configure, null);
-    }
+    public static IServiceCollection AddCalqCmdController(this IServiceCollection services,
+        Func<IServiceProvider, object> cliTargetFactory, Action<CalqCmdControllerOptions>? configure = null) =>
+        AddCalqCmdControllerInternal(services, cliTargetFactory, configure, null);
 
     /// <summary>
-    /// Registers the CalqCmdController for ASP.NET Core MVC with command execution support.
-    /// This controller provides streaming endpoints for command execution.
-    /// Uses CliCommandExecutor (CalqFramework.Cli) by default, but can be customized via options.
-    /// Automatically registers DistributedMemoryCache if no distributed cache is already registered.
-    /// Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
+    ///     Registers the CalqCmdController for ASP.NET Core MVC with command execution support.
+    ///     This controller provides streaming endpoints for command execution.
+    ///     Uses CliCommandExecutor (CalqFramework.Cli) by default, but can be customized via options.
+    ///     Automatically registers DistributedMemoryCache if no distributed cache is already registered.
+    ///     Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="cliTargetFactory">Factory function to create the CLI target object.</param>
     /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <param name="configureCacheOptions">Optional action to configure cache options.</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, Func<IServiceProvider, object> cliTargetFactory, Action<CalqCmdControllerOptions>? configure, Action<CalqCmdCacheOptions>? configureCacheOptions)
-    {
-        return AddCalqCmdControllerInternal(services, cliTargetFactory, configure, configureCacheOptions);
-    }
+    public static IServiceCollection AddCalqCmdController(this IServiceCollection services,
+        Func<IServiceProvider, object> cliTargetFactory, Action<CalqCmdControllerOptions>? configure,
+        Action<CalqCmdCacheOptions>? configureCacheOptions) =>
+        AddCalqCmdControllerInternal(services, cliTargetFactory, configure, configureCacheOptions);
 
     /// <summary>
-    /// Internal implementation for registering CalqCmdController with shared logic.
+    ///     Internal implementation for registering CalqCmdController with shared logic.
     /// </summary>
-    private static IServiceCollection AddCalqCmdControllerInternal(IServiceCollection services, Func<IServiceProvider, object> cliTargetFactory, Action<CalqCmdControllerOptions>? configure, Action<CalqCmdCacheOptions>? configureCacheOptions)
-    {
+    private static IServiceCollection AddCalqCmdControllerInternal(IServiceCollection services,
+        Func<IServiceProvider, object> cliTargetFactory, Action<CalqCmdControllerOptions>? configure,
+        Action<CalqCmdCacheOptions>? configureCacheOptions) {
         services.AddSingleton(cliTargetFactory);
-        
+
         // Configure controller options
-        var options = new CalqCmdControllerOptions();
+        CalqCmdControllerOptions options = new();
         configure?.Invoke(options);
-        
-        services.Configure<CalqCmdControllerOptions>(opts =>
-        {
+
+        services.Configure<CalqCmdControllerOptions>(opts => {
             opts.RoutePrefix = options.RoutePrefix;
             opts.HttpClientTimeout = options.HttpClientTimeout;
             opts.HttpClientName = options.HttpClientName;
             opts.CommandExecutor = options.CommandExecutor;
         });
-        
+
         // Register command executor - use custom if provided, otherwise default to CliCommandExecutor
-        if (options.CommandExecutor != null)
-        {
+        if (options.CommandExecutor != null) {
             services.AddSingleton(options.CommandExecutor);
-        }
-        else
-        {
+        } else {
             services.AddSingleton<ICalqCommandExecutor, CliCommandExecutor>();
         }
-        
+
         // Register cache options
-        if (configureCacheOptions != null)
-        {
+        if (configureCacheOptions != null) {
             services.Configure(configureCacheOptions);
-        }
-        else
-        {
+        } else {
             services.Configure<CalqCmdCacheOptions>(_ => { });
         }
-        
+
         // Ensure distributed cache is available - register memory cache as fallback if none registered
         EnsureDistributedCacheRegistered(services);
-        
+
         // Register LocalHttpToolFactory that automatically discovers CalqCmdController URL
-        AddLocalToolFactoryInternal(services, options);
-        
+        services.AddLocalToolFactoryInternal(options);
+
         // Configure routing if custom prefix is specified
-        if (!string.IsNullOrEmpty(options.RoutePrefix))
-        {
-            services.Configure<Microsoft.AspNetCore.Mvc.MvcOptions>(mvcOptions =>
-            {
+        if (!string.IsNullOrEmpty(options.RoutePrefix)) {
+            services.Configure<MvcOptions>(mvcOptions => {
                 mvcOptions.Conventions.Add(new CalqCmdControllerRouteConvention(options.RoutePrefix));
             });
         }
-        
-        services.AddTransient<CalqCmdController>(provider =>
-        {
-            var factory = provider.GetRequiredService<Func<IServiceProvider, object>>();
-            var target = factory(provider);
-            var commandExecutor = provider.GetRequiredService<ICalqCommandExecutor>();
-            var localToolFactory = provider.GetRequiredService<ILocalToolFactory>();
-            var distributedCache = provider.GetRequiredService<IDistributedCache>();
-            var cacheOptions = provider.GetRequiredService<IOptions<CalqCmdCacheOptions>>();
+
+        services.AddTransient<CalqCmdController>(provider => {
+            Func<IServiceProvider, object> factory = provider.GetRequiredService<Func<IServiceProvider, object>>();
+            object target = factory(provider);
+            ICalqCommandExecutor commandExecutor = provider.GetRequiredService<ICalqCommandExecutor>();
+            ILocalToolFactory localToolFactory = provider.GetRequiredService<ILocalToolFactory>();
+            IDistributedCache distributedCache = provider.GetRequiredService<IDistributedCache>();
+            IOptions<CalqCmdCacheOptions> cacheOptions = provider.GetRequiredService<IOptions<CalqCmdCacheOptions>>();
             return new CalqCmdController(target, commandExecutor, localToolFactory, distributedCache, cacheOptions);
         });
-        
+
         return services;
     }
 
     /// <summary>
-    /// Registers a LocalHttpToolFactory that automatically discovers CalqCmdController URL from ASP.NET Core
+    ///     Registers a LocalHttpToolFactory that automatically discovers CalqCmdController URL from ASP.NET Core
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="options">Controller options containing HTTP client configuration.</param>
     /// <returns>The service collection for method chaining.</returns>
-    private static IServiceCollection AddLocalToolFactoryInternal(this IServiceCollection services, CalqCmdControllerOptions options)
-    {
+    private static IServiceCollection AddLocalToolFactoryInternal(this IServiceCollection services,
+        CalqCmdControllerOptions options) {
         services.AddHttpContextAccessor();
-        
-        services.AddHttpClient(options.HttpClientName, client =>
-        {
-            client.Timeout = options.HttpClientTimeout;
-        });
-        
+
+        services.AddHttpClient(options.HttpClientName, client => { client.Timeout = options.HttpClientTimeout; });
+
         services.AddSingleton<ILocalToolFactory, LocalHttpToolFactory>();
         return services;
     }
 
-    private static void EnsureDistributedCacheRegistered(IServiceCollection services)
-    {
+    private static void EnsureDistributedCacheRegistered(IServiceCollection services) {
         // Check if IDistributedCache is already registered
-        var distributedCacheDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IDistributedCache));
-        
-        if (distributedCacheDescriptor == null)
-        {
+        ServiceDescriptor? distributedCacheDescriptor =
+            services.FirstOrDefault(d => d.ServiceType == typeof(IDistributedCache));
+
+        if (distributedCacheDescriptor == null) {
             // No distributed cache registered, add memory cache as default
             services.AddDistributedMemoryCache();
         }
     }
 
     /// <summary>
-    /// Registers PythonToolServer and PythonTool services for dependency injection.
-    /// PythonToolServer is registered as a singleton to manage the Python process lifecycle.
-    /// PythonTool is registered as transient and depends on the PythonToolServer.
-    /// Note: The PythonToolServer must be started before PythonTool can be resolved.
+    ///     Registers PythonToolServer and PythonTool services for dependency injection.
+    ///     PythonToolServer is registered as a singleton to manage the Python process lifecycle.
+    ///     PythonTool is registered as transient and depends on the PythonToolServer.
+    ///     Note: The PythonToolServer must be started before PythonTool can be resolved.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="scriptPath">Path to the Python script file that will be executed by the PythonToolServer.</param>
     /// <returns>The service collection for method chaining.</returns>
     /// <example>
-    /// <code>
+    ///     <code>
     /// builder.Services.AddPythonTool("path/to/script.py");
     /// 
     /// // Start the server during application startup:
@@ -239,12 +222,10 @@ public static class ServiceCollectionExtensions
     /// }
     /// </code>
     /// </example>
-    public static IServiceCollection AddPythonTool(this IServiceCollection services, string scriptPath)
-    {
+    public static IServiceCollection AddPythonTool(this IServiceCollection services, string scriptPath) {
         services.AddSingleton<PythonToolServer>(provider => new PythonToolServer(scriptPath));
-        services.AddTransient<PythonTool>(provider => 
-        {
-            var server = provider.GetRequiredService<PythonToolServer>();
+        services.AddTransient<PythonTool>(provider => {
+            PythonToolServer server = provider.GetRequiredService<PythonToolServer>();
             // Note: Server must be started before this can be resolved
             return new PythonTool(server);
         });
@@ -252,15 +233,15 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Registers PythonToolServer and PythonTool services using a factory function.
-    /// This overload allows for more complex configuration scenarios.
-    /// Note: The PythonToolServer must be started before PythonTool can be resolved.
+    ///     Registers PythonToolServer and PythonTool services using a factory function.
+    ///     This overload allows for more complex configuration scenarios.
+    ///     Note: The PythonToolServer must be started before PythonTool can be resolved.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="serverFactory">Factory function to create the PythonToolServer instance.</param>
     /// <returns>The service collection for method chaining.</returns>
     /// <example>
-    /// <code>
+    ///     <code>
     /// builder.Services.AddPythonTool(provider => 
     /// {
     ///     var config = provider.GetRequiredService&lt;IConfiguration&gt;();
@@ -273,12 +254,11 @@ public static class ServiceCollectionExtensions
     /// await app.Services.StartPythonToolServerAsync();
     /// </code>
     /// </example>
-    public static IServiceCollection AddPythonTool(this IServiceCollection services, Func<IServiceProvider, PythonToolServer> serverFactory)
-    {
+    public static IServiceCollection AddPythonTool(this IServiceCollection services,
+        Func<IServiceProvider, PythonToolServer> serverFactory) {
         services.AddSingleton(serverFactory);
-        services.AddTransient<PythonTool>(provider => 
-        {
-            var server = provider.GetRequiredService<PythonToolServer>();
+        services.AddTransient<PythonTool>(provider => {
+            PythonToolServer server = provider.GetRequiredService<PythonToolServer>();
             // Note: Server must be started before this can be resolved
             return new PythonTool(server);
         });
@@ -287,20 +267,19 @@ public static class ServiceCollectionExtensions
 }
 
 /// <summary>
-/// Extension methods for IServiceProvider to manage PythonToolServer lifecycle.
+///     Extension methods for IServiceProvider to manage PythonToolServer lifecycle.
 /// </summary>
-public static class ServiceProviderExtensions
-{
+public static class ServiceProviderExtensions {
     /// <summary>
-    /// Starts the registered PythonToolServer, enabling PythonTool resolution.
-    /// This method should be called during application startup after the service provider is built.
+    ///     Starts the registered PythonToolServer, enabling PythonTool resolution.
+    ///     This method should be called during application startup after the service provider is built.
     /// </summary>
     /// <param name="services">The service provider containing the registered PythonToolServer.</param>
     /// <param name="cancellationToken">Optional cancellation token for the startup operation.</param>
     /// <returns>The service provider for method chaining.</returns>
     /// <exception cref="InvalidOperationException">Thrown if PythonToolServer is not registered.</exception>
     /// <example>
-    /// <code>
+    ///     <code>
     /// var app = builder.Build();
     /// await app.Services.StartPythonToolServerAsync();
     /// 
@@ -308,37 +287,31 @@ public static class ServiceProviderExtensions
     /// var pythonTool = app.Services.GetRequiredService&lt;PythonTool&gt;();
     /// </code>
     /// </example>
-    public static async Task<IServiceProvider> StartPythonToolServerAsync(this IServiceProvider services, CancellationToken cancellationToken = default)
-    {
-        var server = services.GetRequiredService<PythonToolServer>();
+    public static async Task<IServiceProvider> StartPythonToolServerAsync(this IServiceProvider services,
+        CancellationToken cancellationToken = default) {
+        PythonToolServer server = services.GetRequiredService<PythonToolServer>();
         await server.StartAsync(cancellationToken);
         return services;
     }
 }
 
 /// <summary>
-/// Route convention to customize CalqCmdController route prefix
+///     Route convention to customize CalqCmdController route prefix
 /// </summary>
-internal class CalqCmdControllerRouteConvention : Microsoft.AspNetCore.Mvc.ApplicationModels.IControllerModelConvention
-{
+internal class CalqCmdControllerRouteConvention : IControllerModelConvention {
     private readonly string _routePrefix;
 
-    public CalqCmdControllerRouteConvention(string routePrefix)
-    {
+    public CalqCmdControllerRouteConvention(string routePrefix) =>
         _routePrefix = routePrefix.TrimStart('/').TrimEnd('/');
-    }
 
-    public void Apply(Microsoft.AspNetCore.Mvc.ApplicationModels.ControllerModel controller)
-    {
-        if (controller.ControllerType == typeof(CalqCmdController))
-        {
+    public void Apply(ControllerModel controller) {
+        if (controller.ControllerType == typeof(CalqCmdController)) {
             // Remove existing route attributes
             controller.Selectors.Clear();
-            
+
             // Add new selector with custom prefix
-            var selector = new Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel();
-            selector.AttributeRouteModel = new Microsoft.AspNetCore.Mvc.ApplicationModels.AttributeRouteModel
-            {
+            SelectorModel selector = new();
+            selector.AttributeRouteModel = new AttributeRouteModel {
                 Template = _routePrefix
             };
             controller.Selectors.Add(selector);

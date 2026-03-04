@@ -1,18 +1,18 @@
 using System.Text;
+using CalqFramework.Cmd.Shell;
 using CalqFramework.Cmd.Shells;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.Test;
 
 public class BashTest {
-
     [Fact]
     public void Bash_ReadInput_EchosCorrectly() {
-        var writer = new MemoryStream();
+        MemoryStream writer = new();
         string input = "hello world\n";
 
         LocalTerminal.Out = writer;
-        LocalTerminal.Shell = new Bash() {
+        LocalTerminal.Shell = new Bash {
             In = GetStream(input)
         };
 
@@ -29,11 +29,13 @@ public class BashTest {
             expectedOutput += "1234567890";
         }
 
-        var writer = new MemoryStream();
+        MemoryStream writer = new();
         LocalTerminal.Out = writer;
         LocalTerminal.Shell = new Bash();
 
-        string output = CMD("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
+        string output =
+            CMD(
+                "sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
         string writerOutput = ReadString(writer);
 
         Assert.Equal(expectedOutput, output);
@@ -47,11 +49,12 @@ public class BashTest {
             expectedOutput += "1234567890";
         }
 
-        var writer = new MemoryStream();
+        MemoryStream writer = new();
         LocalTerminal.Out = writer;
         LocalTerminal.Shell = new Bash();
 
-        RUN("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
+        RUN(
+            "sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
         string writerOutput = ReadString(writer);
 
         Assert.Equal(expectedOutput, writerOutput);
@@ -76,10 +79,10 @@ public class BashTest {
         string input = "hello world";
 
         ShellScript command = CMDV($"sleep 2; echo {input}");
-        using Cmd.Shell.IShellWorker proc = await command.StartAsync(disposeOnCompletion: false);
+        using IShellWorker proc = await command.StartAsync(false);
         GC.Collect();
         GC.WaitForPendingFinalizers();
-        using var reader = new StreamReader(proc.StandardOutput);
+        using StreamReader reader = new(proc.StandardOutput);
         string? output = reader.ReadLine();
 
         Assert.Equal(input, output);

@@ -3,25 +3,22 @@ using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.Test;
 
-public class LocalToolTest 
-{
+public class LocalToolTest {
     [Fact]
-    public void LocalTool_WithSingleArgument_ExecutesCurrentExecutable()
-    {
+    public void LocalTool_WithSingleArgument_ExecutesCurrentExecutable() {
         LocalTerminal.Shell = new LocalTool();
 
-        var exception = Assert.Throws<ShellScriptException>(() => CMD("--version"));
-        
+        ShellScriptException exception = Assert.Throws<ShellScriptException>(() => CMD("--version"));
+
         Assert.Contains("testhost.dll --version", exception.Message);
     }
 
     [Fact]
-    public void LocalTool_WithMultipleArguments_ExecutesCurrentExecutable()
-    {
+    public void LocalTool_WithMultipleArguments_ExecutesCurrentExecutable() {
         LocalTerminal.Shell = new LocalTool();
 
-        var exception = Assert.Throws<ShellScriptException>(() => CMD("--help"));
-        
+        ShellScriptException exception = Assert.Throws<ShellScriptException>(() => CMD("--help"));
+
         Assert.Contains("testhost.dll --help", exception.Message);
     }
 }
