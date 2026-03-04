@@ -649,4 +649,4 @@ app.Run();
 ```  
 
 ## License  
-Calq CMD is dual-licensed under GNU AGPLv3 and a commercial license.  
+Calq CMD is dual-licensed under GNU AGPLv3 and the Calq Commercial License.
