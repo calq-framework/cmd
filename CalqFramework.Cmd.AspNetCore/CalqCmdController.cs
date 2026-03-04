@@ -18,19 +18,19 @@ namespace CalqFramework.Cmd.AspNetCore;
 [Route("[controller]")]
 public class CalqCmdController : ControllerBase {
     private readonly CalqCmdCacheOptions _cacheOptions;
-    private readonly object _cliTarget;
-    private readonly ICalqCommandExecutor _commandExecutor;
+    private readonly object _commandTarget;
+    private readonly ICalqCommandExecutor _calqCommandExecutor;
     private readonly IDistributedCache _distributedCache;
     private readonly ILocalToolFactory _localToolFactory;
 
     public CalqCmdController(
-        object cliTarget,
-        ICalqCommandExecutor commandExecutor,
+        object commandTarget,
+        ICalqCommandExecutor calqCommandExecutor,
         ILocalToolFactory localToolFactory,
         IDistributedCache distributedCache,
         IOptions<CalqCmdCacheOptions> cacheOptions) {
-        _cliTarget = cliTarget;
-        _commandExecutor = commandExecutor;
+        _commandTarget = commandTarget;
+        _calqCommandExecutor = calqCommandExecutor;
         _localToolFactory = localToolFactory;
         _distributedCache = distributedCache;
         _cacheOptions = cacheOptions.Value;
@@ -52,7 +52,7 @@ public class CalqCmdController : ControllerBase {
             LocalTerminal.Shell = new CommandLine { In = Request.Body };
 
             string[] args = script.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            object? result = _commandExecutor.Execute(_cliTarget, args);
+            object? result = _calqCommandExecutor.Execute(_commandTarget, args);
 
             if (result is Task task) {
                 await task;
