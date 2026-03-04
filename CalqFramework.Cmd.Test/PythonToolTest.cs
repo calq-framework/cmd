@@ -59,7 +59,7 @@ public class PythonToolTest {
 
         try {
             while (true) {
-                int bytesRead = await worker.StandardOutput.ReadAsync(outputBuffer);
+                int bytesRead = await worker.StandardOutput.ReadAsync(outputBuffer.AsMemory());
                 if (bytesRead == 0) {
                     break;
                 }

@@ -30,9 +30,9 @@ public class HttpToolOutputStream(Stream responseContentStream, IShellWorker she
     ///     Attempts to read data from the HTTP response stream, capturing HTTP protocol errors.
     /// </summary>
     /// <returns>Number of bytes read, or 0 if an error occurred</returns>
-    protected override int TryRead(byte[] buffer, int offset, int count) {
+    protected override int TryRead(Span<byte> buffer) {
         try {
-            int bytesRead = _innerStream.Read(buffer, offset, count);
+            int bytesRead = _innerStream.Read(buffer);
             return bytesRead;
         } catch (HttpProtocolException ex) {
             _error = new Error(ex.ErrorCode, ex);
@@ -44,10 +44,10 @@ public class HttpToolOutputStream(Stream responseContentStream, IShellWorker she
     ///     Asynchronously attempts to read data from the HTTP response stream, capturing HTTP protocol errors.
     /// </summary>
     /// <returns>Task containing the number of bytes read, or 0 if an error occurred</returns>
-    protected override async Task<int> TryReadAsync(byte[] buffer, int offset, int count,
+    protected override async ValueTask<int> TryReadAsync(Memory<byte> buffer,
         CancellationToken cancellationToken) {
         try {
-            int bytesRead = await _innerStream.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
+            int bytesRead = await _innerStream.ReadAsync(buffer, cancellationToken);
             return bytesRead;
         } catch (HttpProtocolException ex) {
             _error = new Error(ex.ErrorCode, ex);

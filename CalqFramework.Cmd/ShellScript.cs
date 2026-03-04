@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Buffers;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using CalqFramework.Cmd.Shell;
@@ -86,10 +87,10 @@ public class ShellScript(IShell shell, string script) {
         using StreamReader reader = new(worker.StandardOutput);
 
         StringBuilder sb = new();
-        char[] buffer = new char[4096];
+        char[] buffer = ArrayPool<char>.Shared.Rent(4096);
         try {
             while (true) {
-                int charsRead = await reader.ReadAsync(buffer, 0, buffer.Length);
+                int charsRead = await reader.ReadAsync(buffer.AsMemory(0, 4096), cancellationToken);
                 if (charsRead == 0) {
                     break;
                 }
@@ -100,6 +101,8 @@ public class ShellScript(IShell shell, string script) {
             await worker.EnsurePipeIsCompletedAsync(cancellationToken);
         } catch (ShellWorkerException ex) {
             throw await Shell.ExceptionFactory.CreateAsync(this, worker, ex, sb.ToString(), cancellationToken);
+        } finally {
+            ArrayPool<char>.Shared.Return(buffer);
         }
 
         cancellationToken.ThrowIfCancellationRequested();

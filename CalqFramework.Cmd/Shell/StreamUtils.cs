@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Buffers;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace CalqFramework.Cmd.Shell;
@@ -31,30 +32,32 @@ internal class StreamUtils {
                 await Task.Delay(1, cancellationToken);
             }
         } else {
-            // TODO relay block by block
-            char[] buffer = new char[1];
+            char[] buffer = ArrayPool<char>.Shared.Rent(1);
+            try {
+                while (!cancellationToken.IsCancellationRequested) {
+                    int bytesRead;
+                    try {
+                        bytesRead = await inputReader.ReadAsync(buffer.AsMemory(0, 1), cancellationToken);
+                    } catch {
+                        processInput
+                            .Close(); // in case input stream reached EOF close input stream to signal EOF to the process
+                        throw;
+                    }
 
-            while (!cancellationToken.IsCancellationRequested) {
-                int bytesRead;
-                try {
-                    bytesRead = await inputReader.ReadAsync(buffer, cancellationToken);
-                } catch {
-                    processInput
-                        .Close(); // in case input stream reached EOF close input stream to signal EOF to the process
-                    throw;
+                    char keyChar = buffer[0];
+                    if (bytesRead == 0 || keyChar == '\uffff') {
+                        // '\uffff' == -1
+                        processInput
+                            .Close(); // in case input stream reached EOF close input stream to signal EOF to the process
+                        break;
+                    }
+
+                    processInput.Write(keyChar);
+
+                    await Task.Delay(1, cancellationToken);
                 }
-
-                char keyChar = buffer[0];
-                if (bytesRead == 0 || keyChar == '\uffff') {
-                    // '\uffff' == -1
-                    processInput
-                        .Close(); // in case input stream reached EOF close input stream to signal EOF to the process
-                    break;
-                }
-
-                processInput.Write(keyChar);
-
-                await Task.Delay(1, cancellationToken);
+            } finally {
+                ArrayPool<char>.Shared.Return(buffer);
             }
         }
     }

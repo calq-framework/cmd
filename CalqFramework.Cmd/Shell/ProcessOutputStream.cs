@@ -41,24 +41,24 @@ public class ProcessOutputStream(Process process, Task relayInputTask, IShellWor
     ///     Attempts to read data from the process output stream, checking for input relay task failures.
     /// </summary>
     /// <returns>Number of bytes read from the process output</returns>
-    protected override int TryRead(byte[] buffer, int offset, int count) {
+    protected override int TryRead(Span<byte> buffer) {
         if (_realyInputTask.IsFaulted) {
             throw _realyInputTask.Exception;
         }
 
-        return _innerStream.Read(buffer, offset, count);
+        return _innerStream.Read(buffer);
     }
 
     /// <summary>
     ///     Asynchronously attempts to read data from the process output stream, checking for input relay task failures.
     /// </summary>
     /// <returns>Task containing the number of bytes read from the process output</returns>
-    protected override async Task<int> TryReadAsync(byte[] buffer, int offset, int count,
+    protected override async ValueTask<int> TryReadAsync(Memory<byte> buffer,
         CancellationToken cancellationToken) {
         if (_realyInputTask.IsFaulted) {
             throw _realyInputTask.Exception;
         }
 
-        return await _innerStream.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
+        return await _innerStream.ReadAsync(buffer, cancellationToken);
     }
 }
