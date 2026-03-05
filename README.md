@@ -391,7 +391,7 @@ app.Run();
 ```
 
 ### Custom Command Executors
-By default, CalqCmdController uses `CliCommandExecutor` which leverages CalqFramework.Cli for command-line style parsing. You can provide a custom `ICalqCommandExecutor` implementation for different command execution strategies:
+By default, CalqCmdController uses `CalqCommandExecutor` which leverages CalqFramework.Cli for command-line style parsing. You can provide a custom `ICalqCommandExecutor` implementation for different command execution strategies:
 
 ```csharp
 // Custom executor example
