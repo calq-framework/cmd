@@ -56,7 +56,7 @@ public class CalqCmdController : ControllerBase {
             LocalTerminal.Shell = new CommandLine { In = Request.Body };
 
             string[] args = cmdValue.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            
+
             StringWriter outputWriter = new();
             object? result = _calqCommandExecutor.Execute(_commandTarget, args, outputWriter);
 

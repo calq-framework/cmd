@@ -1,4 +1,4 @@
-﻿﻿using System.Text;
+﻿using System.Text;
 using CalqFramework.Cmd.Shells;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
