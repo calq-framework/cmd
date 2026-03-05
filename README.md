@@ -420,6 +420,38 @@ builder.Services.AddCalqCmdController(myCliTarget, options =>
 
 Use cases: custom argument parsing, integration with other CLI frameworks, message-based routing (JSON-RPC, gRPC), or domain-specific command languages.
 
+### Built-in Help for CLI Target
+When you register a CLI target with CalqCmdController, help documentation is automatically available via the `--help` flag. This works exactly like a command-line tool, but over HTTP:
+
+```csharp
+// CLI target class
+public class MyCliCommands
+{
+    public string ProcessData(string input) => input.ToUpper();
+    public int Add(int a, int b) => a + b;
+}
+
+// Register with controller
+builder.Services.AddCalqCmdController(new MyCliCommands());
+
+// Client usage - get help for all available commands
+LocalTerminal.Shell = new HttpTool(httpClient);
+string help = CMD("--help");
+// Returns:
+// Subcommands
+//   process-data
+//   add
+
+// Get help for a specific command
+string commandHelp = CMD("add --help");
+// Returns:
+// Parameters
+//   -a  (Requires: int32)
+//   -b  (Requires: int32)
+```
+
+The help output is automatically generated from your CLI target's methods and parameters. Add XML documentation comments to your methods for richer help descriptions (requires `<GenerateDocumentationFile>true</GenerateDocumentationFile>` in your project file).
+
 ### Distributed Command Execution
 The CalqCmdController automatically handles:
 - **Streaming Command Execution**: Commands stream results in real-time via HTTP

@@ -52,7 +52,9 @@ public class CalqCmdController : ControllerBase {
             LocalTerminal.Shell = new CommandLine { In = Request.Body };
 
             string[] args = script.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            object? result = _calqCommandExecutor.Execute(_commandTarget, args);
+            
+            StringWriter outputWriter = new();
+            object? result = _calqCommandExecutor.Execute(_commandTarget, args, outputWriter);
 
             if (result is Task task) {
                 await task;
@@ -70,7 +72,7 @@ public class CalqCmdController : ControllerBase {
 
             return result switch {
                 Stream stream => stream,
-                ResultVoid => CreateEmptyStream(),
+                ResultVoid => CreateStringStream(outputWriter.ToString()),
                 string str => CreateStringStream(str),
                 null => CreateEmptyStream(),
                 _ => CreateObjectStream(result)

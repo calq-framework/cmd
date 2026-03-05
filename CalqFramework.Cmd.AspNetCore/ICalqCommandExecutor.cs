@@ -13,4 +13,13 @@ public interface ICalqCommandExecutor {
     /// <param name="args">Command arguments. Interpretation depends on the implementation.</param>
     /// <returns>The result of the command execution. May be a Task, Stream, string, or other type.</returns>
     object? Execute(object target, string[] args);
+
+    /// <summary>
+    ///     Executes a command against the specified target object with output capture.
+    /// </summary>
+    /// <param name="target">The target object containing the methods to execute.</param>
+    /// <param name="args">Command arguments. Interpretation depends on the implementation.</param>
+    /// <param name="output">Optional TextWriter to capture output from void methods.</param>
+    /// <returns>The result of the command execution. May be a Task, Stream, string, or other type.</returns>
+    object? Execute(object target, string[] args, System.IO.TextWriter? output);
 }
