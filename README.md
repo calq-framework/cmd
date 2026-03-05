@@ -609,6 +609,8 @@ dotnet add package CalqFramework.Cmd.AspNetCore
 using CalqFramework.Cmd.AspNetCore;
 using static CalqFramework.Cmd.Terminal;
 using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using CalqFramework.Cmd.Shells;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
@@ -619,6 +621,7 @@ builder.Services.AddCalqCmdController(commandTarget);
 
 var app = builder.Build();
 app.MapControllers();
+app.Run();
 
 // Command target class - methods become executable commands via CalqCmdController
 public class DataProcessingCommands
@@ -657,7 +660,7 @@ public class DataProcessingCommands
     {
         if (LocalTerminal.Shell.In == null)
             return "Empty chunk";
-            
+        
         using var reader = new StreamReader(LocalTerminal.Shell.In);
         var data = await reader.ReadToEndAsync();
         
@@ -672,7 +675,7 @@ public class DataProcessingCommands
     {
         if (LocalTerminal.Shell.In == null)
             return new MemoryStream();
-            
+        
         // Process input stream and return results as stream
         using var reader = new StreamReader(LocalTerminal.Shell.In);
         var data = await reader.ReadToEndAsync();
@@ -685,21 +688,20 @@ public class DataProcessingCommands
 
 // Controller for HTTP endpoint access - calls DataProcessingCommands via CMD
 [ApiController, UseLocalToolShell]
-public class DataController : ControllerBase 
+[Route("api/[controller]")]
+public class DataController : ControllerBase
 {
-    [HttpPost]
+    [HttpPost("run-parallel")]
     public async Task<string> RunParallel([FromBody] Stream input)
     {
         LocalTerminal.Shell = new LocalTool() { In = input };
         return await CMDAsync("process-parallel");
     }
     
-    [HttpPost]
-    public async Task<Stream> GetStreamResults([FromBody] Stream input) => 
+    [HttpPost("get-stream-results")]
+    public async Task<Stream> GetStreamResults([FromBody] Stream input) =>
         await CMDStreamAsync("stream-results", input);
 }
-
-app.Run();
 ```  
 
 ## License  
