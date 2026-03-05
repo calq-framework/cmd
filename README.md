@@ -425,17 +425,17 @@ When you register a CLI target with CalqCmdController, help documentation is aut
 
 **Using query strings (GET - browser-friendly):**
 ```http
-GET http://localhost:5000/CalqCmd?script=--help
-GET http://localhost:5000/CalqCmd?script=add --help
+GET http://localhost:5000/CalqCmd?cmd=--help
+GET http://localhost:5000/CalqCmd?cmd=add --help
 ```
 
 **Using headers (POST - supports input streams):**
 ```http
 POST http://localhost:5000/CalqCmd
-Script: --help
+cmd: --help
 
 POST http://localhost:5000/CalqCmd
-Script: add --help
+cmd: add --help
 ```
 
 **Example with C# client:**
