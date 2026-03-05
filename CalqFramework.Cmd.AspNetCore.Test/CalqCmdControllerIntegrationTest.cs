@@ -105,6 +105,33 @@ public class CalqCmdControllerIntegrationTest {
         Assert.Equal("Processed: TEST INPUT DATA", result);
     }
 
+    [Fact]
+    public async Task ExecuteScript_WithHelpCommand_ReturnsHelpOutput() {
+        HttpTool httpTool = await CreateHttpToolAsync();
+        LocalTerminal.Shell = httpTool;
+
+        string result = CMD("--help");
+
+        Assert.NotEmpty(result);
+        Assert.Contains("test-method", result);
+        Assert.Contains("process-data", result);
+        Assert.Contains("add", result);
+    }
+
+    [Fact]
+    public async Task ExecuteScript_WithSubcommandHelp_ReturnsSubcommandHelpOutput() {
+        HttpTool httpTool = await CreateHttpToolAsync();
+        LocalTerminal.Shell = httpTool;
+
+        string result = CMD("add --help");
+
+        Assert.NotEmpty(result);
+        Assert.Contains("Parameters", result);
+        Assert.Contains("-a", result);
+        Assert.Contains("-b", result);
+        Assert.Contains("int32", result);
+    }
+
     /// <summary>
     ///     Test CLI target class with various method signatures for testing different CLI scenarios
     /// </summary>
