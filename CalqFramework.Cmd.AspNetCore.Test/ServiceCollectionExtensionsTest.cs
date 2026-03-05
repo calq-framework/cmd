@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 namespace CalqFramework.Cmd.AspNetCore.Test;
 
 public class ServiceCollectionExtensionsTest {
-    private class TestCliTarget {
+    private class TestCommandTarget {
         public static string TestMethod() => "test";
     }
 
@@ -16,7 +16,7 @@ public class ServiceCollectionExtensionsTest {
     [Fact]
     public void AddCalqCmdController_RegistersLocalToolFactory() {
         ServiceCollection services = new();
-        services.AddCalqCmdController(new TestCliTarget());
+        services.AddCalqCmdController(new TestCommandTarget());
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         ILocalToolFactory factory = serviceProvider.GetRequiredService<ILocalToolFactory>();
@@ -28,7 +28,7 @@ public class ServiceCollectionExtensionsTest {
     [Fact]
     public void AddCalqCmdController_WithFactory_RegistersLocalToolFactory() {
         ServiceCollection services = new();
-        services.AddCalqCmdController(provider => new TestCliTarget());
+        services.AddCalqCmdController(provider => new TestCommandTarget());
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         ILocalToolFactory factory = serviceProvider.GetRequiredService<ILocalToolFactory>();
@@ -40,7 +40,7 @@ public class ServiceCollectionExtensionsTest {
     [Fact]
     public void AddCalqCmdController_RegistersHttpClientFactory() {
         ServiceCollection services = new();
-        services.AddCalqCmdController(new TestCliTarget());
+        services.AddCalqCmdController(new TestCommandTarget());
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         ILocalToolFactory factory = serviceProvider.GetRequiredService<ILocalToolFactory>();
@@ -57,7 +57,7 @@ public class ServiceCollectionExtensionsTest {
     [Fact]
     public void AddCalqCmdController_WithCustomHttpClientOptions_ConfiguresCorrectly() {
         ServiceCollection services = new();
-        services.AddCalqCmdController(new TestCliTarget(), options => {
+        services.AddCalqCmdController(new TestCommandTarget(), options => {
             options.HttpClientTimeout = TimeSpan.FromMinutes(2);
             options.HttpClientName = "CustomHttpClient";
         });
@@ -77,7 +77,7 @@ public class ServiceCollectionExtensionsTest {
     [Fact]
     public void AddCalqCmdController_WithRoutePrefix_ConfiguresOptions() {
         ServiceCollection services = new();
-        services.AddCalqCmdController(new TestCliTarget(), options => { options.RoutePrefix = "api/commands"; });
+        services.AddCalqCmdController(new TestCommandTarget(), options => { options.RoutePrefix = "api/commands"; });
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         IOptions<CalqCmdControllerOptions> options =
@@ -90,7 +90,7 @@ public class ServiceCollectionExtensionsTest {
     [Fact]
     public void AddCalqCmdController_WithCacheOptions_ConfiguresCorrectly() {
         ServiceCollection services = new();
-        services.AddCalqCmdController(new TestCliTarget(), null, cacheOptions => {
+        services.AddCalqCmdController(new TestCommandTarget(), null, cacheOptions => {
             cacheOptions.ErrorCacheExpiration = TimeSpan.FromMinutes(30);
             cacheOptions.ErrorCacheKeyPrefix = "MyApp.Errors:";
         });
@@ -107,7 +107,7 @@ public class ServiceCollectionExtensionsTest {
     [Fact]
     public void AddCalqCmdController_LocalToolFactory_DoesNotOwnHttpClients() {
         ServiceCollection services = new();
-        services.AddCalqCmdController(new TestCliTarget());
+        services.AddCalqCmdController(new TestCommandTarget());
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         using LocalHttpToolFactory factory =

@@ -364,22 +364,22 @@ using static CalqFramework.Cmd.Terminal;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Your CLI target object
-var myCliTarget = new MyCliCommands();
+// Your command target object
+var myCommandTarget = new MyCliCommands();
 
 // Register CalqCmdController with automatic service discovery
 // Uses CalqCommandExecutor (CalqFramework.Cli) by default
-builder.Services.AddCalqCmdController(myCliTarget);
+builder.Services.AddCalqCmdController(myCommandTarget);
 
 // Optional: Configure controller options
-builder.Services.AddCalqCmdController(myCliTarget, options =>
+builder.Services.AddCalqCmdController(myCommandTarget, options =>
 {
     options.RoutePrefix = "api/cmd";           // Custom route prefix
     options.HttpClientTimeout = TimeSpan.FromMinutes(5); // HTTP timeout
 });
 
 // Optional: Configure distributed error caching
-builder.Services.AddCalqCmdController(myCliTarget, null, cacheOptions =>
+builder.Services.AddCalqCmdController(myCommandTarget, null, cacheOptions =>
 {
     cacheOptions.ErrorCacheExpiration = TimeSpan.FromHours(2);
     cacheOptions.ErrorCacheKeyPrefix = "MyApp.Errors:";
@@ -412,7 +412,7 @@ public class JsonRpcCommandExecutor : ICalqCommandExecutor
 }
 
 // Register with custom executor
-builder.Services.AddCalqCmdController(myCliTarget, options =>
+builder.Services.AddCalqCmdController(myCommandTarget, options =>
 {
     options.CommandExecutor = new JsonRpcCommandExecutor();
 });
@@ -420,8 +420,8 @@ builder.Services.AddCalqCmdController(myCliTarget, options =>
 
 Use cases: custom argument parsing, integration with other CLI frameworks, message-based routing (JSON-RPC, gRPC), or domain-specific command languages.
 
-### Built-in Help for CLI Target
-When you register a CLI target with CalqCmdController, help documentation is automatically available via the `--help` flag. This works exactly like a command-line tool, but over HTTP.
+### Built-in Help for Command Target
+When you register a command target with CalqCmdController, help documentation is automatically available via the `--help` flag. This works exactly like a command-line tool, but over HTTP.
 
 **Using query strings (GET - browser-friendly):**
 ```http
@@ -440,7 +440,7 @@ cmd: add --help
 
 **Example with C# client:**
 ```csharp
-// CLI target class
+// Command target class
 public class MyCliCommands
 {
     public string ProcessData(string input) => input.ToUpper();
@@ -466,7 +466,7 @@ string commandHelp = CMD("add --help");
 //   -b  (Requires: int32)
 ```
 
-The help output is automatically generated from your CLI target's methods and parameters. Add XML documentation comments to your methods for richer help descriptions (requires `<GenerateDocumentationFile>true</GenerateDocumentationFile>` in your project file).
+The help output is automatically generated from your command target's methods and parameters. Add XML documentation comments to your methods for richer help descriptions (requires `<GenerateDocumentationFile>true</GenerateDocumentationFile>` in your project file).
 
 ### Distributed Command Execution
 The CalqCmdController automatically handles:
@@ -613,14 +613,14 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
-// Register CLI target for CalqCmdController
-var cliCommands = new DataProcessingCommands();
-builder.Services.AddCalqCmdController(cliCommands);
+// Register command target for CalqCmdController
+var commandTarget = new DataProcessingCommands();
+builder.Services.AddCalqCmdController(commandTarget);
 
 var app = builder.Build();
 app.MapControllers();
 
-// CLI target class - methods become executable commands via CalqCmdController
+// Command target class - methods become executable commands via CalqCmdController
 public class DataProcessingCommands
 {
     // Process data in parallel chunks - reads from LocalTerminal.Shell.In
