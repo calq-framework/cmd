@@ -132,6 +132,62 @@ public class CalqCmdControllerIntegrationTest {
         Assert.Contains("int32", result);
     }
 
+    [Fact]
+    public async Task ExecuteScript_WithQueryStringScript_ReturnsResult() {
+        IHostBuilder hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webHost => {
+                webHost.UseTestServer();
+                webHost.ConfigureServices(services => {
+                    services.AddControllers()
+                        .AddApplicationPart(typeof(CalqCmdController).Assembly);
+                    services.AddCalqCmdController(new TestCliTarget());
+                });
+                webHost.Configure(app => {
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+                });
+            });
+
+        IHost host = await hostBuilder.StartAsync();
+        TestServer server = host.GetTestServer();
+        HttpClient client = server.CreateClient();
+
+        // Test GET with query string
+        HttpResponseMessage response = await client.GetAsync("/CalqCmd?script=test-method");
+        string result = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal("Test CLI output", result);
+    }
+
+    [Fact]
+    public async Task ExecuteScript_WithQueryStringHelp_ReturnsHelpOutput() {
+        IHostBuilder hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webHost => {
+                webHost.UseTestServer();
+                webHost.ConfigureServices(services => {
+                    services.AddControllers()
+                        .AddApplicationPart(typeof(CalqCmdController).Assembly);
+                    services.AddCalqCmdController(new TestCliTarget());
+                });
+                webHost.Configure(app => {
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+                });
+            });
+
+        IHost host = await hostBuilder.StartAsync();
+        TestServer server = host.GetTestServer();
+        HttpClient client = server.CreateClient();
+
+        // Test GET with --help query string
+        HttpResponseMessage response = await client.GetAsync("/CalqCmd?script=--help");
+        string result = await response.Content.ReadAsStringAsync();
+
+        Assert.NotEmpty(result);
+        Assert.Contains("test-method", result);
+        Assert.Contains("process-data", result);
+    }
+
     /// <summary>
     ///     Test CLI target class with various method signatures for testing different CLI scenarios
     /// </summary>
