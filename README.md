@@ -578,6 +578,9 @@ public class CustomController : ControllerBase
 
 ### Calq CMD
 ```bash
+git clone --branch latest https://github.com/calq-framework/cmd docs/cmd
+dotnet new console -n QuickStart
+cd QuickStart
 dotnet add package CalqFramework.Cmd
 ```
 
@@ -596,6 +599,9 @@ class QuickStart {
 
 ### Calq CMD ASP.NET Core
 ```bash
+git clone --branch latest https://github.com/calq-framework/cmd docs/cmd
+dotnet new webapi -n QuickStartWeb
+cd QuickStartWeb
 dotnet add package CalqFramework.Cmd.AspNetCore
 ```
 
