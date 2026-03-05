@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿﻿using System.Text;
 using CalqFramework.Cmd.Shells;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -21,7 +21,7 @@ public class CalqCmdControllerIntegrationTest {
                 webHost.ConfigureServices(services => {
                     services.AddControllers()
                         .AddApplicationPart(typeof(CalqCmdController).Assembly);
-                    services.AddCalqCmdController(new TestCliTarget());
+                    services.AddCalqCmdController(new TestCommandTarget());
                 });
                 webHost.Configure(app => {
                     app.UseRouting();
@@ -140,7 +140,7 @@ public class CalqCmdControllerIntegrationTest {
                 webHost.ConfigureServices(services => {
                     services.AddControllers()
                         .AddApplicationPart(typeof(CalqCmdController).Assembly);
-                    services.AddCalqCmdController(new TestCliTarget());
+                    services.AddCalqCmdController(new TestCommandTarget());
                 });
                 webHost.Configure(app => {
                     app.UseRouting();
@@ -167,7 +167,7 @@ public class CalqCmdControllerIntegrationTest {
                 webHost.ConfigureServices(services => {
                     services.AddControllers()
                         .AddApplicationPart(typeof(CalqCmdController).Assembly);
-                    services.AddCalqCmdController(new TestCliTarget());
+                    services.AddCalqCmdController(new TestCommandTarget());
                 });
                 webHost.Configure(app => {
                     app.UseRouting();
@@ -189,9 +189,9 @@ public class CalqCmdControllerIntegrationTest {
     }
 
     /// <summary>
-    ///     Test CLI target class with various method signatures for testing different CLI scenarios
+    ///     Test command target class with various method signatures for testing different CLI scenarios
     /// </summary>
-    private class TestCliTarget {
+    private class TestCommandTarget {
         public static string TestMethod() => "Test CLI output";
 
         public static string ProcessData(string data) => $"Processed: {data.ToUpper()}";
