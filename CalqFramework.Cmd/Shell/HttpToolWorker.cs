@@ -86,7 +86,7 @@ public class HttpToolWorker(
         HttpRequestMessage request = new() {
             Version = new Version(2, 0)
         };
-        request.Headers.Add("Script", shellScript.Script);
+        request.Headers.Add("cmd", shellScript.Script);
 
         request.Method = HttpMethod.Post;
         if (InputStream != null) {

@@ -204,7 +204,7 @@ class H2Protocol(asyncio.Protocol):
         )
         self.conn.send_headers(stream_id, response_headers)
 
-        value = fire.Fire(test_tool, command=headers["script"])
+        value = fire.Fire(test_tool, command=headers["cmd"])
         if isinstance(value, types.AsyncGeneratorType):
             self.stream_task[stream_id] = asyncio.ensure_future(self.send_stream_data(value, stream_id))
         elif isinstance(value, str):

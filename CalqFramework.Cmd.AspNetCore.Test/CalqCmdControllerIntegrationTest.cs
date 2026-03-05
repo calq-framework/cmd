@@ -153,7 +153,7 @@ public class CalqCmdControllerIntegrationTest {
         HttpClient client = server.CreateClient();
 
         // Test GET with query string
-        HttpResponseMessage response = await client.GetAsync("/CalqCmd?script=test-method");
+        HttpResponseMessage response = await client.GetAsync("/CalqCmd?cmd=test-method");
         string result = await response.Content.ReadAsStringAsync();
 
         Assert.Equal("Test CLI output", result);
@@ -180,7 +180,7 @@ public class CalqCmdControllerIntegrationTest {
         HttpClient client = server.CreateClient();
 
         // Test GET with --help query string
-        HttpResponseMessage response = await client.GetAsync("/CalqCmd?script=--help");
+        HttpResponseMessage response = await client.GetAsync("/CalqCmd?cmd=--help");
         string result = await response.Content.ReadAsStringAsync();
 
         Assert.NotEmpty(result);
