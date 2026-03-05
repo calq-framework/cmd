@@ -40,18 +40,22 @@ public class CalqCmdController : ControllerBase {
     }
 
     [HttpPost]
+    [HttpGet]
     [Route("")]
-    public async Task<Stream> ExecuteScript() {
+    public async Task<Stream> ExecuteScript([FromQuery] string? script = null) {
         try {
-            if (!Request.Headers.TryGetValue("Script", out StringValues scriptValues)) {
-                return CreateErrorStream("Missing 'Script' header");
+            // Try query string first (GET), then header (POST)
+            string? scriptValue = script;
+            if (string.IsNullOrEmpty(scriptValue)) {
+                if (!Request.Headers.TryGetValue("Script", out StringValues scriptValues)) {
+                    return CreateErrorStream("Missing 'script' query parameter or 'Script' header");
+                }
+                scriptValue = scriptValues.FirstOrDefault() ?? "";
             }
-
-            string script = scriptValues.FirstOrDefault() ?? "";
 
             LocalTerminal.Shell = new CommandLine { In = Request.Body };
 
-            string[] args = script.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            string[] args = scriptValue.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             
             StringWriter outputWriter = new();
             object? result = _calqCommandExecutor.Execute(_commandTarget, args, outputWriter);

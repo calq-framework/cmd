@@ -421,8 +421,24 @@ builder.Services.AddCalqCmdController(myCliTarget, options =>
 Use cases: custom argument parsing, integration with other CLI frameworks, message-based routing (JSON-RPC, gRPC), or domain-specific command languages.
 
 ### Built-in Help for CLI Target
-When you register a CLI target with CalqCmdController, help documentation is automatically available via the `--help` flag. This works exactly like a command-line tool, but over HTTP:
+When you register a CLI target with CalqCmdController, help documentation is automatically available via the `--help` flag. This works exactly like a command-line tool, but over HTTP.
 
+**Using query strings (GET - browser-friendly):**
+```http
+GET http://localhost:5000/CalqCmd?script=--help
+GET http://localhost:5000/CalqCmd?script=add --help
+```
+
+**Using headers (POST - supports input streams):**
+```http
+POST http://localhost:5000/CalqCmd
+Script: --help
+
+POST http://localhost:5000/CalqCmd
+Script: add --help
+```
+
+**Example with C# client:**
 ```csharp
 // CLI target class
 public class MyCliCommands
