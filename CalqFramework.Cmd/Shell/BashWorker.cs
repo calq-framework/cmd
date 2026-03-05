@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
-using CalqFramework.Cmd.RegexGenerator;
 using CalqFramework.Cmd.Shells;
 
 namespace CalqFramework.Cmd.Shell;
@@ -30,7 +29,7 @@ public class BashWorker(ShellScript shellScript, Stream? inputStream, bool dispo
             trappedScript.Append($"trap '>&2 echo \"\nExited with code $? at line {i}.\"' exit\n");
             // TODO append if exit not 0 then exit; also remove set -e
             trappedScript.Append($"{cmd}\n");
-            i += Newline.Unix().Matches(cmd).Count + 1;
+            i += cmd.Count(c => c == '\n') + 1;
         }
 
         trappedScript.Append("trap '' exit\n");
