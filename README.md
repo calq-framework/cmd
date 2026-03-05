@@ -655,7 +655,7 @@ public class DataProcessingCommands
         return string.Join('\n', results);
     }
     
-    // Process individual chunk - demonstrates single command execution
+    // Process individual chunk - single command execution
     public async Task<string> ProcessChunk()
     {
         if (LocalTerminal.Shell.In == null)
@@ -667,10 +667,10 @@ public class DataProcessingCommands
         // Simulate processing work
         await Task.Delay(100);
         
-        return $"Processed: {data.Trim().ToUpper()} [Worker: {Environment.ProcessId}]";
+        return $"Processed: {data.Trim().ToUpper()} [Process: {Environment.ProcessId}, Thread: {Environment.CurrentManagedThreadId}]";
     }
     
-    // Stream processing - demonstrates streaming output
+    // Stream processing - streaming output
     public async Task<Stream> StreamResults()
     {
         if (LocalTerminal.Shell.In == null)
