@@ -47,7 +47,7 @@ public class CalqCmdControllerIntegrationTest {
         HttpTool httpTool = await CreateHttpToolAsync();
         LocalTerminal.Shell = httpTool;
 
-        string result = CMD("test-method");
+        string result = CMD("TestMethod");
 
         Assert.Equal("Test CLI output", result);
     }
@@ -57,7 +57,7 @@ public class CalqCmdControllerIntegrationTest {
         HttpTool httpTool = await CreateHttpToolAsync();
         LocalTerminal.Shell = httpTool;
 
-        string result = CMD("process-data --data test");
+        string result = CMD("ProcessData --data test");
 
         Assert.Equal("Processed: TEST", result);
     }
@@ -67,7 +67,7 @@ public class CalqCmdControllerIntegrationTest {
         HttpTool httpTool = await CreateHttpToolAsync();
         LocalTerminal.Shell = httpTool;
 
-        string result = CMD("add --a 5 --b 3");
+        string result = CMD("Add --a 5 --b 3");
 
         Assert.Equal("8", result);
     }
@@ -77,7 +77,7 @@ public class CalqCmdControllerIntegrationTest {
         HttpTool httpTool = await CreateHttpToolAsync();
         LocalTerminal.Shell = httpTool;
 
-        string result = CMD("get-test-stream");
+        string result = CMD("GetTestStream");
 
         Assert.Equal("This is a test stream content", result);
     }
@@ -87,7 +87,7 @@ public class CalqCmdControllerIntegrationTest {
         HttpTool httpTool = await CreateHttpToolAsync();
         LocalTerminal.Shell = httpTool;
 
-        HttpResetTestException exception = Assert.Throws<HttpResetTestException>(() => CMD("nonexistent-command"));
+        HttpResetTestException exception = Assert.Throws<HttpResetTestException>(() => CMD("NonexistentCommand"));
 
         Assert.NotNull(exception);
         Assert.Contains("reset the request with error code", exception.Message);
@@ -100,7 +100,7 @@ public class CalqCmdControllerIntegrationTest {
         string inputData = "test input data";
         MemoryStream inputStream = new(Encoding.UTF8.GetBytes(inputData));
 
-        string result = CMD("process-data-from-stream", inputStream);
+        string result = CMD("ProcessDataFromStream", inputStream);
 
         Assert.Equal("Processed: TEST INPUT DATA", result);
     }
@@ -113,9 +113,9 @@ public class CalqCmdControllerIntegrationTest {
         string result = CMD("--help");
 
         Assert.NotEmpty(result);
-        Assert.Contains("test-method", result);
-        Assert.Contains("process-data", result);
-        Assert.Contains("add", result);
+        Assert.Contains("TestMethod", result);
+        Assert.Contains("ProcessData", result);
+        Assert.Contains("Add", result);
     }
 
     [Fact]
@@ -123,7 +123,7 @@ public class CalqCmdControllerIntegrationTest {
         HttpTool httpTool = await CreateHttpToolAsync();
         LocalTerminal.Shell = httpTool;
 
-        string result = CMD("add --help");
+        string result = CMD("Add --help");
 
         Assert.NotEmpty(result);
         Assert.Contains("Parameters", result);
@@ -153,7 +153,7 @@ public class CalqCmdControllerIntegrationTest {
         HttpClient client = server.CreateClient();
 
         // Test GET with query string
-        HttpResponseMessage response = await client.GetAsync("/CalqCmd?cmd=test-method");
+        HttpResponseMessage response = await client.GetAsync("/CalqCmd?cmd=TestMethod");
         string result = await response.Content.ReadAsStringAsync();
 
         Assert.Equal("Test CLI output", result);
@@ -184,8 +184,8 @@ public class CalqCmdControllerIntegrationTest {
         string result = await response.Content.ReadAsStringAsync();
 
         Assert.NotEmpty(result);
-        Assert.Contains("test-method", result);
-        Assert.Contains("process-data", result);
+        Assert.Contains("TestMethod", result);
+        Assert.Contains("ProcessData", result);
     }
 
     /// <summary>

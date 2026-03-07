@@ -390,8 +390,28 @@ app.MapControllers();
 app.Run();
 ```
 
+### Command Naming Convention
+By default, `CalqCommandExecutor` preserves method and parameter names as-is (PascalCase, camelCase, snake_case, etc.) without transformation. This differs from CalqFramework.Cli's default behavior which converts names to kebab-case.
+
+```csharp
+// Command target class
+public class MyCommands
+{
+    public string ProcessData(string input) => input.ToUpper();
+    public string process_snake_case(string data) => data.ToLower();
+}
+
+// Client usage with nameof()
+LocalTerminal.Shell = new HttpTool(httpClient);
+string methodName = nameof(MyCommands.ProcessData);
+string result = CMD($"{methodName} --input test"); // Executes "ProcessData --input test"
+
+// Snake case methods work as-is
+result = CMD("process_snake_case --data TEST"); // Executes "process_snake_case --data TEST"
+```
+
 ### Custom Command Executors
-By default, CalqCmdController uses `CalqCommandExecutor` which leverages CalqFramework.Cli for command-line style parsing. You can provide a custom `ICalqCommandExecutor` implementation for different command execution strategies:
+By default, CalqCmdController uses `CalqCommandExecutor` which leverages CalqFramework.Cli for command-line style parsing with as-is naming. You can provide a custom `ICalqCommandExecutor` implementation for different command execution strategies:
 
 ```csharp
 // Custom executor example
@@ -426,7 +446,7 @@ When you register a command target with CalqCmdController, help documentation is
 **Using query strings (GET - browser-friendly):**
 ```http
 GET http://localhost:5000/CalqCmd?cmd=--help
-GET http://localhost:5000/CalqCmd?cmd=add --help
+GET http://localhost:5000/CalqCmd?cmd=Add --help
 ```
 
 **Using headers (POST - supports input streams):**
@@ -435,7 +455,7 @@ POST http://localhost:5000/CalqCmd
 cmd: --help
 
 POST http://localhost:5000/CalqCmd
-cmd: add --help
+cmd: Add --help
 ```
 
 **Example with C# client:**
@@ -455,11 +475,12 @@ LocalTerminal.Shell = new HttpTool(httpClient);
 string help = CMD("--help");
 // Returns:
 // Subcommands
-//   process-data
-//   add
+//   ProcessData
+//   Add
 
-// Get help for a specific command
-string commandHelp = CMD("add --help");
+// Get help for a specific command using nameof()
+string methodName = nameof(MyCliCommands.Add);
+string commandHelp = CMD($"{methodName} --help");
 // Returns:
 // Parameters
 //   -a  (Requires: int32)
@@ -647,8 +668,8 @@ public class DataProcessingCommands
             var chunkData = string.Join('\n', chunk);
             var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(chunkData));
             
-            // Each chunk processed via distributed LocalTool - calls process-chunk command
-            return await CMDAsync("process-chunk", inputStream);
+            // Each chunk processed via distributed LocalTool - calls ProcessChunk command
+            return await CMDAsync("ProcessChunk", inputStream);
         });
         
         var results = await Task.WhenAll(tasks);
@@ -695,12 +716,12 @@ public class DataController : ControllerBase
     public async Task<string> RunParallel([FromBody] Stream input)
     {
         LocalTerminal.Shell = new LocalTool() { In = input };
-        return await CMDAsync("process-parallel");
+        return await CMDAsync(nameof(DataProcessingCommands.ProcessParallel));
     }
     
     [HttpPost("get-stream-results")]
     public async Task<Stream> GetStreamResults([FromBody] Stream input) =>
-        await CMDStreamAsync("stream-results", input);
+        await CMDStreamAsync(nameof(DataProcessingCommands.StreamResults), input);
 }
 ```  
 
