@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>CalqFramework.Cmd.AspNetCore</RootNamespace>
     <PackageId>CalqFramework.Cmd.AspNetCore</PackageId>
-    <Version>0.0.0</Version>
+    <Version>0.35.0</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CalqFramework.Cli" Version="0.62.0" />
