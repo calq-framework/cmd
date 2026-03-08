@@ -12,21 +12,30 @@ namespace CalqFramework.Cmd.AspNetCore;
 ///     Uses AsIsClassMemberStringifier to preserve original method and parameter names without transformation.
 /// </summary>
 public class CalqCommandExecutor : ICalqCommandExecutor {
+    private readonly object _commandTarget;
+
+    /// <summary>
+    ///     Initializes a new instance of CalqCommandExecutor with the specified command target.
+    /// </summary>
+    /// <param name="commandTarget">The target object containing the methods to execute.</param>
+    public CalqCommandExecutor(object commandTarget) {
+        _commandTarget = commandTarget;
+    }
+
     /// <summary>
     ///     Executes a command using CLI-style argument parsing via CalqFramework.Cli with output capture.
     /// </summary>
-    /// <param name="target">The target object containing the methods to execute.</param>
     /// <param name="args">Command-line arguments (e.g., ["MethodName", "--param", "value"]).</param>
     /// <param name="output">Optional TextWriter to capture output. If null, uses Console.Out.</param>
     /// <returns>The result of the command execution.</returns>
-    public object? Execute(object target, string[] args, TextWriter output) {
+    public object? Execute(string[] args, TextWriter output) {
         CommandLineInterface cli = new() {
             Out = output,
             CliComponentStoreFactory = new CliComponentStoreFactory {
                 ClassMemberStringifier = new AsIsClassMemberStringifier()
             }
         };
-        return cli.Execute(target, args);
+        return cli.Execute(_commandTarget, args);
     }
 
     /// <summary>

@@ -45,7 +45,7 @@ public static class ServiceCollectionExtensions {
     ///     Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
-    /// <param name="commandTarget">The target object to pass to the command executor.</param>
+    /// <param name="commandTarget">The target object containing methods to execute. This will be injected into the command executor.</param>
     /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <returns>The service collection for method chaining.</returns>
     public static IServiceCollection AddCalqCmdController(this IServiceCollection services, object commandTarget,
@@ -59,7 +59,7 @@ public static class ServiceCollectionExtensions {
     ///     Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
-    /// <param name="commandTarget">The target object to pass to the command executor.</param>
+    /// <param name="commandTarget">The target object containing methods to execute. This will be injected into the command executor.</param>
     /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <param name="configureCacheOptions">Optional action to configure cache options.</param>
     /// <returns>The service collection for method chaining.</returns>
@@ -75,7 +75,7 @@ public static class ServiceCollectionExtensions {
     ///     Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
-    /// <param name="commandTargetFactory">Factory function to create the command target object.</param>
+    /// <param name="commandTargetFactory">Factory function to create the command target object containing methods to execute. This will be injected into the command executor.</param>
     /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <returns>The service collection for method chaining.</returns>
     public static IServiceCollection AddCalqCmdController(this IServiceCollection services,
@@ -90,7 +90,7 @@ public static class ServiceCollectionExtensions {
     ///     Also registers LocalHttpToolFactory for creating HTTP tools that connect to the controller.
     /// </summary>
     /// <param name="services">The service collection to add services to.</param>
-    /// <param name="commandTargetFactory">Factory function to create the command target object.</param>
+    /// <param name="commandTargetFactory">Factory function to create the command target object containing methods to execute. This will be injected into the command executor.</param>
     /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <param name="configureCacheOptions">Optional action to configure cache options.</param>
     /// <returns>The service collection for method chaining.</returns>
@@ -105,8 +105,6 @@ public static class ServiceCollectionExtensions {
     private static IServiceCollection AddCalqCmdControllerInternal(IServiceCollection services,
         Func<IServiceProvider, object> commandTargetFactory, Action<CalqCmdControllerOptions>? configure,
         Action<CalqCmdCacheOptions>? configureCacheOptions) {
-        services.AddSingleton(commandTargetFactory);
-
         // Configure controller options
         CalqCmdControllerOptions options = new();
         configure?.Invoke(options);
@@ -122,7 +120,10 @@ public static class ServiceCollectionExtensions {
         if (options.CommandExecutor != null) {
             services.AddSingleton(options.CommandExecutor);
         } else {
-            services.AddSingleton<ICalqCommandExecutor, CalqCommandExecutor>();
+            services.AddSingleton<ICalqCommandExecutor>(provider => {
+                object target = commandTargetFactory(provider);
+                return new CalqCommandExecutor(target);
+            });
         }
 
         // Register cache options
@@ -146,13 +147,11 @@ public static class ServiceCollectionExtensions {
         }
 
         services.AddTransient<CalqCmdController>(provider => {
-            Func<IServiceProvider, object> factory = provider.GetRequiredService<Func<IServiceProvider, object>>();
-            object target = factory(provider);
             ICalqCommandExecutor calqCommandExecutor = provider.GetRequiredService<ICalqCommandExecutor>();
             ILocalToolFactory localToolFactory = provider.GetRequiredService<ILocalToolFactory>();
             IDistributedCache distributedCache = provider.GetRequiredService<IDistributedCache>();
             IOptions<CalqCmdCacheOptions> cacheOptions = provider.GetRequiredService<IOptions<CalqCmdCacheOptions>>();
-            return new CalqCmdController(target, calqCommandExecutor, localToolFactory, distributedCache, cacheOptions);
+            return new CalqCmdController(calqCommandExecutor, localToolFactory, distributedCache, cacheOptions);
         });
 
         return services;
