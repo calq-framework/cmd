@@ -2,6 +2,7 @@
 using System.Text.Json;
 using CalqFramework.Cli;
 using CalqFramework.Cmd.Shells;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
@@ -53,11 +54,13 @@ public class CalqCmdController : ControllerBase {
                 cmdValue = cmdValues.FirstOrDefault() ?? "";
             }
 
+            Stream responseStream = Response.BodyWriter.AsStream();
             LocalTerminal.Shell = new CommandLine { In = Request.Body };
+            LocalTerminal.Out = responseStream; // Void methods return ResultVoid and might write directly to the response body via RUN or LocalTerminal.Out
 
             string[] args = cmdValue.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            StreamWriter outputWriter = new(Response.BodyWriter.AsStream());
+            StreamWriter outputWriter = new(responseStream);
             object? result = _calqCommandExecutor.Execute(_commandTarget, args, outputWriter);
 
             if (result is Task task) {
@@ -67,7 +70,6 @@ public class CalqCmdController : ControllerBase {
                     : ResultVoid.Value;
             }
 
-            // Void methods return ResultVoid and might write directly to the response body
             // For other result types, don't flush to avoid committing headers prematurely
             if (result is ResultVoid) {
                 await outputWriter.FlushAsync();
