@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿﻿using System.Text;
 using CalqFramework.Cmd.Shells;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -188,6 +188,28 @@ public class CalqCmdControllerIntegrationTest {
         Assert.Contains("ProcessData", result);
     }
 
+    [Fact]
+    public async Task ExecuteScript_WithVoidMethodUsingRUN_WritesToResponseBody() {
+        HttpTool httpTool = await CreateHttpToolAsync();
+        LocalTerminal.Shell = httpTool;
+
+        string result = CMD("VoidMethodWithRUN");
+
+        Assert.NotEmpty(result);
+        Assert.Matches(@"^\d+\.\d+\.\d+", result);
+    }
+
+    [Fact]
+    public async Task ExecuteScript_WithVoidMethodWritingToLocalTerminalOut_WritesToResponseBody() {
+        HttpTool httpTool = await CreateHttpToolAsync();
+        LocalTerminal.Shell = httpTool;
+
+        string result = CMD("VoidMethodWithDirectOutput");
+
+        Assert.Equal("Direct output", result);
+    }
+
+
     /// <summary>
     ///     Test command target class with various method signatures for testing different CLI scenarios
     /// </summary>
@@ -212,6 +234,16 @@ public class CalqCmdControllerIntegrationTest {
             string content = "This is a test stream content";
             byte[] bytes = Encoding.UTF8.GetBytes(content);
             return new MemoryStream(bytes);
+        }
+
+        public static void VoidMethodWithRUN() {
+            RUN("dotnet --version");
+        }
+
+        public static void VoidMethodWithDirectOutput() {
+            StreamWriter sw = new(LocalTerminal.Out);
+            sw.Write("Direct output");
+            sw.Flush();
         }
     }
 }
