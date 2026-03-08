@@ -13,7 +13,7 @@ public class CalqCommandExecutorTest {
         string[] args = ["ProcessData", "--input", "test"];
 
         // Act
-        var result = _executor.Execute(target, args);
+        var result = _executor.Execute(target, args, TextWriter.Null);
 
         // Assert
         Assert.Equal("Processed: test", result);
@@ -26,7 +26,7 @@ public class CalqCommandExecutorTest {
         string[] args = ["process-data", "--input", "test"]; // kebab-case should not work
 
         // Act & Assert
-        Assert.Throws<Cli.CliException>(() => _executor.Execute(target, args));
+        Assert.Throws<Cli.CliException>(() => _executor.Execute(target, args, TextWriter.Null));
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public class CalqCommandExecutorTest {
         string[] args = [methodName, "--input", "nameof"];
 
         // Act
-        var result = _executor.Execute(target, args);
+        var result = _executor.Execute(target, args, TextWriter.Null);
 
         // Assert
         Assert.Equal("Processed: nameof", result);
@@ -50,7 +50,7 @@ public class CalqCommandExecutorTest {
         string[] args = ["Add", "--a", "5", "--b", "3"];
 
         // Act
-        var result = _executor.Execute(target, args);
+        var result = _executor.Execute(target, args, TextWriter.Null);
 
         // Assert
         Assert.Equal(8, result);
