@@ -42,13 +42,13 @@ public class CalqCmdController : ControllerBase {
     [HttpPost]
     [HttpGet]
     [Route("")]
-    public async Task<Stream> ExecuteScript([FromQuery] string? cmd = null) {
+    public async Task<IActionResult> ExecuteScript([FromQuery] string? cmd = null) {
         try {
             // Try query string first (GET), then header (POST)
             string? cmdValue = cmd;
             if (string.IsNullOrEmpty(cmdValue)) {
                 if (!Request.Headers.TryGetValue("cmd", out StringValues cmdValues)) {
-                    return CreateErrorStream("Missing 'cmd' query parameter or 'cmd' header");
+                    return BadRequest("Missing 'cmd' query parameter or 'cmd' header");
                 }
                 cmdValue = cmdValues.FirstOrDefault() ?? "";
             }
@@ -57,32 +57,31 @@ public class CalqCmdController : ControllerBase {
 
             string[] args = cmdValue.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            StringWriter outputWriter = new();
+            StreamWriter outputWriter = new(Response.BodyWriter.AsStream());
             object? result = _calqCommandExecutor.Execute(_commandTarget, args, outputWriter);
 
             if (result is Task task) {
                 await task;
+                result = task.GetType().IsGenericType 
+                    ? ((dynamic)task).Result 
+                    : ResultVoid.Value;
+            }
 
-                result = task switch {
-                    Task<string> stringTask => stringTask.Result,
-                    Task<Stream> streamTask => streamTask.Result,
-                    Task<int> intTask => intTask.Result,
-                    Task<object> objectTask => objectTask.Result,
-                    _ when task.GetType().IsGenericType =>
-                        task.GetType().GetProperty("Result")?.GetValue(task),
-                    _ => ResultVoid.Value
-                };
+            // Void methods return ResultVoid and might write directly to the response body
+            // For other result types, don't flush to avoid committing headers prematurely
+            if (result is ResultVoid) {
+                await outputWriter.FlushAsync();
+                return new EmptyResult();
             }
 
             return result switch {
-                Stream stream => stream,
-                ResultVoid => CreateStringStream(outputWriter.ToString()),
-                string str => CreateStringStream(str),
-                null => CreateEmptyStream(),
-                _ => CreateObjectStream(result)
+                Stream stream => File(stream, "application/octet-stream"),
+                string str => Content(str, "text/plain"),
+                null => NoContent(),
+                _ => Ok(result)
             };
         } catch (Exception ex) {
-            return await HandleExceptionStreamAsync(ex);
+            return await HandleExceptionAsync(ex);
         }
     }
 
@@ -105,7 +104,7 @@ public class CalqCmdController : ControllerBase {
         return NotFound($"Error code '{errorCode}' not found");
     }
 
-    private async Task<Stream> HandleExceptionStreamAsync(Exception ex) {
+    private async Task<IActionResult> HandleExceptionAsync(Exception ex) {
         string stackTrace = ex.ToString();
 
         int hashCode = stackTrace.GetHashCode();
@@ -128,30 +127,11 @@ public class CalqCmdController : ControllerBase {
             await Task.Delay(1000);
 
             resetFeature.Reset((int)errorCode);
-            return Stream.Null;
+            return new EmptyResult();
         }
 
-        Response.StatusCode = 500;
-        string errorResponse = JsonSerializer.Serialize(new { error_code = errorCode, message = ex.Message });
-        return CreateStringStream(errorResponse);
+        return StatusCode(500, new { error_code = errorCode, message = ex.Message });
     }
 
     private string GetErrorCacheKey(string errorCode) => $"{_cacheOptions.ErrorCacheKeyPrefix}{errorCode}";
-
-    private static MemoryStream CreateStringStream(string content) {
-        byte[] bytes = Encoding.UTF8.GetBytes(content);
-        return new MemoryStream(bytes);
-    }
-
-    private static MemoryStream CreateObjectStream(object obj) {
-        string json = JsonSerializer.Serialize(obj);
-        return CreateStringStream(json);
-    }
-
-    private static MemoryStream CreateEmptyStream() => new();
-
-    private MemoryStream CreateErrorStream(string message) {
-        Response.StatusCode = 400;
-        return CreateStringStream(message);
-    }
 }
