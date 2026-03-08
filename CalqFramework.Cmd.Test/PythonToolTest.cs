@@ -2,6 +2,7 @@
 using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shell;
 using CalqFramework.Cmd.Shells;
+using CalqFramework.Cmd.TerminalComponents;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.Test;
@@ -12,6 +13,7 @@ public class PythonToolTest {
         string input = "hello world\nhello world\n";
         MemoryStream writer = new();
         LocalTerminal.Out = writer;
+        LocalTerminal.TerminalLogger = new NullTerminalLogger();
 
         PythonToolServer pythonServer = new("./test_tool.py");
         await pythonServer.StartAsync();
@@ -30,6 +32,7 @@ public class PythonToolTest {
         string input = "hello world\nhello world\n";
         MemoryStream writer = new();
         LocalTerminal.Out = writer;
+        LocalTerminal.TerminalLogger = new NullTerminalLogger();
 
         PythonToolServer pythonServer = new("./test_tool.py");
         await pythonServer.StartAsync();
@@ -78,9 +81,7 @@ public class PythonToolTest {
 
         Assert.NotNull(errorMessage);
         Assert.NotEmpty(errorMessage);
-
-        Console.WriteLine($"Error message: '{errorMessage}'");
-
+        Assert.Contains("An intentional error occurred.", errorMessage);
         Assert.True(errorMessage.Length > 10, $"Error message too short: '{errorMessage}'");
     }
 

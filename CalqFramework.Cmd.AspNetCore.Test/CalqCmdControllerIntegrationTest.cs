@@ -1,5 +1,6 @@
-﻿﻿using System.Text;
+﻿using System.Text;
 using CalqFramework.Cmd.Shells;
+using CalqFramework.Cmd.TerminalComponents;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -237,6 +238,7 @@ public class CalqCmdControllerIntegrationTest {
         }
 
         public static void VoidMethodWithRUN() {
+            LocalTerminal.TerminalLogger = new NullTerminalLogger();
             RUN("dotnet --version");
         }
 

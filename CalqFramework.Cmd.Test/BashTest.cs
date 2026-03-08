@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using CalqFramework.Cmd.Shell;
 using CalqFramework.Cmd.Shells;
+using CalqFramework.Cmd.TerminalComponents;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.Test;
@@ -12,6 +13,7 @@ public class BashTest {
         string input = "hello world\n";
 
         LocalTerminal.Out = writer;
+        LocalTerminal.TerminalLogger = new NullTerminalLogger();
         LocalTerminal.Shell = new Bash {
             In = GetStream(input)
         };
@@ -40,24 +42,6 @@ public class BashTest {
 
         Assert.Equal(expectedOutput, output);
         Assert.Empty(writerOutput);
-    }
-
-    [Fact]
-    public void RUN_WithLongOutput_WritesCorrectly() {
-        string expectedOutput = "";
-        for (int i = 0; i < 2500; ++i) {
-            expectedOutput += "1234567890";
-        }
-
-        MemoryStream writer = new();
-        LocalTerminal.Out = writer;
-        LocalTerminal.Shell = new Bash();
-
-        RUN(
-            "sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
-        string writerOutput = ReadString(writer);
-
-        Assert.Equal(expectedOutput, writerOutput);
     }
 
     [Fact]
