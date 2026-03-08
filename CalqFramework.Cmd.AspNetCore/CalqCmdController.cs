@@ -87,8 +87,8 @@ public class CalqCmdController : ControllerBase {
         }
     }
 
-    [HttpGet("read_error_message")]
-    [HttpPost("read_error_message")]
+    [HttpGet("ReadErrorMessage")]
+    [HttpPost("ReadErrorMessage")]
     public async Task<IActionResult> ReadErrorMessage() {
         if (!Request.Headers.TryGetValue("error_code", out StringValues errorCodeValues)) {
             return BadRequest("Missing 'error_code' header");

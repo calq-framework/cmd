@@ -40,7 +40,7 @@ public class HttpToolWorker(
                 HttpRequestMessage request = new() {
                     Version = new Version(2, 0),
                     Method = HttpMethod.Post,
-                    RequestUri = new Uri("/read_error_message", UriKind.Relative),
+                    RequestUri = new Uri("/ReadErrorMessage", UriKind.Relative),
                     Content = new StringContent("")
                 };
 

@@ -172,9 +172,9 @@ class H2Protocol(asyncio.Protocol):
         if 'stdin' in sys.__dict__:
             del sys.__dict__['stdin']
 
-        # Check if the endpoint is read_error_message
+        # Check if the endpoint is ReadErrorMessage
         path = headers.get(':path', '')
-        if path == '/read_error_message':
+        if path == '/ReadErrorMessage':
             error_code_str = headers.get("error_code")
             response_data = self.EXCEPTION_CACHE.get(error_code_str)
             
