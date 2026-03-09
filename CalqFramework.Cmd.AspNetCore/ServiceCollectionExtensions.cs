@@ -9,31 +9,6 @@ using Microsoft.Extensions.Options;
 namespace CalqFramework.Cmd.AspNetCore;
 
 /// <summary>
-///     Configuration options for CalqCmdController
-/// </summary>
-public class CalqCmdControllerOptions {
-    /// <summary>
-    ///     Route prefix for the CalqCmdController. If null or empty, uses default "CalqCmd"
-    /// </summary>
-    public string? RoutePrefix { get; set; }
-
-    /// <summary>
-    ///     HTTP client timeout for LocalHttpTool connections. Default is 30 seconds.
-    /// </summary>
-    public TimeSpan HttpClientTimeout { get; set; } = TimeSpan.FromSeconds(30);
-
-    /// <summary>
-    ///     Named HTTP client configuration for CalqFramework.Cmd.LocalHttpTool
-    /// </summary>
-    public string HttpClientName { get; set; } = "CalqFramework.Cmd.LocalHttpTool";
-
-    /// <summary>
-    ///     Custom command executor. If null, uses CalqCommandExecutor (CalqFramework.Cli) by default.
-    /// </summary>
-    public ICalqCommandExecutor? CommandExecutor { get; set; }
-}
-
-/// <summary>
 ///     Extension methods for registering CalqFramework.Cmd services with ASP.NET Core dependency injection.
 /// </summary>
 public static class ServiceCollectionExtensions {
@@ -114,6 +89,8 @@ public static class ServiceCollectionExtensions {
             opts.HttpClientTimeout = options.HttpClientTimeout;
             opts.HttpClientName = options.HttpClientName;
             opts.CommandExecutor = options.CommandExecutor;
+            opts.DefaultShell = options.DefaultShell;
+            opts.DefaultTerminalLogger = options.DefaultTerminalLogger;
         });
 
         // Register command executor - use custom if provided, otherwise default to CalqCommandExecutor
@@ -139,12 +116,15 @@ public static class ServiceCollectionExtensions {
         // Register LocalHttpToolFactory that automatically discovers CalqCmdController URL
         services.AddLocalToolFactoryInternal(options);
 
-        // Configure routing if custom prefix is specified
-        if (!string.IsNullOrEmpty(options.RoutePrefix)) {
-            services.Configure<MvcOptions>(mvcOptions => {
+        // Register global filter for automatic LocalTerminal configuration
+        services.Configure<MvcOptions>(mvcOptions => {
+            mvcOptions.Filters.Add<LocalTerminalFilter>();
+            
+            // Configure routing if custom prefix is specified
+            if (!string.IsNullOrEmpty(options.RoutePrefix)) {
                 mvcOptions.Conventions.Add(new CalqCmdControllerRouteConvention(options.RoutePrefix));
-            });
-        }
+            }
+        });
 
         services.AddTransient<CalqCmdController>(provider => {
             ICalqCommandExecutor calqCommandExecutor = provider.GetRequiredService<ICalqCommandExecutor>();
