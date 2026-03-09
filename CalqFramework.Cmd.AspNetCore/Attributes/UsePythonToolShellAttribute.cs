@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using static CalqFramework.Cmd.Terminal;
 
-namespace CalqFramework.Cmd.AspNetCore;
+namespace CalqFramework.Cmd.AspNetCore.Attributes;
 
 /// <summary>
 ///     ActionFilter attribute that sets LocalTerminal.Shell to use PythonTool shell for the request scope.
