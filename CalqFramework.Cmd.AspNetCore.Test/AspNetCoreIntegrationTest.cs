@@ -64,9 +64,7 @@ public class AspNetCoreIntegrationTest {
 
 public class UseMyCustomShellAttribute : ActionFilterAttribute {
     public override void OnActionExecuting(ActionExecutingContext context) {
-        LocalTerminal.TerminalLogger = new NullTerminalLogger();
         LocalTerminal.Shell = new CommandLine();
-        LocalTerminal.Out = context.HttpContext.Response.Body;
     }
 }
 
