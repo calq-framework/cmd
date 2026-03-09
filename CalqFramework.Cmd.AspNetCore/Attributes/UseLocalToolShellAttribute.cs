@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using static CalqFramework.Cmd.Terminal;
 
-namespace CalqFramework.Cmd.AspNetCore;
+namespace CalqFramework.Cmd.AspNetCore.Attributes;
 
 /// <summary>
 ///     Action filter attribute that configures LocalTool shell for the request.

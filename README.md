@@ -548,6 +548,8 @@ await app.Services.StartPythonToolServerAsync();
 Built-in attributes automatically configure shell context per request. No additional registration required:
 
 ```csharp
+using CalqFramework.Cmd.AspNetCore.Attributes;
+
 [ApiController, UseBashShell] // Applied to entire controller
 public class DataController : ControllerBase 
 {
@@ -573,6 +575,9 @@ public class DataController : ControllerBase
 Create custom action filters for specific shell configurations:
 
 ```csharp
+using CalqFramework.Cmd.AspNetCore.Attributes;
+using Microsoft.AspNetCore.Mvc.Filters;
+
 public class UseMyCustomShellAttribute : ActionFilterAttribute 
 {
     private readonly IShell _shell;
@@ -628,6 +633,7 @@ dotnet add package CalqFramework.Cmd.AspNetCore
 
 ```csharp
 using CalqFramework.Cmd.AspNetCore;
+using CalqFramework.Cmd.AspNetCore.Attributes;
 using static CalqFramework.Cmd.Terminal;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
