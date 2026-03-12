@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using CalqFramework.Cmd.Python;
-using CalqFramework.Cmd.Shell;
 using CalqFramework.Cmd.Shells;
 using CalqFramework.Cmd.TerminalComponents;
 using static CalqFramework.Cmd.Terminal;
