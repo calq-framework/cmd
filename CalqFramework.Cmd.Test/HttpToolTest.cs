@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using CalqFramework.Cmd.Shell;
 using CalqFramework.Cmd.Shells;
 using static CalqFramework.Cmd.Terminal;
 

@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.Shell;
+﻿namespace CalqFramework.Cmd;
 
 /// <summary>
 ///     Stream wrapper for shell worker output that handles automatic disposal and error detection.
