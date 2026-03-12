@@ -13,6 +13,16 @@ async def test_throw_exception():
         yield line
         raise Exception("An intentional error occurred.")
 
+async def test_binary():
+    buffer = sys.stdin.buffer
+    chunk_size = 4096
+    
+    while True:
+        chunk = buffer.read(chunk_size)
+        if not chunk:
+            break
+        yield chunk
+
 if __name__ == "__main__":
     import fire
     fire.core._PrintResult = lambda component_trace, verbose=False, serialize=None: None

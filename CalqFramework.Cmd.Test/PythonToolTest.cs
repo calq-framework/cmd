@@ -91,6 +91,34 @@ public class PythonToolTest {
         return stream;
     }
 
+    [Fact]
+    public async Task PythonTool_BinaryInputOutput_PreservesData() {
+        // Create binary test data with various byte values including null bytes and high-bit-set bytes
+        byte[] binaryInput = new byte[256];
+        for (int i = 0; i < 256; i++) {
+            binaryInput[i] = (byte)i;
+        }
+
+        MemoryStream inputStream = new(binaryInput);
+        MemoryStream outputStream = new();
+        
+        LocalTerminal.Out = outputStream;
+        LocalTerminal.TerminalLogger = new NullTerminalLogger();
+
+        PythonToolServer pythonServer = new("./test_tool.py");
+        await pythonServer.StartAsync();
+        LocalTerminal.Shell = new PythonTool(pythonServer) {
+            In = inputStream
+        };
+
+        RUN("test_binary");
+
+        byte[] outputBytes = outputStream.ToArray();
+        
+        Assert.Equal(binaryInput.Length, outputBytes.Length);
+        Assert.Equal(binaryInput, outputBytes);
+    }
+
     private static string ReadString(Stream writer) {
         writer.Position = 0;
         using StreamReader reader = new(writer);

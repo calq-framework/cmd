@@ -78,6 +78,28 @@ public class BashTest {
         return stream;
     }
 
+    [Fact]
+    public async Task Bash_BinaryInputOutput_PreservesData() {
+        // Create binary test data with various byte values
+        byte[] binaryInput = new byte[256];
+        for (int i = 0; i < 256; i++) {
+            binaryInput[i] = (byte)i;
+        }
+
+        MemoryStream inputStream = new(binaryInput);
+        
+        LocalTerminal.TerminalLogger = new NullTerminalLogger();
+        LocalTerminal.Shell = new Bash();
+
+        // Use CMDStream to handle binary data directly
+        using ShellWorkerOutputStream stream = CMDStream("cat", inputStream);
+        byte[] outputBytes = new byte[256];
+        int bytesRead = await stream.ReadAsync(outputBytes);
+        
+        Assert.Equal(binaryInput.Length, bytesRead);
+        Assert.Equal(binaryInput, outputBytes);
+    }
+
     private static string ReadString(Stream writer) {
         writer.Position = 0;
         using StreamReader reader = new(writer);
