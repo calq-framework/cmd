@@ -60,8 +60,8 @@ public abstract class ProcessWorkerBase(ShellScript shellScript, Stream? inputSt
         if (InputStream != null) {
             relayInputTask =
                 Task.Run(
-                        async () => await StreamUtils.RelayInput(_process.StandardInput!,
-                            new StreamReader(InputStream!),
+                        async () => await StreamUtils.RelayInput(_process.StandardInput.BaseStream,
+                            InputStream!,
                             relayInputTaskAbortCts.Token), cancellationToken)
                     .WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
         }

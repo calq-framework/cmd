@@ -64,6 +64,88 @@ import threading
 
 fire.core._PrintResult = lambda component_trace, verbose=False, serialize=None: None
 
+class BinaryAwareStdIn(io.TextIOBase):
+    """Wrapper that provides both text and binary stdin interfaces, compatible with Python Fire"""
+    def __init__(self, data_bytes):
+        super().__init__()
+        self._bytes = data_bytes
+        self._text_io = io.StringIO(self._bytes.decode('utf-8', errors='replace'))
+        self._binary_io = io.BytesIO(self._bytes)
+        self._position = 0
+    
+    @property
+    def buffer(self):
+        """Binary interface - returns BytesIO"""
+        return self._binary_io
+    
+    def read(self, size=-1):
+        """Text interface - decodes bytes as UTF-8"""
+        return self._text_io.read(size)
+    
+    def readline(self, size=-1):
+        return self._text_io.readline(size)
+    
+    def readlines(self, hint=-1):
+        return self._text_io.readlines(hint)
+    
+    def __iter__(self):
+        return iter(self._text_io)
+    
+    def __next__(self):
+        return next(self._text_io)
+    
+    # File-like object methods that Fire might check
+    def isatty(self):
+        return False
+    
+    def fileno(self):
+        raise io.UnsupportedOperation("fileno")
+    
+    def close(self):
+        self._text_io.close()
+        self._binary_io.close()
+    
+    def flush(self):
+        pass
+    
+    def readable(self):
+        return True
+    
+    def writable(self):
+        return False
+    
+    def seekable(self):
+        return True
+    
+    def seek(self, offset, whence=0):
+        self._text_io.seek(offset, whence)
+        return self._text_io.tell()
+    
+    def tell(self):
+        return self._text_io.tell()
+    
+    @property
+    def closed(self):
+        return self._text_io.closed
+    
+    @property
+    def encoding(self):
+        return 'utf-8'
+    
+    @property
+    def errors(self):
+        return 'replace'
+    
+    @property
+    def newlines(self):
+        return self._text_io.newlines
+    
+    def write(self, s):
+        raise io.UnsupportedOperation("not writable")
+    
+    def writelines(self, lines):
+        raise io.UnsupportedOperation("not writable")
+
 class SysWithLocalStdIn(types.ModuleType):
     def __init__(self, name, doc=None):
         super().__init__(name, doc)
@@ -166,8 +248,8 @@ class H2Protocol(asyncio.Protocol):
             return
 
         headers = request_data.headers
-        body = request_data.data.getvalue().decode('utf-8')
-        sys._calq_cmd_stdin_local.set(io.StringIO(body))
+        body_bytes = request_data.data.getvalue()  # Keep as bytes
+        sys._calq_cmd_stdin_local.set(BinaryAwareStdIn(body_bytes))
         # Clear any cached stdin to ensure property is called
         if 'stdin' in sys.__dict__:
             del sys.__dict__['stdin']

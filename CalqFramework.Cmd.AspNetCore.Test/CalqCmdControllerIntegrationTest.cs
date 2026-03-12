@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using CalqFramework.Cmd.Shell;
 using CalqFramework.Cmd.Shells;
 using CalqFramework.Cmd.TerminalComponents;
 using Microsoft.AspNetCore.Builder;
@@ -210,6 +211,28 @@ public class CalqCmdControllerIntegrationTest {
         Assert.Equal("Direct output", result);
     }
 
+    [Fact]
+    public async Task ExecuteScript_WithBinaryInputStream_PreservesBinaryData() {
+        HttpTool httpTool = await CreateHttpToolAsync();
+        LocalTerminal.Shell = httpTool;
+        
+        // Create binary test data with various byte values including null bytes and high-bit-set bytes
+        byte[] binaryInput = new byte[256];
+        for (int i = 0; i < 256; i++) {
+            binaryInput[i] = (byte)i;
+        }
+        
+        MemoryStream inputStream = new(binaryInput);
+
+        // Use CMDStream to handle binary data directly
+        using ShellWorkerOutputStream stream = CMDStream("ProcessBinaryData", inputStream);
+        byte[] outputBytes = new byte[256];
+        int bytesRead = await stream.ReadAsync(outputBytes);
+        
+        Assert.Equal(binaryInput.Length, bytesRead);
+        Assert.Equal(binaryInput, outputBytes);
+    }
+
 
     /// <summary>
     ///     Test command target class with various method signatures for testing different CLI scenarios
@@ -246,6 +269,21 @@ public class CalqCmdControllerIntegrationTest {
             StreamWriter sw = new(LocalTerminal.Out);
             sw.Write("Direct output");
             sw.Flush();
+        }
+
+        public static async Task ProcessBinaryData() {
+            if (LocalTerminal.Shell.In == null) {
+                return;
+            }
+
+            // Read binary data from input stream
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            
+            while ((bytesRead = await LocalTerminal.Shell.In.ReadAsync(buffer.AsMemory())) > 0) {
+                // Write binary data directly to output stream
+                await LocalTerminal.Out.WriteAsync(buffer.AsMemory(0, bytesRead));
+            }
         }
     }
 }

@@ -156,6 +156,25 @@ The following returns "Hello World" after 1 second.
 string output = CMDV("echo Hello World") | CMDV("sleep 1; cat") | CMDV("sleep 1; cat") | CMDV("sleep 1; cat");
 ```
 
+### Binary Input/Output Support
+All shells support binary input/output streams, preserving raw byte data without text encoding corruption. This enables processing of images, audio, video, and other binary formats through shell pipelines.
+
+```csharp
+// Binary data through Bash
+byte[] imageData = File.ReadAllBytes("image.png");
+LocalTerminal.Shell = new Bash { In = new MemoryStream(imageData) };
+using var outputStream = CMDStream("convert - -resize 50% -"); // ImageMagick resize
+byte[] resizedImage = ReadAllBytes(outputStream);
+
+// Binary data through Python
+var pts = new PythonToolServer("image-processor.py");
+await pts.StartAsync();
+LocalTerminal.Shell = new PythonTool(pts) { In = new MemoryStream(imageData) };
+RUN("process_image"); // Python script processes binary image data
+```
+
+Binary streams work seamlessly with all shell types including distributed execution via HttpTool and LocalTool.
+
 ### Thread/Task Isolation with AsyncLocal
 `LocalTerminal` settings are stored in `AsyncLocal<T>` so threads and tasks can be used like subshells.
 ```csharp
@@ -321,8 +340,11 @@ RUN("upper --msg world"); // prints "WORLD"
 ```
 
 #### PythonTool Input/Output Streams
-Python HTTP server monkey-patches sys.stdin and consumes the entire stream before executing Python scripts via Python Fire. Python scripts requiring real-time input streaming must be executed directly via `python` using `Bash` or `CommandLine` shells.  
-Conversely, output is unbuffered, streamed directly to C# over a raw HTTP/2 connection using asynchronous generators.
+Python HTTP server supports both text and binary input/output streams. For text input, the server consumes the entire stream before executing Python scripts via Python Fire. For binary input, scripts can access `sys.stdin.buffer` for raw byte streams.
+
+Output is unbuffered and streamed directly to C# over HTTP/2 using asynchronous generators, supporting both text and binary data.
+
+**Text streaming example:**
 ```python
 # async-tool.py
 import asyncio
@@ -338,9 +360,11 @@ if __name__ == "__main__":
     import fire
     fire.core._PrintResult = lambda component_trace, verbose=False, serialize=None: None
     value = fire.Fire()
+    
     async def main():
         async for part in value:
             print(part, end="")
+            
     asyncio.run(main())
 ```
 ```csharp
@@ -351,6 +375,50 @@ LocalTerminal.Shell = new PythonTool(pts) {
 };
 RUN("test") // prints each line every second
 ```
+
+**Binary streaming example:**
+```python
+# binary-tool.py
+import asyncio
+import sys
+import io
+
+async def test_binary():
+    buffer = sys.stdin.buffer
+    chunk_size = 4096
+    
+    while True:
+        chunk = buffer.read(chunk_size)
+        if not chunk:
+            break
+        yield chunk
+
+if __name__ == "__main__":
+    import fire
+    fire.core._PrintResult = lambda component_trace, verbose=False, serialize=None: None
+    value = fire.Fire()
+    
+    async def main():
+        async for part in value:
+            print(part, end="")
+            
+    asyncio.run(main())
+```
+```csharp
+var pts = new PythonToolServer("binary-tool.py");
+using var worker = await pts.StartAsync();
+
+// Create binary test data
+byte[] binaryData = new byte[256];
+for (int i = 0; i < 256; i++) binaryData[i] = (byte)i;
+
+LocalTerminal.Shell = new PythonTool(pts) {
+    In = new MemoryStream(binaryData)
+};
+RUN("test_binary") // Streams binary data through Python and back
+```
+
+Python scripts requiring real-time input streaming (where input arrives progressively during execution) must be executed directly via `python` using `Bash` or `CommandLine` shells.
 
 ## Calq CMD ASP.NET Core
 Calq CMD integrates seamlessly with ASP.NET Core applications, enabling cloud-native web APIs that leverage shell-style scripting for data processing and streaming operations.

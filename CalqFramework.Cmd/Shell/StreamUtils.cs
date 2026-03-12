@@ -10,13 +10,14 @@ namespace CalqFramework.Cmd.Shell;
 /// </summary>
 internal class StreamUtils {
     /// <summary>
-    ///     Relays input from a StreamReader to a process's standard input.
-    ///     Handles both console input (character by character) and redirected input (buffered).
+    ///     Relays input from a stream to a process's standard input stream.
+    ///     Handles both console input (character by character with encoding) and redirected input (binary buffered).
     /// </summary>
-    public static async Task RelayInput(TextWriter processInput, StreamReader inputReader,
+    public static async Task RelayInput(Stream processInputStream, Stream inputStream,
         CancellationToken cancellationToken) {
-        bool isInputRedirected = IsInputRedirected(inputReader);
+        bool isInputRedirected = IsInputRedirected(inputStream);
         if (!isInputRedirected) {
+            // Console keyboard input - read chars and encode to UTF-8 bytes
             while (!cancellationToken.IsCancellationRequested) {
                 if (Console.KeyAvailable) {
                     char keyChar = Console.ReadKey(false).KeyChar;
@@ -26,38 +27,38 @@ internal class StreamUtils {
                         keyChar = '\n';
                     }
 
-                    processInput.Write(keyChar);
+                    byte[] charBytes = System.Text.Encoding.UTF8.GetBytes(new[] { keyChar });
+                    await processInputStream.WriteAsync(charBytes.AsMemory(), cancellationToken);
+                    await processInputStream.FlushAsync(cancellationToken);
                 }
 
                 await Task.Delay(1, cancellationToken);
             }
         } else {
-            char[] buffer = ArrayPool<char>.Shared.Rent(1);
+            // Redirected input - binary copy
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(4096);
             try {
                 while (!cancellationToken.IsCancellationRequested) {
                     int bytesRead;
                     try {
-                        bytesRead = await inputReader.ReadAsync(buffer.AsMemory(0, 1), cancellationToken);
+                        bytesRead = await inputStream.ReadAsync(buffer.AsMemory(0, 4096), cancellationToken);
                     } catch {
-                        processInput
+                        processInputStream
                             .Close(); // in case input stream reached EOF close input stream to signal EOF to the process
                         throw;
                     }
 
-                    char keyChar = buffer[0];
-                    if (bytesRead == 0 || keyChar == '\uffff') {
-                        // '\uffff' == -1
-                        processInput
+                    if (bytesRead == 0) {
+                        processInputStream
                             .Close(); // in case input stream reached EOF close input stream to signal EOF to the process
                         break;
                     }
 
-                    processInput.Write(keyChar);
-
-                    await Task.Delay(1, cancellationToken);
+                    await processInputStream.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
+                    await processInputStream.FlushAsync(cancellationToken);
                 }
             } finally {
-                ArrayPool<char>.Shared.Return(buffer);
+                ArrayPool<byte>.Shared.Return(buffer);
             }
         }
     }
@@ -91,34 +92,16 @@ internal class StreamUtils {
     ///     Determines if input is redirected by checking console redirection status and stream type.
     /// </summary>
     /// <returns>True if input is redirected from console</returns>
-    private static bool IsInputRedirected(TextReader reader) =>
-        Console.IsInputRedirected || !IsStandardInputStream(reader);
+    private static bool IsInputRedirected(Stream stream) =>
+        Console.IsInputRedirected || !IsStandardInputStream(stream);
 
     /// <summary>
-    ///     Checks if a TextReader represents the standard console input stream.
+    ///     Checks if a Stream represents the standard console input stream.
     ///     Uses reflection to compare underlying stream handles across different .NET implementations.
     /// </summary>
-    /// <returns>True if the reader represents standard console input</returns>
-    private static bool IsStandardInputStream(TextReader reader) {
-        if (reader is StreamReader sr) {
-            using Stream standardInput = Console.OpenStandardInput();
-            return HasMatchingUnderlyingStream(sr.BaseStream, standardInput);
-        }
-
-        Type readerType = reader.GetType();
-        if (readerType.FullName == "System.IO.StdInReader") {
-            // this is used on linux
-            return true;
-        }
-
-        if (readerType.FullName == "System.IO.SyncTextReader") {
-            FieldInfo? innerReaderField = readerType.GetField("_in", BindingFlags.NonPublic | BindingFlags.Instance);
-            if (innerReaderField != null) {
-                TextReader innerReader = (innerReaderField.GetValue(reader) as TextReader)!;
-                return IsStandardInputStream(innerReader);
-            }
-        }
-
-        return false;
+    /// <returns>True if the stream represents standard console input</returns>
+    private static bool IsStandardInputStream(Stream stream) {
+        using Stream standardInput = Console.OpenStandardInput();
+        return HasMatchingUnderlyingStream(stream, standardInput);
     }
 }
