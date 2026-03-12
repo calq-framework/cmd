@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace CalqFramework.Cmd.Shell;
+namespace CalqFramework.Cmd.Shell.SystemProcess;
 
 /// <summary>
 ///     Utility methods for stream handling and input/output relay operations.

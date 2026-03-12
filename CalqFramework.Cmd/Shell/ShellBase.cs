@@ -1,4 +1,6 @@
-﻿namespace CalqFramework.Cmd.Shell;
+﻿using CalqFramework.Cmd.ShellComponents;
+
+namespace CalqFramework.Cmd.Shell;
 
 /// <summary>
 ///     Base class for all shell implementations. Provides common functionality for

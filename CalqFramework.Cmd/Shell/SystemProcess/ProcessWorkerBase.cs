@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace CalqFramework.Cmd.Shell;
+namespace CalqFramework.Cmd.Shell.SystemProcess;
 
 /// <summary>
 ///     Base class for process-based shell workers (CommandLine, Bash).
