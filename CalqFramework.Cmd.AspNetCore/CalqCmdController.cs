@@ -62,13 +62,12 @@ public class CalqCmdController : ControllerBase {
 
             if (result is Task task) {
                 await task;
-                result = task.GetType().IsGenericType 
-                    ? ((dynamic)task).Result 
-                    : ResultVoid.Value;
+                // Task methods return Task<VoidTaskResult> so task.GetType().IsGenericType is always true and hence unreliable
+                result = task.GetType().GetProperty("Result")?.GetValue(task) ?? ResultVoid.Value;
             }
 
             // For other result types, don't flush to avoid committing headers prematurely
-            if (result is ResultVoid) {
+            if (result is ResultVoid || result?.GetType().Name == "VoidTaskResult") {
                 await outputWriter.FlushAsync();
                 return new EmptyResult();
             }
@@ -129,7 +128,7 @@ public class CalqCmdController : ControllerBase {
             return new EmptyResult();
         }
 
-        return StatusCode(500, new { error_code = errorCode, message = ex.Message });
+        throw new NotSupportedException("HTTP reset feature is not supported by the current server. Error details have been cached with error code: " + errorCode, ex);
     }
 
     private string GetErrorCacheKey(string errorCode) => $"{_cacheOptions.ErrorCacheKeyPrefix}{errorCode}";
