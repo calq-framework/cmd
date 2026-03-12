@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.Shell;
+﻿namespace CalqFramework.Cmd.ShellComponents;
 
 /// <summary>
 ///     Interface for processing shell command output.

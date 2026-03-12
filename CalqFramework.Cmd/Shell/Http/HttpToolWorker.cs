@@ -1,7 +1,7 @@
 ﻿using System.Buffers;
 using System.Net;
 
-namespace CalqFramework.Cmd.Shell;
+namespace CalqFramework.Cmd.Shell.Http;
 
 /// <summary>
 ///     HTTP-based shell worker for distributed command execution.

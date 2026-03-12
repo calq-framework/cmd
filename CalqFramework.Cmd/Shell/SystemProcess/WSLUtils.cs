@@ -2,7 +2,7 @@
 using System.Text;
 using Microsoft.Win32;
 
-namespace CalqFramework.Cmd.Shell;
+namespace CalqFramework.Cmd.Shell.SystemProcess;
 #pragma warning disable CA1416 // Validate platform compatibility
 
 /// <summary>

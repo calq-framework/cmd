@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 using CalqFramework.Cmd.Shells;
 
-namespace CalqFramework.Cmd.Shell;
+namespace CalqFramework.Cmd.Shell.SystemProcess;
 
 /// <summary>
 ///     Process worker for Bash shell execution with WSL support.

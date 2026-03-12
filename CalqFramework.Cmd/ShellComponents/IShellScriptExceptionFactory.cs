@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.Shell;
+﻿namespace CalqFramework.Cmd.ShellComponents;
 
 /// <summary>
 ///     Factory interface for creating ShellScriptException instances.
