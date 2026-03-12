@@ -21,7 +21,9 @@ public abstract class ProcessWorkerBase(ShellScript shellScript, Stream? inputSt
 
     protected override void Dispose(bool disposing) {
         if (!_disposed) {
-            _process.Dispose();
+            if (disposing) {
+                _process.Dispose();
+            }
 
             _disposed = true;
         }

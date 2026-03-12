@@ -72,7 +72,6 @@ public class HttpToolWorker(
         if (!_disposed) {
             if (disposing) {
                 _response?.Dispose();
-                _executionOutputStream?.Dispose();
             }
 
             _disposed = true;

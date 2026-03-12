@@ -8,6 +8,7 @@ public abstract class ShellWorkerBase(ShellScript shellScript, Stream? inputStre
     : IShellWorker {
     private readonly SemaphoreSlim _hasStartedSemaphore = new(1, 1);
     private bool _disposed;
+    private bool _disposing;
     private volatile bool _hasStarted;
 
     public Stream? InputStream { get; private set; } = inputStream;
@@ -60,14 +61,17 @@ public abstract class ShellWorkerBase(ShellScript shellScript, Stream? inputStre
     ~ShellWorkerBase() => Dispose(false);
 
     protected virtual void Dispose(bool disposing) {
-        if (!_disposed) {
+        if (!_disposed && !_disposing) {
+            _disposing = true;
+
             if (disposing) {
-                _hasStartedSemaphore?.Dispose();
+                _hasStartedSemaphore.Dispose();
+                StandardOutput.Dispose();
+                PipedWorker?.Dispose();
             }
 
-            PipedWorker?.Dispose();
-
             _disposed = true;
+            _disposing = false;
         }
     }
 
