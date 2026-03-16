@@ -1,4 +1,4 @@
-﻿using CalqFramework.Cmd.TerminalComponents;
+using CalqFramework.Cmd.TerminalComponents;
 
 namespace CalqFramework.Cmd;
 

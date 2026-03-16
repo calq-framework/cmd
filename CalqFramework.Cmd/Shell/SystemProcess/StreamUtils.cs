@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.Shell.SystemProcess;
+namespace CalqFramework.Cmd.Shell.SystemProcess;
 
 /// <summary>
 ///     Utility methods for stream handling and input/output relay operations.
@@ -24,9 +24,9 @@ internal class StreamUtils {
                     }
 
                     byte[] charBytes = System.Text.Encoding.UTF8.GetBytes(
-                        new[] {
+                        [
                             keyChar
-                        });
+                        ]);
                     await processInputStream.WriteAsync(charBytes.AsMemory(), cancellationToken);
                     await processInputStream.FlushAsync(cancellationToken);
                 }

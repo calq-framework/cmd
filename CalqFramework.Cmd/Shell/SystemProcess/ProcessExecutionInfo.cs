@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.Shell.SystemProcess;
+namespace CalqFramework.Cmd.Shell.SystemProcess;
 
 /// <summary>
 ///     Contains process execution information including the executable path and command arguments.

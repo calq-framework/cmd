@@ -1,4 +1,4 @@
-﻿using CalqFramework.Cmd.AspNetCore.Attributes;
+using CalqFramework.Cmd.AspNetCore.Attributes;
 using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shells;
 using static CalqFramework.Cmd.Terminal;

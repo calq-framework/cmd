@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.Shell;
+namespace CalqFramework.Cmd.Shell;
 
 /// <summary>
 ///     Base implementation for shell workers. Handles piping, lifecycle management,

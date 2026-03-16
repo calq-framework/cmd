@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.Shell.SystemProcess;
+namespace CalqFramework.Cmd.Shell.SystemProcess;
 #pragma warning disable CA1416 // Validate platform compatibility
 
 /// <summary>

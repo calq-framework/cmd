@@ -1,4 +1,4 @@
-﻿using CalqFramework.Cmd.Shells;
+using CalqFramework.Cmd.Shells;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.AspNetCore;

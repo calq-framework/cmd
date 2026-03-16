@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.Python;
+namespace CalqFramework.Cmd.Python;
 
 /// <summary>
 ///     Interface for Python tool servers that provide HTTP/2 endpoints for Python script execution.

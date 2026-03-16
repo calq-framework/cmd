@@ -1,4 +1,4 @@
-﻿using CalqFramework.Cmd.Shell;
+using CalqFramework.Cmd.Shell;
 using CalqFramework.Cmd.Shell.SystemProcess;
 
 namespace CalqFramework.Cmd.Shells;
@@ -21,10 +21,10 @@ public class Bash : ShellBase {
             using StreamReader reader = new(worker.StandardOutput);
             IsRunningBashOnWSL = reader.ReadToEnd()
                 .TrimEnd() switch {
-                "Linux" => true,
-                "Darwin" => true,
-                _ => false
-            };
+                    "Linux" => true,
+                    "Darwin" => true,
+                    _ => false
+                };
         } else {
             IsRunningBashOnWSL = false;
         }

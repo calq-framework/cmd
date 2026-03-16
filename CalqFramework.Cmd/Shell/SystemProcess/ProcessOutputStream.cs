@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.Shell.SystemProcess;
+namespace CalqFramework.Cmd.Shell.SystemProcess;
 
 /// <summary>
 ///     Process-based output stream that wraps a process's standard output for shell operations.

@@ -1,4 +1,4 @@
-﻿using CalqFramework.Cmd.Shell;
+using CalqFramework.Cmd.Shell;
 using CalqFramework.Cmd.Shell.Http;
 
 namespace CalqFramework.Cmd.Shells;

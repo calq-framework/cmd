@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.AspNetCore;
+namespace CalqFramework.Cmd.AspNetCore;
 
 /// <summary>
 ///     Configuration options for CalqCmdController error caching

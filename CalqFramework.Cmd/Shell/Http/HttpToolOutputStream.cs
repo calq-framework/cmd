@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.Shell.Http;
+namespace CalqFramework.Cmd.Shell.Http;
 
 /// <summary>
 ///     HTTP-based output stream that wraps HTTP response content for shell operations.
