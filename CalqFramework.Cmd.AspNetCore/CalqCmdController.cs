@@ -82,15 +82,19 @@ public class CalqCmdController : ControllerBase {
         }
     }
 
-    [HttpGet("ReadErrorMessage")]
     [HttpPost("ReadErrorMessage")]
-    public async Task<IActionResult> ReadErrorMessage() {
-        if (!Request.Headers.TryGetValue("error_code", out StringValues errorCodeValues)) {
-            return BadRequest("Missing 'error_code' header");
+    [HttpGet("ReadErrorMessage")]
+    public async Task<IActionResult> ReadErrorMessage([FromQuery] string? errorCode = null) {
+        // Try query string first (GET), then header (POST)
+        string? errorCodeValue = errorCode;
+        if (string.IsNullOrEmpty(errorCodeValue)) {
+            if (!Request.Headers.TryGetValue("error_code", out StringValues errorCodeValues)) {
+                return BadRequest("Missing 'error_code' header");
+            }
+            errorCodeValue = errorCodeValues.FirstOrDefault() ?? "";
         }
 
-        string errorCode = errorCodeValues.FirstOrDefault() ?? "";
-        string cacheKey = GetErrorCacheKey(errorCode);
+        string cacheKey = GetErrorCacheKey(errorCodeValue);
 
         byte[]? bytes = await _distributedCache.GetAsync(cacheKey);
         if (bytes != null) {
@@ -98,7 +102,7 @@ public class CalqCmdController : ControllerBase {
             return Ok(errorMessage);
         }
 
-        return NotFound($"Error code '{errorCode}' not found");
+        return NotFound($"Error code '{errorCodeValue}' not found");
     }
 
     private async Task<IActionResult> HandleExceptionAsync(Exception ex) {
