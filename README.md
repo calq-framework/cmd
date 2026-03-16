@@ -3,7 +3,7 @@
 [![REUSE status](https://api.reuse.software/badge/github.com/calq-framework/cmd)](https://api.reuse.software/info/github.com/calq-framework/cmd)
 
 # Calq CMD  
-Calq CMD introduces distributed, shell-style scripting to C#, turning complex systems into simple scripts. Build cross-platform tools, streaming data pipelines, parallel batch workloads, HPC processes, and AI-powered systems with unprecedented simplicity.
+Calq CMD introduces distributed, shell-style scripting to C#, turning complex systems into simple scripts. Calq CMD makes it possible to build cross-platform tools, streaming data pipelines, parallel batch workloads, HPC processes, and AI-powered systems with unprecedented simplicity.
 
 Easy cloud-native distributed computing - scale from single-process development to distributed microservices without changing your code.
 
