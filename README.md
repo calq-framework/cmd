@@ -1245,6 +1245,19 @@ try {
 }
 ```
 
+**ReadErrorMessage endpoint (GET — browser-friendly):**
+
+```http
+GET http://localhost:5000/CalqCmd/ReadErrorMessage?errorCode=123456
+```
+
+**ReadErrorMessage endpoint (POST — header-based):**
+
+```http
+POST http://localhost:5000/CalqCmd/ReadErrorMessage
+error_code: 123456
+```
+
 **Key points:**
 - Errors are cached in `IDistributedCache` with configurable expiration (default: 1 hour)
 - Error codes are derived from the exception's hash code
