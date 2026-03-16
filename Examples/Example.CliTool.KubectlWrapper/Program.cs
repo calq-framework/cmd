@@ -1,17 +1,15 @@
 // NOTE: This example uses Calq CLI for the CLI interface.
 // See https://github.com/calq-framework/cli for full Calq CLI documentation.
 
-using System.Text.Json;
-using CalqFramework.Cli;
-using CalqFramework.Cmd.Shells;
 using Example.CliTool.KubectlWrapper;
-using static CalqFramework.Cmd.Terminal;
 
 LocalTerminal.Shell = new Bash();
 
 try {
     object? result = new CommandLineInterface().Execute(new Kubectl());
-    if (result is not ValueTuple) Console.WriteLine(JsonSerializer.Serialize(result));
+    if (result is not ValueTuple) {
+        Console.WriteLine(JsonSerializer.Serialize(result));
+    }
 } catch (CliException ex) {
     Console.Error.WriteLine(ex.Message);
     Environment.Exit(1);
@@ -19,7 +17,7 @@ try {
 
 namespace Example.CliTool.KubectlWrapper {
     /// <summary>Kubectl wrapper — a CLI tool built with Calq CLI and Calq CMD.</summary>
-    class Kubectl {
+    internal class Kubectl {
         /// <summary>Namespace to operate in.</summary>
         public string Namespace { get; set; } = "default";
 
