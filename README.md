@@ -1106,14 +1106,14 @@ public class DataController : ControllerBase
 {
     [HttpGet]
     [Produces("text/plain")]
-    public async Task<Stream> StreamData() => await CMDStreamAsync("process-large-dataset");
+    public async Task<Stream> StreamData() => await CMDStreamAsync("ProcessLargeDataset");
 
     [HttpPost]
     [Produces("application/json")]
     public async Task<Stream> ProcessUpload(IFormFile file)
     {
         LocalTerminal.Shell = new CommandLine(); // Override controller-level attribute
-        return await CMDStreamAsync("analyze-file", file.OpenReadStream());
+        return await CMDStreamAsync("AnalyzeFile", file.OpenReadStream());
     }
 }
 ```
@@ -1171,12 +1171,12 @@ using CalqFramework.Cmd.AspNetCore.Attributes;
 public class DataController : ControllerBase
 {
     [HttpGet]
-    public async Task<Stream> StreamData() => await CMDStreamAsync("process-data");
+    public async Task<Stream> StreamData() => await CMDStreamAsync("ProcessData");
 
     // Override controller-level attribute for a specific action
     [HttpPost, UseCommandLineShell]
     public async Task<Stream> ProcessStream([FromBody] Stream data) =>
-        await CMDStreamAsync("transform-data", data);
+        await CMDStreamAsync("TransformData", data);
 }
 ```
 
@@ -1467,7 +1467,7 @@ public class StreamController : ControllerBase
         _pythonTool = pythonTool;
     }
 
-    [HttpPost("process-stream")]
+    [HttpPost("ProcessStream")]
     public async Task<Stream> ProcessStream()
     {
         // Request body → Python stdin, Python stdout → response body
@@ -1475,7 +1475,7 @@ public class StreamController : ControllerBase
         return await CMDStreamAsync("test", Request.Body);
     }
 
-    [HttpPost("process-binary")]
+    [HttpPost("ProcessBinary")]
     public async Task ProcessBinary()
     {
         LocalTerminal.Shell = _pythonTool;
