@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.TerminalComponents;
+namespace CalqFramework.Cmd.TerminalComponents;
 
 /// <summary>
 ///     Default implementation of ITerminalLogger that outputs to a TextWriter.

@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd;
+namespace CalqFramework.Cmd;
 
 /// <summary>
 ///     Exception thrown when shell script execution fails.

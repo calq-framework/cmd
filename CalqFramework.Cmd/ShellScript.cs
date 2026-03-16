@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd;
+namespace CalqFramework.Cmd;
 
 /// <summary>
 ///     Represents a shell command that can be executed, piped, and chained.

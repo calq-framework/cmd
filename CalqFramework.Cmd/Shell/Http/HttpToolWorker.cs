@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.Shell.Http;
+namespace CalqFramework.Cmd.Shell.Http;
 
 /// <summary>
 ///     HTTP-based shell worker for distributed command execution.

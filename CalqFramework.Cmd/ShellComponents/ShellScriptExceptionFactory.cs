@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.ShellComponents;
+namespace CalqFramework.Cmd.ShellComponents;
 
 public class ShellScriptExceptionFactory : IShellScriptExceptionFactory {
     public async Task<ShellScriptException> CreateAsync(ShellScript shellScript, IShellWorker shellWorker, ShellWorkerException exception, string? output, CancellationToken cancellationToken = default) {

@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd;
+namespace CalqFramework.Cmd;
 
 /// <summary>
 ///     Interface for shell workers that execute commands and provide stream access.

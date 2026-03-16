@@ -1,4 +1,4 @@
-﻿namespace CalqFramework.Cmd.Shell.SystemProcess;
+namespace CalqFramework.Cmd.Shell.SystemProcess;
 
 /// <summary>
 ///     Base class for process-based shell workers (CommandLine, Bash).

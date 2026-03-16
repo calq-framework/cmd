@@ -4,7 +4,7 @@ using static CalqFramework.Cmd.Terminal;
 namespace CalqFramework.Cmd.AspNetCore.Test;
 
 public class AspNetCoreIntegrationTest {
-    private async Task<IHost> CreateTestHostAsync() {
+    private static async Task<IHost> CreateTestHostAsync() {
         IHostBuilder hostBuilder = new HostBuilder().ConfigureWebHost(webHost => {
             webHost.UseTestServer();
             webHost.ConfigureServices(services => {
@@ -67,5 +67,5 @@ public class TestApiController : ControllerBase {
     }
 
     [HttpGet("run")]
-    public async Task TestRun() => await RUNAsync("dotnet --version");
+    public static async Task TestRun() => await RUNAsync("dotnet --version");
 }

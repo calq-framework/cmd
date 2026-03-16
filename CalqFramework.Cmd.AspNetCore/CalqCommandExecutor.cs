@@ -1,17 +1,15 @@
-﻿namespace CalqFramework.Cmd.AspNetCore;
+namespace CalqFramework.Cmd.AspNetCore;
 
 /// <summary>
 ///     Default command executor implementation using CalqFramework.Cli for command-line style parsing.
 ///     Uses AsIsClassMemberStringifier to preserve original method and parameter names without transformation.
 /// </summary>
-public class CalqCommandExecutor : ICalqCommandExecutor {
-    private readonly object _commandTarget;
-
-    /// <summary>
-    ///     Initializes a new instance of CalqCommandExecutor with the specified command target.
-    /// </summary>
-    /// <param name="commandTarget">The target object containing the methods to execute.</param>
-    public CalqCommandExecutor(object commandTarget) => _commandTarget = commandTarget;
+/// <remarks>
+///     Initializes a new instance of CalqCommandExecutor with the specified command target.
+/// </remarks>
+/// <param name="commandTarget">The target object containing the methods to execute.</param>
+public class CalqCommandExecutor(object commandTarget) : ICalqCommandExecutor {
+    private readonly object _commandTarget = commandTarget;
 
     /// <summary>
     ///     Executes a command using CLI-style argument parsing via CalqFramework.Cli with interface output capture.
