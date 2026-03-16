@@ -1,5 +1,5 @@
 # SPDX-FileCopyrightText: 2015-2020 Cory Benfield and contributors
-# SPDX-FileCopyrightText: 2024 Calq Framework
+# SPDX-FileCopyrightText: 2023-2026 Calq Framework
 #
 # SPDX-License-Identifier: MIT AND (PolyForm-Noncommercial-1.0.0 WITH LicenseRef-Calq-Evaluation-Grant OR LicenseRef-CCL)
 """
