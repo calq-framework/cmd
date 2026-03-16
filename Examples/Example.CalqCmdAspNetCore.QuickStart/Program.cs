@@ -3,12 +3,12 @@ using CalqFramework.Cmd.Shells;
 using Example.CalqCmdAspNetCore.QuickStart;
 using static CalqFramework.Cmd.Terminal;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
     .AddApplicationPart(typeof(CalqCmdController).Assembly);
 builder.Services.AddCalqCmdController(new QuickStartCommands());
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 app.MapControllers();
 app.Run();
 
