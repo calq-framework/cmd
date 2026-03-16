@@ -4,11 +4,11 @@
     "net9.0": {
       "CalqFramework.Cli": {
         "type": "Direct",
-        "requested": "[0.62.0, )",
-        "resolved": "0.62.0",
-        "contentHash": "fXD26pRS5XlreSzItTpULf8hXmbXqQ8eSq+hzveMi+6g9fAXJqjR6eL10szt5bZWpkdcKnOY+yfMV2wmI4x+2A==",
+        "requested": "[0.63.1, )",
+        "resolved": "0.63.1",
+        "contentHash": "LLTQn8c0qpIGiBnNp0S2eQBTOJSEzhmEyx5tPxUjCgl80PjDi9l89g5mW5O++MXVpCY1AStlZbpeTfoEkc9nIg==",
         "dependencies": {
-          "CalqFramework.DataAccess": "0.62.0"
+          "CalqFramework.DataAccess": "0.63.1"
         }
       },
       "Microsoft.Extensions.Caching.Abstractions": {
@@ -65,8 +65,8 @@
       },
       "CalqFramework.DataAccess": {
         "type": "Transitive",
-        "resolved": "0.62.0",
-        "contentHash": "onSHYzmcoR2yyYozolUogQgW/DfnGzWRRnnan1gYDBcLLkc0cuL2yYAivNHW4PD6/N+tp9erS102gy6yNDQveQ=="
+        "resolved": "0.63.1",
+        "contentHash": "t6oMMUL/RGPRDI1J06vEPzmPNOaIcAz4cBYFGwOzKAghqzdQr87Wdp0ZUA4bckIfrnbI1qmxPj6kEv1TEFKp5w=="
       },
       "Microsoft.Build.Tasks.Git": {
         "type": "Transitive",
