@@ -1,4 +1,7 @@
+using CalqFramework.Cmd.AspNetCore;
+using CalqFramework.Cmd.Shells;
 using Example.CalqCmdAspNetCore.QuickStart;
+using static CalqFramework.Cmd.Terminal;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
