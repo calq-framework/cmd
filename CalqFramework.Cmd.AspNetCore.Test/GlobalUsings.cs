@@ -1,0 +1,14 @@
+global using global::Microsoft.AspNetCore.Builder;
+global using global::Microsoft.AspNetCore.Hosting;
+global using global::Microsoft.AspNetCore.Http;
+global using global::Microsoft.AspNetCore.Mvc;
+global using global::Microsoft.AspNetCore.Mvc.Abstractions;
+global using global::Microsoft.AspNetCore.Mvc.Filters;
+global using global::Microsoft.AspNetCore.Routing;
+global using global::Microsoft.AspNetCore.TestHost;
+global using global::Microsoft.Extensions.DependencyInjection;
+global using global::Microsoft.Extensions.Hosting;
+global using global::Microsoft.Extensions.Options;
+global using global::Moq;
+global using global::System.Reflection;
+global using global::System.Text;
