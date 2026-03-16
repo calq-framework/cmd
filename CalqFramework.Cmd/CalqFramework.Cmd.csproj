@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>CalqFramework.Cmd</RootNamespace>
     <PackageId>CalqFramework.Cmd</PackageId>
-    <Version>0.35.0</Version>
+    <Version>0.36.0</Version>
     <PackageProjectUrl>https://github.com/calq-framework</PackageProjectUrl>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
