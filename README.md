@@ -644,9 +644,6 @@ string result = CMD("echo Hello World");
 
 See also: [How to Execute Parallel and Distributed Jobs](#how-to-execute-parallel-and-distributed-jobs)
 
----
----
-
 ## Usage - Calq CMD with Python
 
 ### 1. Application Setup & Initialization
@@ -884,9 +881,6 @@ See also: [How to Handle Execution Failures](#how-to-handle-execution-failures)
 ### 7. Extensibility & Customization
 
 *Covered by [Calq CMD — How to Connect to Remote Nodes](#how-to-connect-to-remote-nodes). PythonTool uses the same HttpToolWorker protocol as HttpTool.*
-
----
----
 
 ## Usage - Calq CMD ASP.NET Core
 
@@ -1337,9 +1331,6 @@ GET http://localhost:5000/CalqCmd?cmd=Add --help
 - Help is written to the `interfaceOut` TextWriter, which streams to the HTTP response
 
 See also: [How to Define Command Targets](#how-to-define-command-targets)
-
----
----
 
 ## Usage - Calq CMD ASP.NET Core with Python
 
