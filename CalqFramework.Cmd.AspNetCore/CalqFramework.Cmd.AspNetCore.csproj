@@ -19,7 +19,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="../CalqFramework.Cmd/CalqFramework.Cmd.csproj" />
   </ItemGroup>

@@ -1,8 +1,4 @@
-﻿using System.Buffers;
-using System.Reflection;
-using System.Runtime.InteropServices;
-
-namespace CalqFramework.Cmd.Shell.SystemProcess;
+﻿namespace CalqFramework.Cmd.Shell.SystemProcess;
 
 /// <summary>
 ///     Utility methods for stream handling and input/output relay operations.
@@ -13,21 +9,24 @@ internal class StreamUtils {
     ///     Relays input from a stream to a process's standard input stream.
     ///     Handles both console input (character by character with encoding) and redirected input (binary buffered).
     /// </summary>
-    public static async Task RelayInput(Stream processInputStream, Stream inputStream,
-        CancellationToken cancellationToken) {
+    public static async Task RelayInput(Stream processInputStream, Stream inputStream, CancellationToken cancellationToken) {
         bool isInputRedirected = IsInputRedirected(inputStream);
         if (!isInputRedirected) {
             // Console keyboard input - read chars and encode to UTF-8 bytes
             while (!cancellationToken.IsCancellationRequested) {
                 if (Console.KeyAvailable) {
-                    char keyChar = Console.ReadKey(false).KeyChar;
+                    char keyChar = Console.ReadKey(false)
+                        .KeyChar;
                     if (keyChar == '\r') {
                         // windows enterkey is \r which returns carriage back to the beginning of the line instead of starting a new line
                         Console.WriteLine();
                         keyChar = '\n';
                     }
 
-                    byte[] charBytes = System.Text.Encoding.UTF8.GetBytes(new[] { keyChar });
+                    byte[] charBytes = System.Text.Encoding.UTF8.GetBytes(
+                        new[] {
+                            keyChar
+                        });
                     await processInputStream.WriteAsync(charBytes.AsMemory(), cancellationToken);
                     await processInputStream.FlushAsync(cancellationToken);
                 }
@@ -43,14 +42,12 @@ internal class StreamUtils {
                     try {
                         bytesRead = await inputStream.ReadAsync(buffer.AsMemory(0, 4096), cancellationToken);
                     } catch {
-                        processInputStream
-                            .Close(); // in case input stream reached EOF close input stream to signal EOF to the process
+                        processInputStream.Close(); // in case input stream reached EOF close input stream to signal EOF to the process
                         throw;
                     }
 
                     if (bytesRead == 0) {
-                        processInputStream
-                            .Close(); // in case input stream reached EOF close input stream to signal EOF to the process
+                        processInputStream.Close(); // in case input stream reached EOF close input stream to signal EOF to the process
                         break;
                     }
 
@@ -76,8 +73,10 @@ internal class StreamUtils {
             return false;
         }
 
-        FieldInfo handleField1 = stream1.GetType().GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance)!;
-        FieldInfo handleField2 = stream2.GetType().GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        FieldInfo handleField1 = stream1.GetType()
+            .GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        FieldInfo handleField2 = stream2.GetType()
+            .GetField("_handle", BindingFlags.NonPublic | BindingFlags.Instance)!;
         object handle1 = handleField1.GetValue(stream1)!;
         object handle2 = handleField2.GetValue(stream2)!;
 

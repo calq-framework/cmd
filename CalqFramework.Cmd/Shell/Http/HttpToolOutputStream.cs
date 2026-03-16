@@ -4,8 +4,7 @@
 ///     HTTP-based output stream that wraps HTTP response content for shell operations.
 ///     Handles HTTP protocol errors and converts them to shell worker errors.
 /// </summary>
-internal sealed class HttpToolOutputStream(Stream responseContentStream, IShellWorker shellWorker)
-    : ShellWorkerOutputStream(shellWorker) {
+internal sealed class HttpToolOutputStream(Stream responseContentStream, IShellWorker shellWorker) : ShellWorkerOutputStream(shellWorker) {
     private readonly Stream _innerStream = responseContentStream;
     private Error _error = new(0, null);
 
@@ -44,8 +43,7 @@ internal sealed class HttpToolOutputStream(Stream responseContentStream, IShellW
     ///     Asynchronously attempts to read data from the HTTP response stream, capturing HTTP protocol errors.
     /// </summary>
     /// <returns>Task containing the number of bytes read, or 0 if an error occurred</returns>
-    protected override async ValueTask<int> TryReadAsync(Memory<byte> buffer,
-        CancellationToken cancellationToken) {
+    protected override async ValueTask<int> TryReadAsync(Memory<byte> buffer, CancellationToken cancellationToken) {
         try {
             int bytesRead = await _innerStream.ReadAsync(buffer, cancellationToken);
             return bytesRead;

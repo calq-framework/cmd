@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using CalqFramework.Cmd.Shell;
+﻿using CalqFramework.Cmd.Shell;
 
 [assembly: InternalsVisibleTo("CalqFramework.Cmd.AspNetCore")]
 
@@ -15,8 +14,7 @@ public class LocalTool : ShellBase {
 
     internal static ILocalToolFactory Factory { get; set; } = new LocalToolFactory();
 
-    public override IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream,
-        bool disposeOnCompletion = true) =>
+    public override IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) =>
         _underlyingShell.CreateShellWorker(shellScript, inputStream, disposeOnCompletion);
 
     public override string MapToHostPath(string internalPath) => _underlyingShell.MapToHostPath(internalPath);

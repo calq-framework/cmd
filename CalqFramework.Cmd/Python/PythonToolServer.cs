@@ -1,8 +1,4 @@
-﻿using System.Net;
-using System.Net.Sockets;
-using System.Reflection;
-using CalqFramework.Cmd.Shell;
-using CalqFramework.Cmd.Shells;
+﻿using CalqFramework.Cmd.Shells;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.Python;
@@ -41,9 +37,7 @@ public class PythonToolServer(string toolScriptPath) : IPythonToolServer {
     ///     HTTPS URI where the Python tool server is accessible.
     ///     Only available after the server has been started successfully.
     /// </summary>
-    public Uri Uri => !_started
-        ? throw new InvalidOperationException("Server hasn't started yet.")
-        : new Uri($"https://localhost:{Port}");
+    public Uri Uri => !_started ? throw new InvalidOperationException("Server hasn't started yet.") : new Uri($"https://localhost:{Port}");
 
     public async Task<IShellWorker> StartAsync(CancellationToken cancellationToken = default) {
         if (_started) {
@@ -56,9 +50,7 @@ public class PythonToolServer(string toolScriptPath) : IPythonToolServer {
         LocalTerminal.Shell = Shell;
         string scriptDirWihinShell = LocalTerminal.Shell.MapToInternalPath(scriptDir);
 
-        await CMDAsync(
-            @"openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj ""/CN=localhost""",
-            cancellationToken);
+        await CMDAsync(@"openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj ""/CN=localhost""", cancellationToken);
 
         Assembly assembly = Assembly.GetExecutingAssembly();
         string pythonServerFile = "CalqFramework.Cmd.Python.server.py";
@@ -67,8 +59,7 @@ public class PythonToolServer(string toolScriptPath) : IPythonToolServer {
         using StreamReader reader = new(stream);
         string pythonServerScript = reader.ReadToEnd();
 
-        pythonServerScript =
-            pythonServerScript.Replace("sys.path.append('./')", $"sys.path.append(r'{scriptDirWihinShell}')");
+        pythonServerScript = pythonServerScript.Replace("sys.path.append('./')", $"sys.path.append(r'{scriptDirWihinShell}')");
         pythonServerScript = pythonServerScript.Replace("test_tool", scriptFileNameWithoutExtension);
 
         _port ??= GetAvailablePort();

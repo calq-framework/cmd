@@ -1,13 +1,10 @@
-﻿using System.Diagnostics;
-
-namespace CalqFramework.Cmd.Shell.SystemProcess;
+﻿namespace CalqFramework.Cmd.Shell.SystemProcess;
 
 /// <summary>
 ///     Base class for process-based shell workers (CommandLine, Bash).
 ///     Manages process lifecycle, stream handling, and error reporting.
 /// </summary>
-public abstract class ProcessWorkerBase(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true)
-    : ShellWorkerBase(shellScript, inputStream, disposeOnCompletion) {
+public abstract class ProcessWorkerBase(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) : ShellWorkerBase(shellScript, inputStream, disposeOnCompletion) {
     private bool _disposed;
     private AutoTerminatingProcess _process = null!;
     private ProcessOutputStream? _processOutputStream;
@@ -32,8 +29,7 @@ public abstract class ProcessWorkerBase(ShellScript shellScript, Stream? inputSt
     }
 
     protected override Task InitializeAsync(ShellScript shellScript, CancellationToken cancellationToken = default) {
-        ProcessExecutionInfo processExecutionInfo =
-            GetProcessExecutionInfo(ShellScript.WorkingDirectory, ShellScript.Script);
+        ProcessExecutionInfo processExecutionInfo = GetProcessExecutionInfo(ShellScript.WorkingDirectory, ShellScript.Script);
 
         _process = new AutoTerminatingProcess {
             StartInfo = new ProcessStartInfo {
@@ -49,8 +45,7 @@ public abstract class ProcessWorkerBase(ShellScript shellScript, Stream? inputSt
             EnableRaisingEvents = true
         };
 
-        CancellationTokenSource relayInputTaskAbortCts =
-            CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        CancellationTokenSource relayInputTaskAbortCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
         _process.Exited += (s, e) => { relayInputTaskAbortCts.Cancel(); };
 
@@ -58,12 +53,8 @@ public abstract class ProcessWorkerBase(ShellScript shellScript, Stream? inputSt
 
         Task relayInputTask = Task.CompletedTask;
         if (InputStream != null) {
-            relayInputTask =
-                Task.Run(
-                        async () => await StreamUtils.RelayInput(_process.StandardInput.BaseStream,
-                            InputStream!,
-                            relayInputTaskAbortCts.Token), cancellationToken)
-                    .WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
+            relayInputTask = Task.Run(async () => await StreamUtils.RelayInput(_process.StandardInput.BaseStream, InputStream!, relayInputTaskAbortCts.Token), cancellationToken)
+                .WaitAsync(relayInputTaskAbortCts.Token); // input reading may lock thread
         }
 
         _processOutputStream = new ProcessOutputStream(_process, relayInputTask, this);

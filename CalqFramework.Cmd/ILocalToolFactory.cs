@@ -1,6 +1,4 @@
-﻿using CalqFramework.Cmd.Shell;
-
-namespace CalqFramework.Cmd;
+﻿namespace CalqFramework.Cmd;
 
 /// <summary>
 ///     Factory interface for creating underlying shells used by LocalTool

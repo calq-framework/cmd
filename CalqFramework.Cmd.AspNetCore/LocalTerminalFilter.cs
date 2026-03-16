@@ -1,7 +1,3 @@
-using CalqFramework.Cmd.Shells;
-using CalqFramework.Cmd.TerminalComponents;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Options;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.AspNetCore;
@@ -13,9 +9,7 @@ namespace CalqFramework.Cmd.AspNetCore;
 public class LocalTerminalFilter : IActionFilter {
     private readonly CalqCmdControllerOptions _options;
 
-    public LocalTerminalFilter(IOptions<CalqCmdControllerOptions> options) {
-        _options = options.Value;
-    }
+    public LocalTerminalFilter(IOptions<CalqCmdControllerOptions> options) => _options = options.Value;
 
     public void OnActionExecuting(ActionExecutingContext context) {
         LocalTerminal.Out = context.HttpContext.Response.Body;

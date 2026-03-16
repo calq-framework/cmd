@@ -14,8 +14,7 @@ public abstract class ShellBase : IShell {
     public IShellWorker CreateShellWorker(ShellScript shellScript, bool disposeOnCompletion = true) =>
         CreateShellWorker(shellScript, In, disposeOnCompletion);
 
-    public abstract IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream,
-        bool disposeOnCompletion = true);
+    public abstract IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true);
 
     public abstract string MapToHostPath(string internalPath);
 

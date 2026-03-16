@@ -1,11 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using CalqFramework.Cli;
-using CalqFramework.Cli.DataAccess;
-using CalqFramework.Cli.Formatting;
-
-namespace CalqFramework.Cmd.AspNetCore;
+﻿namespace CalqFramework.Cmd.AspNetCore;
 
 /// <summary>
 ///     Default command executor implementation using CalqFramework.Cli for command-line style parsing.
@@ -18,9 +11,7 @@ public class CalqCommandExecutor : ICalqCommandExecutor {
     ///     Initializes a new instance of CalqCommandExecutor with the specified command target.
     /// </summary>
     /// <param name="commandTarget">The target object containing the methods to execute.</param>
-    public CalqCommandExecutor(object commandTarget) {
-        _commandTarget = commandTarget;
-    }
+    public CalqCommandExecutor(object commandTarget) => _commandTarget = commandTarget;
 
     /// <summary>
     ///     Executes a command using CLI-style argument parsing via CalqFramework.Cli with interface output capture.
@@ -43,16 +34,13 @@ public class CalqCommandExecutor : ICalqCommandExecutor {
     ///     Preserves original naming conventions (e.g., PascalCase, snake_case).
     /// </summary>
     private class AsIsClassMemberStringifier : ClassMemberStringifierBase {
-        protected override IEnumerable<string> GetAlternativeNames(string name,
-            IEnumerable<CliNameAttribute> cliNameAttributes) {
+        protected override IEnumerable<string> GetAlternativeNames(string name, IEnumerable<CliNameAttribute> cliNameAttributes) =>
             // Return empty list - no alternative names
-            return [];
-        }
+            [];
 
-        protected override IEnumerable<string> GetRequiredNames(string name,
-            IEnumerable<CliNameAttribute> cliNameAttributes) {
+        protected override IEnumerable<string> GetRequiredNames(string name, IEnumerable<CliNameAttribute> cliNameAttributes) {
             List<string> keys = [];
-            
+
             // If CliNameAttribute is present, use it
             foreach (CliNameAttribute cliNameAttribute in cliNameAttributes) {
                 keys.Add(cliNameAttribute.Name);

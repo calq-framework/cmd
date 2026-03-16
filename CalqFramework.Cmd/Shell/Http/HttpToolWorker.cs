@@ -1,18 +1,11 @@
-﻿using System.Buffers;
-using System.Net;
-
-namespace CalqFramework.Cmd.Shell.Http;
+﻿namespace CalqFramework.Cmd.Shell.Http;
 
 /// <summary>
 ///     HTTP-based shell worker for distributed command execution.
 ///     Communicates with HTTP servers via HTTP/2, supports streaming and error handling.
 ///     Used by HttpTool and PythonTool for remote execution.
 /// </summary>
-public class HttpToolWorker(
-    HttpClient httpClient,
-    ShellScript shellScript,
-    Stream? inputStream,
-    bool disposeOnCompletion = true) : ShellWorkerBase(shellScript, inputStream, disposeOnCompletion) {
+public class HttpToolWorker(HttpClient httpClient, ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) : ShellWorkerBase(shellScript, inputStream, disposeOnCompletion) {
     private readonly HttpClient _httpClient = httpClient;
     private bool _disposed;
     private HttpToolOutputStream? _executionOutputStream;
@@ -59,11 +52,9 @@ public class HttpToolWorker(
 
                 return await errorResponse.Content.ReadAsStringAsync(cancellationToken);
             } catch (HttpRequestException retrievalEx) {
-                return
-                    $"Error occurred (code: {errorCode}), but could not retrieve detailed error message: {retrievalEx.Message}";
+                return $"Error occurred (code: {errorCode}), but could not retrieve detailed error message: {retrievalEx.Message}";
             } catch (TaskCanceledException retrievalEx) when (retrievalEx.InnerException is TimeoutException) {
-                return
-                    $"Error occurred (code: {errorCode}), but timed out retrieving detailed error message: {retrievalEx.Message}";
+                return $"Error occurred (code: {errorCode}), but timed out retrieving detailed error message: {retrievalEx.Message}";
             }
         }
     }
@@ -80,8 +71,7 @@ public class HttpToolWorker(
         base.Dispose(disposing);
     }
 
-    protected override async Task InitializeAsync(ShellScript shellScript,
-        CancellationToken cancellationToken = default) {
+    protected override async Task InitializeAsync(ShellScript shellScript, CancellationToken cancellationToken = default) {
         HttpRequestMessage request = new() {
             Version = new Version(2, 0)
         };

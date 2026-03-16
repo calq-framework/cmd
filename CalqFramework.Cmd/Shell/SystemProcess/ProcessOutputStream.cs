@@ -1,13 +1,10 @@
-﻿using System.Diagnostics;
-
-namespace CalqFramework.Cmd.Shell.SystemProcess;
+﻿namespace CalqFramework.Cmd.Shell.SystemProcess;
 
 /// <summary>
 ///     Process-based output stream that wraps a process's standard output for shell operations.
 ///     Handles process exit codes and input relay task monitoring.
 /// </summary>
-internal sealed class ProcessOutputStream(Process process, Task relayInputTask, IShellWorker shellWorker)
-    : ShellWorkerOutputStream(shellWorker) {
+internal sealed class ProcessOutputStream(Process process, Task relayInputTask, IShellWorker shellWorker) : ShellWorkerOutputStream(shellWorker) {
     private readonly Stream _innerStream = process.StandardOutput.BaseStream;
     private readonly Process _process = process;
     private readonly Task _realyInputTask = relayInputTask;
@@ -53,8 +50,7 @@ internal sealed class ProcessOutputStream(Process process, Task relayInputTask, 
     ///     Asynchronously attempts to read data from the process output stream, checking for input relay task failures.
     /// </summary>
     /// <returns>Task containing the number of bytes read from the process output</returns>
-    protected override async ValueTask<int> TryReadAsync(Memory<byte> buffer,
-        CancellationToken cancellationToken) {
+    protected override async ValueTask<int> TryReadAsync(Memory<byte> buffer, CancellationToken cancellationToken) {
         if (_realyInputTask.IsFaulted) {
             throw _realyInputTask.Exception;
         }

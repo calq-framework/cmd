@@ -1,5 +1,4 @@
-﻿using CalqFramework.Cmd.Shell;
-using CalqFramework.Cmd.TerminalComponents;
+﻿using CalqFramework.Cmd.TerminalComponents;
 
 namespace CalqFramework.Cmd;
 
@@ -38,12 +37,14 @@ public static class Terminal {
     /// </summary>
     public static string CMD(string script, TimeSpan? timeout = null) {
         CancellationTokenSource cancellationTokenSource = new(timeout ?? Timeout.InfiniteTimeSpan);
-        return CMDV(script).Evaluate(cancellationTokenSource.Token);
+        return CMDV(script)
+            .Evaluate(cancellationTokenSource.Token);
     }
 
     public static string CMD(string script, Stream? inputStream, TimeSpan? timeout = null) {
         CancellationTokenSource cancellationTokenSource = new(timeout ?? Timeout.InfiniteTimeSpan);
-        return CMDV(script).Evaluate(inputStream, cancellationTokenSource.Token);
+        return CMDV(script)
+            .Evaluate(inputStream, cancellationTokenSource.Token);
     }
 
     /// <summary>
@@ -56,7 +57,8 @@ public static class Terminal {
     /// <exception cref="JsonException">Thrown when the output is not valid JSON</exception>
     public static T? CMD<T>(string script, TimeSpan? timeout = null) {
         CancellationTokenSource cancellationTokenSource = new(timeout ?? Timeout.InfiniteTimeSpan);
-        return CMDV(script).Evaluate<T>(cancellationTokenSource.Token);
+        return CMDV(script)
+            .Evaluate<T>(cancellationTokenSource.Token);
     }
 
     /// <summary>
@@ -70,17 +72,19 @@ public static class Terminal {
     /// <exception cref="JsonException">Thrown when the output is not valid JSON</exception>
     public static T? CMD<T>(string script, Stream? inputStream, TimeSpan? timeout = null) {
         CancellationTokenSource cancellationTokenSource = new(timeout ?? Timeout.InfiniteTimeSpan);
-        return CMDV(script).Evaluate<T>(inputStream, cancellationTokenSource.Token);
+        return CMDV(script)
+            .Evaluate<T>(inputStream, cancellationTokenSource.Token);
     }
 
     /// <summary>
     ///     Asynchronously executes a shell command and returns the output as a string.
     /// </summary>
     public static Task<string> CMDAsync(string script, CancellationToken cancellationToken = default) =>
-        CMDV(script).EvaluateAsync(cancellationToken);
+        CMDV(script)
+            .EvaluateAsync(cancellationToken);
 
-    public static Task<string> CMDAsync(string script, Stream? inputStream,
-        CancellationToken cancellationToken = default) => CMDV(script).EvaluateAsync(inputStream, cancellationToken);
+    public static Task<string> CMDAsync(string script, Stream? inputStream, CancellationToken cancellationToken = default) => CMDV(script)
+        .EvaluateAsync(inputStream, cancellationToken);
 
     /// <summary>
     ///     Asynchronously executes a shell command and deserializes the JSON output to the specified type.
@@ -91,7 +95,8 @@ public static class Terminal {
     /// <returns>Task containing the deserialized object of type T, or null if deserialization returns null</returns>
     /// <exception cref="JsonException">Thrown when the output is not valid JSON</exception>
     public static Task<T?> CMDAsync<T>(string script, CancellationToken cancellationToken = default) =>
-        CMDV(script).EvaluateAsync<T>(cancellationToken);
+        CMDV(script)
+            .EvaluateAsync<T>(cancellationToken);
 
     /// <summary>
     ///     Asynchronously executes a shell command with custom input and deserializes the JSON output to the specified type.
@@ -102,8 +107,8 @@ public static class Terminal {
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>Task containing the deserialized object of type T, or null if deserialization returns null</returns>
     /// <exception cref="JsonException">Thrown when the output is not valid JSON</exception>
-    public static Task<T?> CMDAsync<T>(string script, Stream? inputStream,
-        CancellationToken cancellationToken = default) => CMDV(script).EvaluateAsync<T>(inputStream, cancellationToken);
+    public static Task<T?> CMDAsync<T>(string script, Stream? inputStream, CancellationToken cancellationToken = default) => CMDV(script)
+        .EvaluateAsync<T>(inputStream, cancellationToken);
 
     /// <summary>
     ///     Executes a shell command and returns the output as a stream for real-time processing.
@@ -112,12 +117,17 @@ public static class Terminal {
     /// </summary>
     public static ShellWorkerOutputStream CMDStream(string script, TimeSpan? timeout = null) {
         CancellationTokenSource cancellationTokenSource = new(timeout ?? Timeout.InfiniteTimeSpan);
-        return CMDStreamAsync(script, cancellationTokenSource.Token).ConfigureAwait(false).GetAwaiter().GetResult();
+        return CMDStreamAsync(script, cancellationTokenSource.Token)
+            .ConfigureAwait(false)
+            .GetAwaiter()
+            .GetResult();
     }
 
     public static ShellWorkerOutputStream CMDStream(string script, Stream? inputStream, TimeSpan? timeout = null) {
         CancellationTokenSource cancellationTokenSource = new(timeout ?? Timeout.InfiniteTimeSpan);
-        return CMDStreamAsync(script, inputStream, cancellationTokenSource.Token).ConfigureAwait(false).GetAwaiter()
+        return CMDStreamAsync(script, inputStream, cancellationTokenSource.Token)
+            .ConfigureAwait(false)
+            .GetAwaiter()
             .GetResult();
     }
 
@@ -126,11 +136,9 @@ public static class Terminal {
     ///     Provides direct access to the command's StandardOutput stream.
     ///     Worker is auto-disposed when stream reading completes.
     /// </summary>
-    public static async Task<ShellWorkerOutputStream> CMDStreamAsync(string script,
-        CancellationToken cancellationToken = default) => await CMDStreamAsync(script, null, cancellationToken);
+    public static async Task<ShellWorkerOutputStream> CMDStreamAsync(string script, CancellationToken cancellationToken = default) => await CMDStreamAsync(script, null, cancellationToken);
 
-    public static async Task<ShellWorkerOutputStream> CMDStreamAsync(string script, Stream? inputStream,
-        CancellationToken cancellationToken = default) {
+    public static async Task<ShellWorkerOutputStream> CMDStreamAsync(string script, Stream? inputStream, CancellationToken cancellationToken = default) {
         ShellScript cmd = CMDV(script);
         IShellWorker worker = await cmd.StartAsync(inputStream, true, cancellationToken);
         return worker.StandardOutput;
@@ -165,12 +173,10 @@ public static class Terminal {
     public static async Task RUNAsync(string script, CancellationToken cancellationToken = default) =>
         await RUNAsync(script, LocalTerminal.Shell.In, LocalTerminal.Out, cancellationToken);
 
-    public static async Task
-        RUNAsync(string script, Stream? inputStream, CancellationToken cancellationToken = default) =>
+    public static async Task RUNAsync(string script, Stream? inputStream, CancellationToken cancellationToken = default) =>
         await RUNAsync(script, inputStream, LocalTerminal.Out, cancellationToken);
 
-    public static async Task RUNAsync(string script, Stream? inputStream, Stream outputStream,
-        CancellationToken cancellationToken = default) {
+    public static async Task RUNAsync(string script, Stream? inputStream, Stream outputStream, CancellationToken cancellationToken = default) {
         ShellScript cmd = CMDV(script);
         LocalTerminal.TerminalLogger.Log(cmd);
         await cmd.RunAsync(inputStream, outputStream, cancellationToken);

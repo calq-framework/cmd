@@ -1,4 +1,3 @@
-using CalqFramework.Cmd.Shell;
 using CalqFramework.Cmd.Shells;
 using CalqFramework.Cmd.TerminalComponents;
 

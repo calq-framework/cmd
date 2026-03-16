@@ -1,10 +1,5 @@
 ﻿using CalqFramework.Cmd.AspNetCore.Attributes;
 using CalqFramework.Cmd.Shells;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Routing;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.AspNetCore.Test;
@@ -13,8 +8,7 @@ public class UseCommandLineShellAttributeTest {
     private static ActionExecutingContext CreateEmptyContext() {
         DefaultHttpContext httpContext = new();
         ActionContext actionContext = new(httpContext, new RouteData(), new ActionDescriptor());
-        return new ActionExecutingContext(actionContext, [], new Dictionary<string, object?>(),
-            new object());
+        return new ActionExecutingContext(actionContext, [], new Dictionary<string, object?>(), new object());
     }
 
     [Fact]

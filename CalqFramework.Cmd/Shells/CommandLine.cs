@@ -8,8 +8,7 @@ namespace CalqFramework.Cmd.Shells;
 ///     Provides basic process execution without special path mapping.
 /// </summary>
 public class CommandLine : ShellBase {
-    public override ProcessWorkerBase CreateShellWorker(ShellScript shellScript, Stream? inputStream,
-        bool disposeOnCompletion = true) => new CommandLineWorker(shellScript, inputStream, disposeOnCompletion);
+    public override ProcessWorkerBase CreateShellWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) => new CommandLineWorker(shellScript, inputStream, disposeOnCompletion);
 
     public override string MapToHostPath(string internalPath) => Path.GetFullPath(internalPath);
 

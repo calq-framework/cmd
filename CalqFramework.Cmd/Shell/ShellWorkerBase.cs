@@ -4,8 +4,7 @@
 ///     Base implementation for shell workers. Handles piping, lifecycle management,
 ///     and provides common functionality for both process and HTTP workers.
 /// </summary>
-public abstract class ShellWorkerBase(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true)
-    : IShellWorker {
+public abstract class ShellWorkerBase(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) : IShellWorker {
     private readonly SemaphoreSlim _hasStartedSemaphore = new(1, 1);
     private bool _disposed;
     private bool _disposing;
@@ -20,11 +19,6 @@ public abstract class ShellWorkerBase(ShellScript shellScript, Stream? inputStre
     public ShellScript ShellScript { get; } = shellScript;
 
     public abstract ShellWorkerOutputStream StandardOutput { get; }
-
-    public void Dispose() {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
 
     public async Task EnsurePipeIsCompletedAsync(CancellationToken cancellationToken = default) {
         await EnsureStandardOutputIsReadToEndAsync(cancellationToken);
@@ -56,6 +50,11 @@ public abstract class ShellWorkerBase(ShellScript shellScript, Stream? inputStre
         } finally {
             _hasStartedSemaphore.Release();
         }
+    }
+
+    public void Dispose() {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     ~ShellWorkerBase() => Dispose(false);

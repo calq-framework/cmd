@@ -1,12 +1,4 @@
-﻿using System.Text;
-using System.Text.Json;
-using CalqFramework.Cmd.Shells;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
+﻿using CalqFramework.Cmd.Shells;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.AspNetCore;
@@ -22,11 +14,7 @@ public class CalqCmdController : ControllerBase {
     private readonly IDistributedCache _distributedCache;
     private readonly ILocalToolFactory _localToolFactory;
 
-    public CalqCmdController(
-        ICalqCommandExecutor calqCommandExecutor,
-        ILocalToolFactory localToolFactory,
-        IDistributedCache distributedCache,
-        IOptions<CalqCmdCacheOptions> cacheOptions) {
+    public CalqCmdController(ICalqCommandExecutor calqCommandExecutor, ILocalToolFactory localToolFactory, IDistributedCache distributedCache, IOptions<CalqCmdCacheOptions> cacheOptions) {
         _calqCommandExecutor = calqCommandExecutor;
         _localToolFactory = localToolFactory;
         _distributedCache = distributedCache;
@@ -47,11 +35,14 @@ public class CalqCmdController : ControllerBase {
                 if (!Request.Headers.TryGetValue("cmd", out StringValues cmdValues)) {
                     return BadRequest("Missing 'cmd' query parameter or 'cmd' header");
                 }
+
                 cmdValue = cmdValues.FirstOrDefault() ?? "";
             }
 
             Stream responseStream = Response.BodyWriter.AsStream();
-            LocalTerminal.Shell = new CommandLine { In = Request.Body };
+            LocalTerminal.Shell = new CommandLine {
+                In = Request.Body
+            };
             LocalTerminal.Out = responseStream; // Void methods return ValueTuple and might write directly to the response body via RUN or LocalTerminal.Out
 
             string[] args = cmdValue.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -62,11 +53,14 @@ public class CalqCmdController : ControllerBase {
             if (result is Task task) {
                 await task;
                 // Task methods return Task<VoidTaskResult> so task.GetType().IsGenericType is always true and hence unreliable
-                result = task.GetType().GetProperty("Result")?.GetValue(task) ?? default(ValueTuple);
+                result = task.GetType()
+                    .GetProperty("Result")
+                    ?.GetValue(task) ?? default(ValueTuple);
             }
 
             // For other result types, don't flush to avoid committing headers prematurely
-            if (result is ValueTuple || result?.GetType().Name == "VoidTaskResult") {
+            if (result is ValueTuple || result?.GetType()
+                    .Name == "VoidTaskResult") {
                 await interfaceOut.FlushAsync();
                 return new EmptyResult();
             }
@@ -91,6 +85,7 @@ public class CalqCmdController : ControllerBase {
             if (!Request.Headers.TryGetValue("error_code", out StringValues errorCodeValues)) {
                 return BadRequest("Missing 'error_code' header");
             }
+
             errorCodeValue = errorCodeValues.FirstOrDefault() ?? "";
         }
 

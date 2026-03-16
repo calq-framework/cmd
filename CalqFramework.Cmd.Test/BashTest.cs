@@ -1,5 +1,4 @@
-﻿using System.Text;
-using CalqFramework.Cmd.Shells;
+﻿using CalqFramework.Cmd.Shells;
 using CalqFramework.Cmd.TerminalComponents;
 using static CalqFramework.Cmd.Terminal;
 
@@ -34,9 +33,7 @@ public class BashTest {
         LocalTerminal.Out = writer;
         LocalTerminal.Shell = new Bash();
 
-        string output =
-            CMD(
-                "sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
+        string output = CMD("sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500}; sleep 1; printf '1234567890'%.0s {1..500};");
         string writerOutput = ReadString(writer);
 
         Assert.Equal(expectedOutput, output);
@@ -86,7 +83,7 @@ public class BashTest {
         }
 
         MemoryStream inputStream = new(binaryInput);
-        
+
         LocalTerminal.TerminalLogger = new NullTerminalLogger();
         LocalTerminal.Shell = new Bash();
 
@@ -94,7 +91,7 @@ public class BashTest {
         using ShellWorkerOutputStream stream = CMDStream("cat", inputStream);
         byte[] outputBytes = new byte[256];
         int bytesRead = await stream.ReadAsync(outputBytes);
-        
+
         Assert.Equal(binaryInput.Length, bytesRead);
         Assert.Equal(binaryInput, outputBytes);
     }
