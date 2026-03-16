@@ -1,0 +1,12 @@
+global using global::Microsoft.Win32;
+global using global::System.Buffers;
+global using global::System.Collections.Concurrent;
+global using global::System.Diagnostics;
+global using global::System.Net;
+global using global::System.Net.Sockets;
+global using global::System.Reflection;
+global using global::System.Runtime.CompilerServices;
+global using global::System.Runtime.InteropServices;
+global using global::System.Text;
+global using global::System.Text.Json;
+global using global::System.Text.RegularExpressions;

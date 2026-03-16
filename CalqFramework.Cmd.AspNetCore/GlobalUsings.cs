@@ -1,0 +1,15 @@
+global using global::CalqFramework.Cli;
+global using global::CalqFramework.Cli.DataAccess;
+global using global::CalqFramework.Cli.Formatting;
+global using global::Microsoft.AspNetCore.Hosting.Server;
+global using global::Microsoft.AspNetCore.Hosting.Server.Features;
+global using global::Microsoft.AspNetCore.Http;
+global using global::Microsoft.AspNetCore.Http.Features;
+global using global::Microsoft.AspNetCore.Mvc;
+global using global::Microsoft.AspNetCore.Mvc.ApplicationModels;
+global using global::Microsoft.AspNetCore.Mvc.Filters;
+global using global::Microsoft.Extensions.Caching.Distributed;
+global using global::Microsoft.Extensions.DependencyInjection;
+global using global::Microsoft.Extensions.Options;
+global using global::Microsoft.Extensions.Primitives;
+global using global::System.Text;
