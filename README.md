@@ -1512,133 +1512,54 @@ See also: [How to Process Binary Data with Python](#how-to-process-binary-data-w
 ## Quick Start
 
 ### Calq CMD
+[QuickStart Example](https://github.com/calq-framework/cmd/tree/main/Examples/Example.CalqCmd.QuickStart)  
+
 ```bash
 git clone --branch latest https://github.com/calq-framework/cmd docs/cmd
 dotnet new console -n QuickStart
 cd QuickStart
+cp ../docs/cmd/Examples/Example.CalqCmd.QuickStart/Program.cs ./Program.cs
 dotnet add package CalqFramework.Cmd
+dotnet run
 ```
 
-```csharp
-using static CalqFramework.Cmd.Terminal;  
+### Calq CMD with Python
+[QuickStart Example](https://github.com/calq-framework/cmd/tree/main/Examples/Example.CalqCmdPython.QuickStart)  
 
-class QuickStart {  
-    static async Task Main() {  
-        Console.WriteLine("PWD: " + PWD);  
-        RUN("echo Hello Calq CMD!");  
-        string version = CMD("curl --version");  
-        Console.WriteLine(version);  
-    }  
-}  
+```bash
+git clone --branch latest https://github.com/calq-framework/cmd docs/cmd
+dotnet new console -n QuickStart
+cd QuickStart
+cp ../docs/cmd/Examples/Example.CalqCmdPython.QuickStart/Program.cs ./Program.cs
+cp ../docs/cmd/Examples/Example.CalqCmdPython.QuickStart/tool.py ./tool.py
+dotnet add package CalqFramework.Cmd
+dotnet run
 ```
 
 ### Calq CMD ASP.NET Core
+[QuickStart Example](https://github.com/calq-framework/cmd/tree/main/Examples/Example.CalqCmdAspNetCore.QuickStart)  
+
 ```bash
 git clone --branch latest https://github.com/calq-framework/cmd docs/cmd
-dotnet new webapi -n QuickStartWeb
-cd QuickStartWeb
+dotnet new web -n QuickStart
+cd QuickStart
+cp ../docs/cmd/Examples/Example.CalqCmdAspNetCore.QuickStart/Program.cs ./Program.cs
 dotnet add package CalqFramework.Cmd.AspNetCore
+dotnet run
 ```
 
-```csharp
-using CalqFramework.Cmd.AspNetCore;
-using CalqFramework.Cmd.AspNetCore.Attributes;
-using static CalqFramework.Cmd.Terminal;
-using System.Text;
-using Microsoft.AspNetCore.Mvc;
-using CalqFramework.Cmd.Shells;
+### Calq CMD ASP.NET Core with Python
+[QuickStart Example](https://github.com/calq-framework/cmd/tree/main/Examples/Example.CalqCmdAspNetCorePython.QuickStart)  
 
-var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddControllers();
-
-// Register command target for CalqCmdController
-var commandTarget = new DataProcessingCommands();
-builder.Services.AddCalqCmdController(commandTarget);
-
-var app = builder.Build();
-app.MapControllers();
-app.Run();
-
-// Command target class - methods become executable commands via CalqCmdController
-public class DataProcessingCommands
-{
-    // Process data in parallel chunks - reads from LocalTerminal.Shell.In
-    public async Task<string> ProcessParallel()
-    {
-        if (LocalTerminal.Shell.In == null)
-            return "No input stream provided";
-
-        using var reader = new StreamReader(LocalTerminal.Shell.In);
-        var inputData = await reader.ReadToEndAsync();
-        
-        // Split input into chunks for parallel processing
-        var lines = inputData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        var chunks = lines.Chunk(Math.Max(1, lines.Length / Environment.ProcessorCount));
-        
-        // Process chunks in parallel using LocalTool for distributed execution
-        LocalTerminal.Shell = new LocalTool();
-        
-        var tasks = chunks.Select(async chunk =>
-        {
-            var chunkData = string.Join('\n', chunk);
-            var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(chunkData));
-            
-            // Each chunk processed via distributed LocalTool - calls ProcessChunk command
-            return await CMDAsync("ProcessChunk", inputStream);
-        });
-        
-        var results = await Task.WhenAll(tasks);
-        return string.Join('\n', results);
-    }
-    
-    // Process individual chunk - single command execution
-    public async Task<string> ProcessChunk()
-    {
-        if (LocalTerminal.Shell.In == null)
-            return "Empty chunk";
-        
-        using var reader = new StreamReader(LocalTerminal.Shell.In);
-        var data = await reader.ReadToEndAsync();
-        
-        // Simulate processing work
-        await Task.Delay(100);
-        
-        return $"Processed: {data.Trim().ToUpper()} [Process: {Environment.ProcessId}, Thread: {Environment.CurrentManagedThreadId}]";
-    }
-    
-    // Stream processing - streaming output
-    public async Task<Stream> StreamResults()
-    {
-        if (LocalTerminal.Shell.In == null)
-            return new MemoryStream();
-        
-        // Process input stream and return results as stream
-        using var reader = new StreamReader(LocalTerminal.Shell.In);
-        var data = await reader.ReadToEndAsync();
-        
-        var result = $"Streaming result: {data.Trim()}";
-        var resultBytes = Encoding.UTF8.GetBytes(result);
-        return new MemoryStream(resultBytes);
-    }
-}
-
-// Controller for HTTP endpoint access - calls DataProcessingCommands via CMD
-[ApiController, UseLocalToolShell]
-[Route("api/[controller]")]
-public class DataController : ControllerBase
-{
-    [HttpPost("run-parallel")]
-    public async Task<string> RunParallel([FromBody] Stream input)
-    {
-        LocalTerminal.Shell = new LocalTool() { In = input };
-        return await CMDAsync(nameof(DataProcessingCommands.ProcessParallel));
-    }
-    
-    [HttpPost("get-stream-results")]
-    public async Task<Stream> GetStreamResults([FromBody] Stream input) =>
-        await CMDStreamAsync(nameof(DataProcessingCommands.StreamResults), input);
-}
-```  
+```bash
+git clone --branch latest https://github.com/calq-framework/cmd docs/cmd
+dotnet new web -n QuickStart
+cd QuickStart
+cp ../docs/cmd/Examples/Example.CalqCmdAspNetCorePython.QuickStart/Program.cs ./Program.cs
+cp ../docs/cmd/Examples/Example.CalqCmdAspNetCorePython.QuickStart/tool.py ./tool.py
+dotnet add package CalqFramework.Cmd.AspNetCore
+dotnet run
+```
 
 ## License  
 Calq CMD is dual-licensed under GNU AGPLv3 and the Calq Commercial License.
