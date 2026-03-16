@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: .NET Foundation and Contributors
+# SPDX-FileCopyrightText: 2021-2026 Calq Framework
+#
+# SPDX-License-Identifier: MIT AND (AGPL-3.0-or-later OR LicenseRef-CCL)
+
 # editorconfig.org
 
 # .NET runtime .editorconfig settings
@@ -198,19 +203,42 @@ end_of_line = crlf
 # C# files
 [*.cs]
 end_of_line = lf
-charset = utf-8-bom
+charset = utf-8
+max_line_length = 255
 
 # New line preferences
 csharp_new_line_before_open_brace = none
 csharp_new_line_before_else = false
 csharp_new_line_before_catch = false
 csharp_new_line_before_finally = false
-csharp_new_line_before_members_in_object_initializers = false
-csharp_new_line_before_members_in_anonymous_types = false
+csharp_new_line_before_members_in_object_initializers = true
+csharp_new_line_before_members_in_anonymous_types = true
 csharp_new_line_between_query_expression_clauses = true
+resharper_csharp_keep_existing_linebreaks = false
+resharper_csharp_place_simple_method_on_single_line = true;
+resharper_csharp_wrap_after_invocation_lpar = true
+resharper_csharp_wrap_arguments_style = chop_if_long
+resharper_csharp_wrap_parameters_style = chop_if_long
+resharper_csharp_wrap_chained_method_calls = chop_always
+resharper_csharp_wrap_linq_expressions = chop_always
+resharper_csharp_wrap_switch_expression = chop_always
+resharper_csharp_wrap_array_initializer_style = chop_always
+resharper_wrap_object_and_collection_initializer_style  = chop_always
 
 # internal and private fields should be _camelCase
 dotnet_naming_rule.camel_case_for_private_internal_fields.severity = error
 
+# Code style defaults
+# Warning: csharp_using_directive_placement might throw Unhandled exception: System.NotSupportedException: Changing document properties is not supported,
+# so to confirm run again with csharp_using_directive_placement = outside_namespace:silent,
+# and if passes then manually fix namespaces in failing files and revert the rule to outside_namespace:suggestion.
+csharp_using_directive_placement = outside_namespace:suggestion
+
 # CA1051: Do not declare visible instance fields
 dotnet_diagnostic.CA1051.severity = error
+
+# SYSLIB1045: Use GeneratedRegex (requires source generators - changes compilation)
+dotnet_diagnostic.SYSLIB1045.severity = none
+
+# SYSLIB1054: Use LibraryImport (requires source generators - changes compilation)
+dotnet_diagnostic.SYSLIB1054.severity = none
