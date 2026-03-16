@@ -2,5 +2,5 @@ version = 1
 
 [[annotations]]
 path = "**"
-SPDX-FileCopyrightText = "2024 Calq Framework"
+SPDX-FileCopyrightText = "2023-2026 Calq Framework"
 SPDX-License-Identifier = "AGPL-3.0-or-later OR LicenseRef-CCL"

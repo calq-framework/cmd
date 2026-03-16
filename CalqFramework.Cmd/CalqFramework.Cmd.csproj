@@ -11,7 +11,7 @@
     <PackageProjectUrl>https://github.com/calq-framework</PackageProjectUrl>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Copyright>2024 Calq Framework</Copyright>
+    <Copyright>2023-2026 Calq Framework</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

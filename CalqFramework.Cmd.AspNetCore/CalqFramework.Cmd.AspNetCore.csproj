@@ -6,7 +6,15 @@
     <RootNamespace>CalqFramework.Cmd.AspNetCore</RootNamespace>
     <PackageId>CalqFramework.Cmd.AspNetCore</PackageId>
     <Version>0.35.0</Version>
+    <PackageProjectUrl>https://github.com/calq-framework</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Copyright>2023-2026 Calq Framework</Copyright>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE.txt" Pack="true" PackagePath="" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CalqFramework.Cli" Version="0.63.1" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
