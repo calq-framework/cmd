@@ -1,4 +1,4 @@
-
+using static CalqFramework.Cmd.Terminal;
 
 // Execute a shell command and get the output as a string
 string echo = CMD("echo Hello World");

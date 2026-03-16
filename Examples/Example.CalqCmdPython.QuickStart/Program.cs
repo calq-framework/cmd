@@ -1,4 +1,6 @@
-
+using CalqFramework.Cmd.Python;
+using CalqFramework.Cmd.Shells;
+using static CalqFramework.Cmd.Terminal;
 
 // Start PythonToolServer with the Python Fire script
 var pts = new PythonToolServer("tool.py");

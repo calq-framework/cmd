@@ -1,4 +1,8 @@
+using System.Text;
+using CalqFramework.Cmd.AspNetCore;
+using CalqFramework.Cmd.Shells;
 using Example.CloudNative.DataProcessor;
+using static CalqFramework.Cmd.Terminal;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
