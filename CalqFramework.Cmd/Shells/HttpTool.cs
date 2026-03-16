@@ -13,8 +13,7 @@ public class HttpTool(HttpClient httpClient) : ShellBase {
     /// </summary>
     public HttpClient HttpClient { get; } = httpClient;
 
-    public override IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream,
-        bool disposeOnCompletion = true) =>
+    public override IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) =>
         new HttpToolWorker(HttpClient, shellScript, inputStream, disposeOnCompletion);
 
     public override string MapToHostPath(string internalPath) => Path.GetFullPath(internalPath);

@@ -1,11 +1,5 @@
-﻿using System.Text;
-using CalqFramework.Cmd.Shells;
+﻿using CalqFramework.Cmd.Shells;
 using CalqFramework.Cmd.TerminalComponents;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.AspNetCore.Test;
@@ -16,26 +10,27 @@ namespace CalqFramework.Cmd.AspNetCore.Test;
 /// </summary>
 public class CalqCmdControllerIntegrationTest {
     private async Task<HttpTool> CreateHttpToolAsync() {
-        IHostBuilder hostBuilder = new HostBuilder()
-            .ConfigureWebHost(webHost => {
-                webHost.UseTestServer();
-                webHost.ConfigureServices(services => {
-                    services.AddControllers()
-                        .AddApplicationPart(typeof(CalqCmdController).Assembly);
-                    services.AddCalqCmdController(new TestCommandTarget());
-                });
-                webHost.Configure(app => {
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
-                });
+        IHostBuilder hostBuilder = new HostBuilder().ConfigureWebHost(webHost => {
+            webHost.UseTestServer();
+            webHost.ConfigureServices(services => {
+                services.AddControllers()
+                    .AddApplicationPart(typeof(CalqCmdController).Assembly);
+                services.AddCalqCmdController(new TestCommandTarget());
             });
+            webHost.Configure(app => {
+                app.UseRouting();
+                app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            });
+        });
 
         IHost host = await hostBuilder.StartAsync();
         TestServer server = host.GetTestServer();
         HttpClient testClient = server.CreateClient();
 
-        string serverBaseUrl = testClient.BaseAddress!.ToString().TrimEnd('/');
-        string controllerRoute = nameof(CalqCmdController).Replace("Controller", "");
+        string serverBaseUrl = testClient.BaseAddress!.ToString()
+            .TrimEnd('/');
+        string controllerRoute = nameof(CalqCmdController)
+            .Replace("Controller", "");
         string fullBaseUrl = $"{serverBaseUrl}/{controllerRoute}";
 
         LocalHttpToolFactory factory = new(fullBaseUrl, testClient);
@@ -135,19 +130,18 @@ public class CalqCmdControllerIntegrationTest {
 
     [Fact]
     public async Task ExecuteScript_WithQueryStringScript_ReturnsResult() {
-        IHostBuilder hostBuilder = new HostBuilder()
-            .ConfigureWebHost(webHost => {
-                webHost.UseTestServer();
-                webHost.ConfigureServices(services => {
-                    services.AddControllers()
-                        .AddApplicationPart(typeof(CalqCmdController).Assembly);
-                    services.AddCalqCmdController(new TestCommandTarget());
-                });
-                webHost.Configure(app => {
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
-                });
+        IHostBuilder hostBuilder = new HostBuilder().ConfigureWebHost(webHost => {
+            webHost.UseTestServer();
+            webHost.ConfigureServices(services => {
+                services.AddControllers()
+                    .AddApplicationPart(typeof(CalqCmdController).Assembly);
+                services.AddCalqCmdController(new TestCommandTarget());
             });
+            webHost.Configure(app => {
+                app.UseRouting();
+                app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            });
+        });
 
         IHost host = await hostBuilder.StartAsync();
         TestServer server = host.GetTestServer();
@@ -162,19 +156,18 @@ public class CalqCmdControllerIntegrationTest {
 
     [Fact]
     public async Task ExecuteScript_WithQueryStringHelp_ReturnsHelpOutput() {
-        IHostBuilder hostBuilder = new HostBuilder()
-            .ConfigureWebHost(webHost => {
-                webHost.UseTestServer();
-                webHost.ConfigureServices(services => {
-                    services.AddControllers()
-                        .AddApplicationPart(typeof(CalqCmdController).Assembly);
-                    services.AddCalqCmdController(new TestCommandTarget());
-                });
-                webHost.Configure(app => {
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
-                });
+        IHostBuilder hostBuilder = new HostBuilder().ConfigureWebHost(webHost => {
+            webHost.UseTestServer();
+            webHost.ConfigureServices(services => {
+                services.AddControllers()
+                    .AddApplicationPart(typeof(CalqCmdController).Assembly);
+                services.AddCalqCmdController(new TestCommandTarget());
             });
+            webHost.Configure(app => {
+                app.UseRouting();
+                app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            });
+        });
 
         IHost host = await hostBuilder.StartAsync();
         TestServer server = host.GetTestServer();
@@ -214,20 +207,20 @@ public class CalqCmdControllerIntegrationTest {
     public async Task ExecuteScript_WithBinaryInputStream_PreservesBinaryData() {
         HttpTool httpTool = await CreateHttpToolAsync();
         LocalTerminal.Shell = httpTool;
-        
+
         // Create binary test data with various byte values including null bytes and high-bit-set bytes
         byte[] binaryInput = new byte[256];
         for (int i = 0; i < 256; i++) {
             binaryInput[i] = (byte)i;
         }
-        
+
         MemoryStream inputStream = new(binaryInput);
 
         // Use CMDStream to handle binary data directly
         using ShellWorkerOutputStream stream = CMDStream("ProcessBinaryData", inputStream);
         byte[] outputBytes = new byte[256];
         int bytesRead = await stream.ReadAsync(outputBytes);
-        
+
         Assert.Equal(binaryInput.Length, bytesRead);
         Assert.Equal(binaryInput, outputBytes);
     }
@@ -278,7 +271,7 @@ public class CalqCmdControllerIntegrationTest {
             // Read binary data from input stream
             byte[] buffer = new byte[4096];
             int bytesRead;
-            
+
             while ((bytesRead = await LocalTerminal.Shell.In.ReadAsync(buffer.AsMemory())) > 0) {
                 // Write binary data directly to output stream
                 await LocalTerminal.Out.WriteAsync(buffer.AsMemory(0, bytesRead));

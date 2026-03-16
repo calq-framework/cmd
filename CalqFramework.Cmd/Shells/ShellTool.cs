@@ -18,8 +18,7 @@ public class ShellTool(IShell shell, string command) : ShellBase {
     /// </summary>
     public IShell Shell { get; } = shell;
 
-    public override IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream,
-        bool disposeOnCompletion = true) {
+    public override IShellWorker CreateShellWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) {
         shellScript.Script = Command + " " + shellScript.Script;
         shellScript.Shell = Shell;
         return Shell.CreateShellWorker(shellScript, inputStream, disposeOnCompletion);

@@ -1,7 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics;
-
-namespace CalqFramework.Cmd.Shell.SystemProcess;
+﻿namespace CalqFramework.Cmd.Shell.SystemProcess;
 
 /// <summary>
 ///     Process wrapper that automatically terminates child processes when the application exits.

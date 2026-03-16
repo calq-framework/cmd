@@ -1,8 +1,5 @@
-﻿using System.Reflection;
-using CalqFramework.Cmd.Python;
+﻿using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shells;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace CalqFramework.Cmd.AspNetCore.Test;
 
@@ -57,10 +54,12 @@ public class ServiceCollectionExtensionsTest {
     [Fact]
     public void AddCalqCmdController_WithCustomHttpClientOptions_ConfiguresCorrectly() {
         ServiceCollection services = new();
-        services.AddCalqCmdController(new TestCommandTarget(), options => {
-            options.HttpClientTimeout = TimeSpan.FromMinutes(2);
-            options.HttpClientName = "CustomHttpClient";
-        });
+        services.AddCalqCmdController(
+            new TestCommandTarget(),
+            options => {
+                options.HttpClientTimeout = TimeSpan.FromMinutes(2);
+                options.HttpClientName = "CustomHttpClient";
+            });
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         ILocalToolFactory factory = serviceProvider.GetRequiredService<ILocalToolFactory>();
@@ -80,8 +79,7 @@ public class ServiceCollectionExtensionsTest {
         services.AddCalqCmdController(new TestCommandTarget(), options => { options.RoutePrefix = "api/commands"; });
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
-        IOptions<CalqCmdControllerOptions> options =
-            serviceProvider.GetRequiredService<IOptions<CalqCmdControllerOptions>>();
+        IOptions<CalqCmdControllerOptions> options = serviceProvider.GetRequiredService<IOptions<CalqCmdControllerOptions>>();
 
         Assert.NotNull(options.Value);
         Assert.Equal("api/commands", options.Value.RoutePrefix);
@@ -90,14 +88,16 @@ public class ServiceCollectionExtensionsTest {
     [Fact]
     public void AddCalqCmdController_WithCacheOptions_ConfiguresCorrectly() {
         ServiceCollection services = new();
-        services.AddCalqCmdController(new TestCommandTarget(), null, cacheOptions => {
-            cacheOptions.ErrorCacheExpiration = TimeSpan.FromMinutes(30);
-            cacheOptions.ErrorCacheKeyPrefix = "MyApp.Errors:";
-        });
+        services.AddCalqCmdController(
+            new TestCommandTarget(),
+            null,
+            cacheOptions => {
+                cacheOptions.ErrorCacheExpiration = TimeSpan.FromMinutes(30);
+                cacheOptions.ErrorCacheKeyPrefix = "MyApp.Errors:";
+            });
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
-        IOptions<CalqCmdCacheOptions>
-            cacheOptions = serviceProvider.GetRequiredService<IOptions<CalqCmdCacheOptions>>();
+        IOptions<CalqCmdCacheOptions> cacheOptions = serviceProvider.GetRequiredService<IOptions<CalqCmdCacheOptions>>();
 
         Assert.NotNull(cacheOptions.Value);
         Assert.Equal(TimeSpan.FromMinutes(30), cacheOptions.Value.ErrorCacheExpiration);
@@ -110,8 +110,7 @@ public class ServiceCollectionExtensionsTest {
         services.AddCalqCmdController(new TestCommandTarget());
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
-        using LocalHttpToolFactory factory =
-            (LocalHttpToolFactory)serviceProvider.GetRequiredService<ILocalToolFactory>();
+        using LocalHttpToolFactory factory = (LocalHttpToolFactory)serviceProvider.GetRequiredService<ILocalToolFactory>();
 
         Assert.NotNull(factory);
         factory.Dispose();
@@ -190,8 +189,7 @@ public class ServiceCollectionExtensionsTest {
         ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await serviceProvider.StartPythonToolServerAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await serviceProvider.StartPythonToolServerAsync());
     }
 
     [Fact]
@@ -224,11 +222,9 @@ public class ServiceCollectionExtensionsTest {
         Assert.NotNull(server);
 
         // Verify the extension method is available (compile-time check)
-        bool extensionMethodExists = typeof(ServiceProviderExtensions)
-            .GetMethods()
-            .Any(m => m.Name == "StartPythonToolServerAsync" &&
-                      m.GetParameters().Length >= 1 &&
-                      m.GetParameters()[0].ParameterType == typeof(IServiceProvider));
+        bool extensionMethodExists = typeof(ServiceProviderExtensions).GetMethods()
+            .Any(m => m.Name == "StartPythonToolServerAsync" && m.GetParameters()
+                .Length >= 1 && m.GetParameters()[0].ParameterType == typeof(IServiceProvider));
 
         Assert.True(extensionMethodExists);
     }

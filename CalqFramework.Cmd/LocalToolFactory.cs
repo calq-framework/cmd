@@ -1,7 +1,4 @@
-﻿using System.Diagnostics;
-using System.Reflection;
-using CalqFramework.Cmd.Shell;
-using CalqFramework.Cmd.Shells;
+﻿using CalqFramework.Cmd.Shells;
 
 namespace CalqFramework.Cmd;
 
@@ -18,7 +15,8 @@ public class LocalToolFactory : ILocalToolFactory {
         string location = assembly.Location;
 
         if (string.IsNullOrEmpty(location)) {
-            string? processPath = Process.GetCurrentProcess().MainModule?.FileName;
+            string? processPath = Process.GetCurrentProcess()
+                .MainModule?.FileName;
             if (!string.IsNullOrEmpty(processPath)) {
                 return processPath;
             }

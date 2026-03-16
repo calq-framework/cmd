@@ -1,32 +1,22 @@
-using System.Text;
 using CalqFramework.Cmd.Shells;
-using CalqFramework.Cmd.TerminalComponents;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.AspNetCore.Test;
 
 public class AspNetCoreIntegrationTest {
     private async Task<IHost> CreateTestHostAsync() {
-        IHostBuilder hostBuilder = new HostBuilder()
-            .ConfigureWebHost(webHost => {
-                webHost.UseTestServer();
-                webHost.ConfigureServices(services => {
-                    services.AddControllers()
-                        .AddApplicationPart(typeof(AspNetCoreIntegrationTest).Assembly);
-                    services.AddCalqCmdController(new object()); // Required for LocalTool.Factory setup
-                });
-                webHost.Configure(app => {
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
-                });
+        IHostBuilder hostBuilder = new HostBuilder().ConfigureWebHost(webHost => {
+            webHost.UseTestServer();
+            webHost.ConfigureServices(services => {
+                services.AddControllers()
+                    .AddApplicationPart(typeof(AspNetCoreIntegrationTest).Assembly);
+                services.AddCalqCmdController(new object()); // Required for LocalTool.Factory setup
             });
+            webHost.Configure(app => {
+                app.UseRouting();
+                app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            });
+        });
 
         return await hostBuilder.StartAsync();
     }
@@ -63,15 +53,13 @@ public class AspNetCoreIntegrationTest {
 }
 
 public class UseMyCustomShellAttribute : ActionFilterAttribute {
-    public override void OnActionExecuting(ActionExecutingContext context) {
-        LocalTerminal.Shell = new CommandLine();
-    }
+    public override void OnActionExecuting(ActionExecutingContext context) => LocalTerminal.Shell = new CommandLine();
 }
 
 [ApiController]
 [Route("[controller]")]
 [UseMyCustomShell]
-public class TestApiController : ControllerBase {    
+public class TestApiController : ControllerBase {
     [HttpGet("cmd")]
     public IActionResult TestCmd() {
         string result = CMD("dotnet --version");
@@ -79,7 +67,5 @@ public class TestApiController : ControllerBase {
     }
 
     [HttpGet("run")]
-    public async Task TestRun() {
-        await RUNAsync("dotnet --version");
-    }
+    public async Task TestRun() => await RUNAsync("dotnet --version");
 }

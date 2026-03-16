@@ -14,9 +14,13 @@ public class Bash : ShellBase {
         if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
             CommandLine shell = new();
             ShellScript script = new(shell, @"bash -c ""uname -s""");
-            using IShellWorker worker = script.StartAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            using IShellWorker worker = script.StartAsync()
+                .ConfigureAwait(false)
+                .GetAwaiter()
+                .GetResult();
             using StreamReader reader = new(worker.StandardOutput);
-            IsRunningBashOnWSL = reader.ReadToEnd().TrimEnd() switch {
+            IsRunningBashOnWSL = reader.ReadToEnd()
+                .TrimEnd() switch {
                 "Linux" => true,
                 "Darwin" => true,
                 _ => false
@@ -31,8 +35,7 @@ public class Bash : ShellBase {
     /// </summary>
     internal static bool IsRunningBashOnWSL { get; }
 
-    public override ProcessWorkerBase CreateShellWorker(ShellScript shellScript, Stream? inputStream,
-        bool disposeOnCompletion = true) => new BashWorker(shellScript, inputStream, disposeOnCompletion);
+    public override ProcessWorkerBase CreateShellWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) => new BashWorker(shellScript, inputStream, disposeOnCompletion);
 
     public override string MapToHostPath(string internalPath) {
         string hostPath;

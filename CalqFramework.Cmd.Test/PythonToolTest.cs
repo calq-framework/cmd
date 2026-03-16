@@ -1,5 +1,4 @@
-﻿using System.Text;
-using CalqFramework.Cmd.Python;
+﻿using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shells;
 using CalqFramework.Cmd.TerminalComponents;
 using static CalqFramework.Cmd.Terminal;
@@ -100,7 +99,7 @@ public class PythonToolTest {
 
         MemoryStream inputStream = new(binaryInput);
         MemoryStream outputStream = new();
-        
+
         LocalTerminal.Out = outputStream;
         LocalTerminal.TerminalLogger = new NullTerminalLogger();
 
@@ -113,7 +112,7 @@ public class PythonToolTest {
         RUN("test_binary");
 
         byte[] outputBytes = outputStream.ToArray();
-        
+
         Assert.Equal(binaryInput.Length, outputBytes.Length);
         Assert.Equal(binaryInput, outputBytes);
     }

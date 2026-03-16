@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using CalqFramework.Cmd.Shells;
+﻿using CalqFramework.Cmd.Shells;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.Test;
@@ -20,7 +19,8 @@ public class TerminalTest {
 
         using ShellWorkerOutputStream stream = CMDStream("cmd /c echo hello world");
         using StreamReader reader = new(stream);
-        string output = reader.ReadToEnd().Trim();
+        string output = reader.ReadToEnd()
+            .Trim();
 
         Assert.Equal("hello world", output);
     }

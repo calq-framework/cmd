@@ -1,10 +1,4 @@
-﻿using CalqFramework.Cmd.Shell;
-using CalqFramework.Cmd.Shells;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
+﻿using CalqFramework.Cmd.Shells;
 
 namespace CalqFramework.Cmd.AspNetCore;
 
@@ -35,6 +29,15 @@ public class LocalHttpToolFactory : ILocalToolFactory, IDisposable {
         _sharedHttpClient = httpClient;
     }
 
+    public IShell CreateLocalTool() {
+        ThrowIfDisposed();
+
+        HttpClient httpClient = GetOrCreateHttpClient();
+        string baseUrl = GetBaseUrl();
+        httpClient.BaseAddress = new Uri($"{baseUrl.TrimEnd('/')}/");
+        return new HttpTool(httpClient);
+    }
+
     /// <summary>
     ///     Disposes the factory.
     ///     Note: HttpClient instances created by IHttpClientFactory are managed by the factory.
@@ -47,15 +50,6 @@ public class LocalHttpToolFactory : ILocalToolFactory, IDisposable {
             _disposed = true;
             GC.SuppressFinalize(this);
         }
-    }
-
-    public IShell CreateLocalTool() {
-        ThrowIfDisposed();
-
-        HttpClient httpClient = GetOrCreateHttpClient();
-        string baseUrl = GetBaseUrl();
-        httpClient.BaseAddress = new Uri($"{baseUrl.TrimEnd('/')}/");
-        return new HttpTool(httpClient);
     }
 
     /// <summary>
@@ -85,8 +79,7 @@ public class LocalHttpToolFactory : ILocalToolFactory, IDisposable {
                 return httpClientFactory.CreateClient(httpClientName);
             }
 
-            throw new InvalidOperationException(
-                "IHttpClientFactory is not registered. Ensure AddLocalToolFactory() is called to register required services.");
+            throw new InvalidOperationException("IHttpClientFactory is not registered. Ensure AddLocalToolFactory() is called to register required services.");
         }
 
         return new HttpClient();
@@ -102,11 +95,13 @@ public class LocalHttpToolFactory : ILocalToolFactory, IDisposable {
         }
 
         IServer? server = _serviceProvider.GetService<IServer>();
-        ICollection<string>? addresses = server?.Features.Get<IServerAddressesFeature>()?.Addresses;
+        ICollection<string>? addresses = server?.Features.Get<IServerAddressesFeature>()
+            ?.Addresses;
 
         string hostUrl;
         if (addresses?.Count > 0) {
-            hostUrl = addresses.First().TrimEnd('/');
+            hostUrl = addresses.First()
+                .TrimEnd('/');
         } else {
             IHttpContextAccessor? httpContextAccessor = _serviceProvider.GetService<IHttpContextAccessor>();
             HttpContext? httpContext = httpContextAccessor?.HttpContext;
@@ -128,7 +123,10 @@ public class LocalHttpToolFactory : ILocalToolFactory, IDisposable {
     }
 
     private string NormalizeRoutePrefix(string? prefix) =>
-        string.IsNullOrEmpty(prefix) ? nameof(CalqCmdController).Replace("Controller", "") : prefix.Trim('/');
+        string.IsNullOrEmpty(prefix)
+            ? nameof(CalqCmdController)
+                .Replace("Controller", "")
+            : prefix.Trim('/');
 
     private string? GetCalqCmdControllerRoutePrefix() {
         if (_serviceProvider == null) {
@@ -136,8 +134,7 @@ public class LocalHttpToolFactory : ILocalToolFactory, IDisposable {
         }
 
         try {
-            IOptions<CalqCmdControllerOptions>? options =
-                _serviceProvider.GetService<IOptions<CalqCmdControllerOptions>>();
+            IOptions<CalqCmdControllerOptions>? options = _serviceProvider.GetService<IOptions<CalqCmdControllerOptions>>();
             return options?.Value?.RoutePrefix;
         } catch {
             return null;
@@ -150,8 +147,7 @@ public class LocalHttpToolFactory : ILocalToolFactory, IDisposable {
         }
 
         try {
-            IOptions<CalqCmdControllerOptions>? options =
-                _serviceProvider.GetService<IOptions<CalqCmdControllerOptions>>();
+            IOptions<CalqCmdControllerOptions>? options = _serviceProvider.GetService<IOptions<CalqCmdControllerOptions>>();
             return options?.Value?.HttpClientName ?? "CalqFramework.Cmd.LocalHttpTool";
         } catch {
             return "CalqFramework.Cmd.LocalHttpTool";

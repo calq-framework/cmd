@@ -1,5 +1,4 @@
-﻿using System.Text;
-using CalqFramework.Cmd.Shells;
+﻿using CalqFramework.Cmd.Shells;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.Test;
@@ -49,8 +48,7 @@ public class HttpToolTest {
     [Fact]
     public async Task HttpTool_MidStreamError_Throws() {
         LocalTerminal.Shell = new CommandLine();
-        CMD(
-            "openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj \"/CN=localhost\"");
+        CMD("openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj \"/CN=localhost\"");
         ShellScript pythonScript = CMDV("python http_h2_server.py");
         using IShellWorker serverWorker = await pythonScript.StartAsync();
 

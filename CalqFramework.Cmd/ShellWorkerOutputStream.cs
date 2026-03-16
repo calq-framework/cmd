@@ -55,8 +55,7 @@ public abstract class ShellWorkerOutputStream(IShellWorker shellWorker) : Stream
         return bytesRead;
     }
 
-    public override async ValueTask<int>
-        ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) {
+    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) {
         int bytesRead;
         try {
             bytesRead = await TryReadAsync(buffer, cancellationToken);

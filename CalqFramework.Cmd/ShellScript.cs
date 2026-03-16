@@ -1,10 +1,4 @@
-﻿using System.Buffers;
-using System.Diagnostics;
-using System.Text;
-using System.Text.Json;
-using CalqFramework.Cmd.Shell;
-
-namespace CalqFramework.Cmd;
+﻿namespace CalqFramework.Cmd;
 
 /// <summary>
 ///     Represents a shell command that can be executed, piped, and chained.
@@ -67,7 +61,10 @@ public sealed class ShellScript(IShell shell, string script) {
     /// </summary>
     /// <returns>The complete command output as a string</returns>
     public string Evaluate(CancellationToken cancellationToken = default) =>
-        EvaluateAsync(cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
+        EvaluateAsync(cancellationToken)
+            .ConfigureAwait(false)
+            .GetAwaiter()
+            .GetResult();
 
     /// <summary>
     ///     Executes the shell script synchronously with custom input and returns the output as a string.
@@ -75,7 +72,10 @@ public sealed class ShellScript(IShell shell, string script) {
     /// </summary>
     /// <returns>The complete command output as a string</returns>
     public string Evaluate(Stream? inputStream, CancellationToken cancellationToken = default) =>
-        EvaluateAsync(inputStream, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
+        EvaluateAsync(inputStream, cancellationToken)
+            .ConfigureAwait(false)
+            .GetAwaiter()
+            .GetResult();
 
     /// <summary>
     ///     Executes the shell script asynchronously with custom input and returns the output as a string.
@@ -173,14 +173,20 @@ public sealed class ShellScript(IShell shell, string script) {
     ///     Uses the shell's default input stream.
     /// </summary>
     public void Run(Stream outputStream, CancellationToken cancellationToken = default) =>
-        RunAsync(outputStream, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
+        RunAsync(outputStream, cancellationToken)
+            .ConfigureAwait(false)
+            .GetAwaiter()
+            .GetResult();
 
     /// <summary>
     ///     Executes the shell script synchronously with custom input and streams output to the specified stream.
     ///     Allows providing input data to be fed to the command's stdin.
     /// </summary>
     public void Run(Stream? inputStream, Stream outputStream, CancellationToken cancellationToken = default) =>
-        RunAsync(inputStream, outputStream, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult();
+        RunAsync(inputStream, outputStream, cancellationToken)
+            .ConfigureAwait(false)
+            .GetAwaiter()
+            .GetResult();
 
     /// <summary>
     ///     Executes the shell script asynchronously and streams output to the specified stream.
@@ -195,8 +201,7 @@ public sealed class ShellScript(IShell shell, string script) {
     ///     Provides full control over input/output streams for advanced scenarios.
     /// </summary>
     /// <returns>Task that completes when the command finishes execution</returns>
-    public async Task RunAsync(Stream? inputStream, Stream outputStream,
-        CancellationToken cancellationToken = default) {
+    public async Task RunAsync(Stream? inputStream, Stream outputStream, CancellationToken cancellationToken = default) {
         using IShellWorker worker = await StartAsync(inputStream, false, cancellationToken);
         CancellationTokenSource relayOutputCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
@@ -224,8 +229,7 @@ public sealed class ShellScript(IShell shell, string script) {
     ///     Provides access to StandardOutput and error handling via ReadErrorMessageAsync.
     /// </summary>
     /// <returns>A worker instance providing access to StandardOutput and error handling</returns>
-    public async Task<IShellWorker>
-        StartAsync(bool disposeOnCompletion, CancellationToken cancellationToken = default) {
+    public async Task<IShellWorker> StartAsync(bool disposeOnCompletion, CancellationToken cancellationToken = default) {
         IShellWorker worker = Shell.CreateShellWorker(this, Shell.In, disposeOnCompletion);
         await worker.StartAsync(cancellationToken);
         return worker;
@@ -245,8 +249,7 @@ public sealed class ShellScript(IShell shell, string script) {
     ///     Allows providing input data and accessing StandardOutput for manual stream handling.
     /// </summary>
     /// <returns>A worker instance providing access to StandardOutput and error handling</returns>
-    public async Task<IShellWorker> StartAsync(Stream? inputStream, bool disposeOnCompletion,
-        CancellationToken cancellationToken = default) {
+    public async Task<IShellWorker> StartAsync(Stream? inputStream, bool disposeOnCompletion, CancellationToken cancellationToken = default) {
         IShellWorker worker = Shell.CreateShellWorker(this, inputStream, disposeOnCompletion);
         await worker.StartAsync(cancellationToken);
         return worker;

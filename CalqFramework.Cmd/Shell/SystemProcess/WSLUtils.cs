@@ -1,8 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using System.Text;
-using Microsoft.Win32;
-
-namespace CalqFramework.Cmd.Shell.SystemProcess;
+﻿namespace CalqFramework.Cmd.Shell.SystemProcess;
 #pragma warning disable CA1416 // Validate platform compatibility
 
 /// <summary>
@@ -23,7 +19,8 @@ internal static class WSLUtils {
             int index = remainder.IndexOf('\\');
 
             if (index >= 0) {
-                return remainder.Substring(index).Replace('\\', '/');
+                return remainder.Substring(index)
+                    .Replace('\\', '/');
             }
 
             return "/";
@@ -39,7 +36,8 @@ internal static class WSLUtils {
             }
 
             char driveLetter = char.ToLower(windowsPath[0]);
-            string pathWithoutDrive = windowsPath.Substring(2).Replace('\\', '/');
+            string pathWithoutDrive = windowsPath.Substring(2)
+                .Replace('\\', '/');
             return $"/mnt/{driveLetter}{pathWithoutDrive}";
         }
 
@@ -69,8 +67,7 @@ internal static class WSLUtils {
 
         if (wslPath.StartsWith("/mnt/", StringComparison.Ordinal)) {
             // Split "/mnt/c/foo/bar" → ["c","foo","bar"]
-            string[] parts = wslPath
-                .Substring("/mnt/".Length)
+            string[] parts = wslPath.Substring("/mnt/".Length)
                 .Split(['/'], StringSplitOptions.RemoveEmptyEntries);
 
             if (parts.Length == 0) {
@@ -98,11 +95,8 @@ internal static class WSLUtils {
         }
 
         // Non-/mnt paths go via the UNC \\wsl$\ distribution share
-        string? distro = GetDefaultWslDistributionName() ??
-                         throw new ArgumentException("Could not determine default WSL distribution name.",
-                             nameof(wslPath));
-        string[] segments = wslPath
-            .TrimStart('/')
+        string? distro = GetDefaultWslDistributionName() ?? throw new ArgumentException("Could not determine default WSL distribution name.", nameof(wslPath));
+        string[] segments = wslPath.TrimStart('/')
             .Split(['/'], StringSplitOptions.RemoveEmptyEntries);
 
         string root = $@"\\wsl$\{distro}";

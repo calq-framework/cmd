@@ -1,5 +1,4 @@
 ﻿using CalqFramework.Cmd.Shells;
-using Microsoft.AspNetCore.Mvc.Filters;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.AspNetCore.Attributes;

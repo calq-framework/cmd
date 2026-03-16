@@ -1,6 +1,4 @@
-﻿using System.Text;
-using System.Text.RegularExpressions;
-using CalqFramework.Cmd.Shells;
+﻿using CalqFramework.Cmd.Shells;
 
 namespace CalqFramework.Cmd.Shell.SystemProcess;
 
@@ -8,8 +6,7 @@ namespace CalqFramework.Cmd.Shell.SystemProcess;
 ///     Process worker for Bash shell execution with WSL support.
 ///     Handles script encoding, error trapping, and WSL path conversion.
 /// </summary>
-public class BashWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true)
-    : ProcessWorkerBase(shellScript, inputStream, disposeOnCompletion) {
+public class BashWorker(ShellScript shellScript, Stream? inputStream, bool disposeOnCompletion = true) : ProcessWorkerBase(shellScript, inputStream, disposeOnCompletion) {
     internal static bool IsUsingWSL => Bash.IsRunningBashOnWSL;
 
     internal override ProcessExecutionInfo GetProcessExecutionInfo(string workingDirectory, string script) {

@@ -1,10 +1,5 @@
 ﻿using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shells;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace CalqFramework.Cmd.AspNetCore;
 
@@ -23,8 +18,7 @@ public static class ServiceCollectionExtensions {
     /// <param name="commandTarget">The target object containing methods to execute. This will be injected into the command executor.</param>
     /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, object commandTarget,
-        Action<CalqCmdControllerOptions>? configure = null) => services.AddCalqCmdController(_ => commandTarget, configure);
+    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, object commandTarget, Action<CalqCmdControllerOptions>? configure = null) => services.AddCalqCmdController(_ => commandTarget, configure);
 
     /// <summary>
     ///     Registers the CalqCmdController for ASP.NET Core MVC with command execution support.
@@ -38,8 +32,7 @@ public static class ServiceCollectionExtensions {
     /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <param name="configureCacheOptions">Optional action to configure cache options.</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, object commandTarget,
-        Action<CalqCmdControllerOptions>? configure, Action<CalqCmdCacheOptions>? configureCacheOptions) =>
+    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, object commandTarget, Action<CalqCmdControllerOptions>? configure, Action<CalqCmdCacheOptions>? configureCacheOptions) =>
         services.AddCalqCmdController(_ => commandTarget, configure, configureCacheOptions);
 
     /// <summary>
@@ -53,8 +46,7 @@ public static class ServiceCollectionExtensions {
     /// <param name="commandTargetFactory">Factory function to create the command target object containing methods to execute. This will be injected into the command executor.</param>
     /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddCalqCmdController(this IServiceCollection services,
-        Func<IServiceProvider, object> commandTargetFactory, Action<CalqCmdControllerOptions>? configure = null) =>
+    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, Func<IServiceProvider, object> commandTargetFactory, Action<CalqCmdControllerOptions>? configure = null) =>
         AddCalqCmdControllerInternal(services, commandTargetFactory, configure, null);
 
     /// <summary>
@@ -69,17 +61,13 @@ public static class ServiceCollectionExtensions {
     /// <param name="configure">Optional action to configure CalqCmdController options.</param>
     /// <param name="configureCacheOptions">Optional action to configure cache options.</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddCalqCmdController(this IServiceCollection services,
-        Func<IServiceProvider, object> commandTargetFactory, Action<CalqCmdControllerOptions>? configure,
-        Action<CalqCmdCacheOptions>? configureCacheOptions) =>
+    public static IServiceCollection AddCalqCmdController(this IServiceCollection services, Func<IServiceProvider, object> commandTargetFactory, Action<CalqCmdControllerOptions>? configure, Action<CalqCmdCacheOptions>? configureCacheOptions) =>
         AddCalqCmdControllerInternal(services, commandTargetFactory, configure, configureCacheOptions);
 
     /// <summary>
     ///     Internal implementation for registering CalqCmdController with shared logic.
     /// </summary>
-    private static IServiceCollection AddCalqCmdControllerInternal(IServiceCollection services,
-        Func<IServiceProvider, object> commandTargetFactory, Action<CalqCmdControllerOptions>? configure,
-        Action<CalqCmdCacheOptions>? configureCacheOptions) {
+    private static IServiceCollection AddCalqCmdControllerInternal(IServiceCollection services, Func<IServiceProvider, object> commandTargetFactory, Action<CalqCmdControllerOptions>? configure, Action<CalqCmdCacheOptions>? configureCacheOptions) {
         // Configure controller options
         CalqCmdControllerOptions options = new();
         configure?.Invoke(options);
@@ -119,7 +107,7 @@ public static class ServiceCollectionExtensions {
         // Register global filter for automatic LocalTerminal configuration
         services.Configure<MvcOptions>(mvcOptions => {
             mvcOptions.Filters.Add<LocalTerminalFilter>();
-            
+
             // Configure routing if custom prefix is specified
             if (!string.IsNullOrEmpty(options.RoutePrefix)) {
                 mvcOptions.Conventions.Add(new CalqCmdControllerRouteConvention(options.RoutePrefix));
@@ -143,8 +131,7 @@ public static class ServiceCollectionExtensions {
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="options">Controller options containing HTTP client configuration.</param>
     /// <returns>The service collection for method chaining.</returns>
-    private static IServiceCollection AddLocalToolFactoryInternal(this IServiceCollection services,
-        CalqCmdControllerOptions options) {
+    private static IServiceCollection AddLocalToolFactoryInternal(this IServiceCollection services, CalqCmdControllerOptions options) {
         services.AddHttpContextAccessor();
 
         services.AddHttpClient(options.HttpClientName, client => { client.Timeout = options.HttpClientTimeout; });
@@ -155,8 +142,7 @@ public static class ServiceCollectionExtensions {
 
     private static void EnsureDistributedCacheRegistered(IServiceCollection services) {
         // Check if IDistributedCache is already registered
-        ServiceDescriptor? distributedCacheDescriptor =
-            services.FirstOrDefault(d => d.ServiceType == typeof(IDistributedCache));
+        ServiceDescriptor? distributedCacheDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IDistributedCache));
 
         if (distributedCacheDescriptor == null) {
             // No distributed cache registered, add memory cache as default
@@ -233,8 +219,7 @@ public static class ServiceCollectionExtensions {
     /// await app.Services.StartPythonToolServerAsync();
     /// </code>
     /// </example>
-    public static IServiceCollection AddPythonTool(this IServiceCollection services,
-        Func<IServiceProvider, PythonToolServer> serverFactory) {
+    public static IServiceCollection AddPythonTool(this IServiceCollection services, Func<IServiceProvider, PythonToolServer> serverFactory) {
         services.AddSingleton(serverFactory);
         services.AddTransient<PythonTool>(provider => {
             PythonToolServer server = provider.GetRequiredService<PythonToolServer>();
@@ -266,8 +251,7 @@ public static class ServiceProviderExtensions {
     /// var pythonTool = app.Services.GetRequiredService&lt;PythonTool&gt;();
     /// </code>
     /// </example>
-    public static async Task<IServiceProvider> StartPythonToolServerAsync(this IServiceProvider services,
-        CancellationToken cancellationToken = default) {
+    public static async Task<IServiceProvider> StartPythonToolServerAsync(this IServiceProvider services, CancellationToken cancellationToken = default) {
         PythonToolServer server = services.GetRequiredService<PythonToolServer>();
         await server.StartAsync(cancellationToken);
         return services;
@@ -278,7 +262,8 @@ public static class ServiceProviderExtensions {
 ///     Route convention to customize CalqCmdController route prefix
 /// </summary>
 internal class CalqCmdControllerRouteConvention(string routePrefix) : IControllerModelConvention {
-    private readonly string _routePrefix = routePrefix.TrimStart('/').TrimEnd('/');
+    private readonly string _routePrefix = routePrefix.TrimStart('/')
+        .TrimEnd('/');
 
     public void Apply(ControllerModel controller) {
         if (controller.ControllerType == typeof(CalqCmdController)) {

@@ -1,14 +1,11 @@
-using System.IO;
-using System.Text;
-
 namespace CalqFramework.Cmd.AspNetCore.Test;
 
 public class CalqCommandExecutorTest {
     [Fact]
     public void Execute_WithPascalCaseMethod_ExecutesSuccessfully() {
         // Arrange
-        var target = new TestCommands();
-        var executor = new CalqCommandExecutor(target);
+        TestCommands target = new();
+        CalqCommandExecutor executor = new CalqCommandExecutor(target);
         string[] args = ["ProcessData", "--input", "test"];
 
         // Act
@@ -21,8 +18,8 @@ public class CalqCommandExecutorTest {
     [Fact]
     public void Execute_WithKebabCaseMethod_ThrowsException() {
         // Arrange
-        var target = new TestCommands();
-        var executor = new CalqCommandExecutor(target);
+        TestCommands target = new();
+        CalqCommandExecutor executor = new CalqCommandExecutor(target);
         string[] args = ["process-data", "--input", "test"]; // kebab-case should not work
 
         // Act & Assert
@@ -32,8 +29,8 @@ public class CalqCommandExecutorTest {
     [Fact]
     public void Execute_WithNameofOperator_ExecutesSuccessfully() {
         // Arrange
-        var target = new TestCommands();
-        var executor = new CalqCommandExecutor(target);
+        TestCommands target = new();
+        CalqCommandExecutor executor = new CalqCommandExecutor(target);
         string methodName = nameof(TestCommands.ProcessData);
         string[] args = [methodName, "--input", "nameof"];
 
@@ -47,8 +44,8 @@ public class CalqCommandExecutorTest {
     [Fact]
     public void Execute_WithMultipleParameters_ExecutesSuccessfully() {
         // Arrange
-        var target = new TestCommands();
-        var executor = new CalqCommandExecutor(target);
+        TestCommands target = new();
+        CalqCommandExecutor executor = new CalqCommandExecutor(target);
         string[] args = ["Add", "--a", "5", "--b", "3"];
 
         // Act

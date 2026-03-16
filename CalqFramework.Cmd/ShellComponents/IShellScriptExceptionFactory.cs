@@ -11,6 +11,5 @@ public interface IShellScriptExceptionFactory {
     ///     Enables consistent error handling across different shell implementations.
     /// </summary>
     /// <returns>A formatted ShellScriptException with enriched error information</returns>
-    Task<ShellScriptException> CreateAsync(ShellScript shellScript, IShellWorker shellWorker,
-        ShellWorkerException exception, string? output, CancellationToken cancellationToken = default);
+    Task<ShellScriptException> CreateAsync(ShellScript shellScript, IShellWorker shellWorker, ShellWorkerException exception, string? output, CancellationToken cancellationToken = default);
 }
