@@ -890,6 +890,8 @@ See also: [How to Handle Execution Failures](#how-to-handle-execution-failures)
 
 ## Usage - Calq CMD ASP.NET Core
 
+Calq CMD ASP.NET Core uses [Calq CLI](https://github.com/calq-framework/cli) for command parsing and execution. Command targets follow Calq CLI conventions for [submodules, subcommands, options, and parameters](https://github.com/calq-framework/cli?tab=readme-ov-file#2-command-structure--hierarchy).
+
 ### 1. Application Setup & Initialization
 
 *How to register CalqCmdController and configure the web API.*
@@ -1003,7 +1005,7 @@ See also: [How to Register CalqCmdController](#how-to-register-calqcmdcontroller
 
 #### How to Define Command Targets
 
-Command target methods become executable commands via CalqCmdController. The default `CalqCommandExecutor` preserves method and parameter names as-is (no kebab-case transformation).
+Command target methods become executable commands via CalqCmdController. The default `CalqCommandExecutor` uses [Calq CLI](https://github.com/calq-framework/cli) and preserves method and parameter names as-is (no kebab-case transformation).
 
 ```csharp
 public class MyCommands
@@ -1132,7 +1134,7 @@ See also: [How to Use Built-in Shell Attributes](#how-to-use-built-in-shell-attr
 
 #### How to Preserve Parameter Naming Conventions
 
-The default `CalqCommandExecutor` uses `AsIsClassMemberStringifier` which preserves original method and parameter names without transformation. This differs from CalqFramework.Cli's default kebab-case conversion.
+The default `CalqCommandExecutor` uses `AsIsClassMemberStringifier` which preserves original method and parameter names without transformation. This differs from [Calq CLI](https://github.com/calq-framework/cli)'s default kebab-case conversion.
 
 ```csharp
 public class MyCommands
@@ -1508,6 +1510,13 @@ See also: [How to Process Binary Data with Python](#how-to-process-binary-data-w
 ### 7. Extensibility & Customization
 
 *Covered by [Calq CMD ASP.NET Core — How to Implement Custom Command Executors](#how-to-implement-custom-command-executors) and [Calq CMD — How to Create Custom Shell Wrappers with ShellTool](#how-to-create-custom-shell-wrappers-with-shelltool). Both apply when using PythonTool in ASP.NET Core.*
+
+## Demo Examples
+[Cloud-Native Data Processor Example](https://github.com/calq-framework/cmd/tree/main/Examples/Example.CloudNative.DataProcessor)  
+
+[Cloud-Native Python Data Processor Example](https://github.com/calq-framework/cmd/tree/main/Examples/Example.CloudNativePython.DataProcessor)  
+
+[Kubectl Wrapper CLI Tool Example](https://github.com/calq-framework/cmd/tree/main/Examples/Example.CliTool.KubectlWrapper) (uses [Calq CLI](https://github.com/calq-framework/cli))  
 
 ## Quick Start
 
