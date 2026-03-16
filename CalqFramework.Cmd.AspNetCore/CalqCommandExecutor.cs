@@ -23,14 +23,14 @@ public class CalqCommandExecutor : ICalqCommandExecutor {
     }
 
     /// <summary>
-    ///     Executes a command using CLI-style argument parsing via CalqFramework.Cli with output capture.
+    ///     Executes a command using CLI-style argument parsing via CalqFramework.Cli with interface output capture.
     /// </summary>
     /// <param name="args">Command-line arguments (e.g., ["MethodName", "--param", "value"]).</param>
-    /// <param name="output">Optional TextWriter to capture output. If null, uses Console.Out.</param>
+    /// <param name="interfaceOut">Optional TextWriter to capture interface output. If null, uses Console.Out.</param>
     /// <returns>The result of the command execution.</returns>
-    public object? Execute(string[] args, TextWriter output) {
+    public object? Execute(string[] args, TextWriter interfaceOut) {
         CommandLineInterface cli = new() {
-            Out = output,
+            InterfaceOut = interfaceOut,
             CliComponentStoreFactory = new CliComponentStoreFactory {
                 ClassMemberStringifier = new AsIsClassMemberStringifier()
             }
