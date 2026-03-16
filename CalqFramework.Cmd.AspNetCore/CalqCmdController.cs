@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using System.Text.Json;
-using CalqFramework.Cli;
 using CalqFramework.Cmd.Shells;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -53,22 +52,22 @@ public class CalqCmdController : ControllerBase {
 
             Stream responseStream = Response.BodyWriter.AsStream();
             LocalTerminal.Shell = new CommandLine { In = Request.Body };
-            LocalTerminal.Out = responseStream; // Void methods return ResultVoid and might write directly to the response body via RUN or LocalTerminal.Out
+            LocalTerminal.Out = responseStream; // Void methods return ValueTuple and might write directly to the response body via RUN or LocalTerminal.Out
 
             string[] args = cmdValue.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            StreamWriter outputWriter = new(responseStream);
-            object? result = _calqCommandExecutor.Execute(args, outputWriter);
+            StreamWriter interfaceOut = new(responseStream);
+            object? result = _calqCommandExecutor.Execute(args, interfaceOut);
 
             if (result is Task task) {
                 await task;
                 // Task methods return Task<VoidTaskResult> so task.GetType().IsGenericType is always true and hence unreliable
-                result = task.GetType().GetProperty("Result")?.GetValue(task) ?? ResultVoid.Value;
+                result = task.GetType().GetProperty("Result")?.GetValue(task) ?? default(ValueTuple);
             }
 
             // For other result types, don't flush to avoid committing headers prematurely
-            if (result is ResultVoid || result?.GetType().Name == "VoidTaskResult") {
-                await outputWriter.FlushAsync();
+            if (result is ValueTuple || result?.GetType().Name == "VoidTaskResult") {
+                await interfaceOut.FlushAsync();
                 return new EmptyResult();
             }
 
