@@ -4,7 +4,7 @@ using static CalqFramework.Cmd.Terminal;
 
 // Start PythonToolServer with the Python Fire script
 var pts = new PythonToolServer("tool.py");
-using var worker = await pts.StartAsync();
+using CalqFramework.Cmd.IShellWorker worker = await pts.StartAsync();
 LocalTerminal.Shell = new PythonTool(pts);
 
 // Call Python functions like shell commands

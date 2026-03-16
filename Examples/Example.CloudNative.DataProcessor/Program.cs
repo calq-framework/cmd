@@ -4,12 +4,12 @@ using CalqFramework.Cmd.Shells;
 using Example.CloudNative.DataProcessor;
 using static CalqFramework.Cmd.Terminal;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
     .AddApplicationPart(typeof(CalqCmdController).Assembly);
 builder.Services.AddCalqCmdController(new DataProcessingCommands());
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 app.MapControllers();
 app.Run();
 
@@ -26,19 +26,19 @@ namespace Example.CloudNative.DataProcessor {
             }
 
             using var reader = new StreamReader(LocalTerminal.Shell.In);
-            var inputData = await reader.ReadToEndAsync();
+            string inputData = await reader.ReadToEndAsync();
 
-            var lines = inputData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-            var chunks = lines.Chunk(Math.Max(1, lines.Length / Environment.ProcessorCount));
+            string[] lines = inputData.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            IEnumerable<string[]> chunks = lines.Chunk(Math.Max(1, lines.Length / Environment.ProcessorCount));
 
             // Each chunk calls ProcessChunk on itself via HTTP (cloud-native distributed execution)
             LocalTerminal.Shell = new LocalTool();
-            var tasks = chunks.Select(async chunk => {
+            IEnumerable<Task<string>> tasks = chunks.Select(async chunk => {
                 var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(string.Join('\n', chunk)));
                 return await CMDAsync(nameof(ProcessChunk), inputStream);
             });
 
-            var results = await Task.WhenAll(tasks);
+            string[] results = await Task.WhenAll(tasks);
             return string.Join('\n', results);
         }
 
@@ -49,7 +49,7 @@ namespace Example.CloudNative.DataProcessor {
             }
 
             using var reader = new StreamReader(LocalTerminal.Shell.In);
-            var data = await reader.ReadToEndAsync();
+            string data = await reader.ReadToEndAsync();
             await Task.Delay(100);
             return $"Processed: {data.Trim().ToUpper()} [PID: {Environment.ProcessId}, TID: {Environment.CurrentManagedThreadId}]";
         }
