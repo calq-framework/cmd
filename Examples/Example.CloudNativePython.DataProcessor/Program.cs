@@ -1,15 +1,10 @@
-using CalqFramework.Cmd.AspNetCore;
-using CalqFramework.Cmd.Shells;
 using Example.CloudNativePython.DataProcessor;
-using static CalqFramework.Cmd.Terminal;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
     .AddApplicationPart(typeof(CalqCmdController).Assembly);
 builder.Services.AddPythonTool("tool.py");
-builder.Services.AddCalqCmdController(provider =>
-    new DataProcessingCommands(provider.GetRequiredService<PythonTool>()));
+builder.Services.AddCalqCmdController(provider => new DataProcessingCommands(provider.GetRequiredService<PythonTool>()));
 
 var app = builder.Build();
 await app.Services.StartPythonToolServerAsync();
@@ -18,20 +13,19 @@ app.Run();
 
 namespace Example.CloudNativePython.DataProcessor {
     /// <summary>
-    /// Command target — ProcessParallel splits input into chunks and calls ProcessChunk
-    /// via LocalTool (distributed HTTP). ProcessChunk delegates to Python via PythonTool.
+    ///     Command target — ProcessParallel splits input into chunks and calls ProcessChunk
+    ///     via LocalTool (distributed HTTP). ProcessChunk delegates to Python via PythonTool.
     /// </summary>
     public class DataProcessingCommands {
         private readonly PythonTool _pythonTool;
 
-        public DataProcessingCommands(PythonTool pythonTool) {
-            _pythonTool = pythonTool;
-        }
+        public DataProcessingCommands(PythonTool pythonTool) => _pythonTool = pythonTool;
 
         /// <summary>Processes input data in parallel chunks via distributed LocalTool calls.</summary>
         public async Task<string> ProcessParallel() {
-            if (LocalTerminal.Shell.In == null)
+            if (LocalTerminal.Shell.In == null) {
                 return "No input stream provided";
+            }
 
             using var reader = new StreamReader(LocalTerminal.Shell.In);
             var inputData = await reader.ReadToEndAsync();

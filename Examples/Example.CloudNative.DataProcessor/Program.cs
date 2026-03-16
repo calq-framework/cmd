@@ -1,8 +1,4 @@
-using CalqFramework.Cmd.AspNetCore;
-using CalqFramework.Cmd.Shells;
 using Example.CloudNative.DataProcessor;
-using static CalqFramework.Cmd.Terminal;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
@@ -15,14 +11,15 @@ app.Run();
 
 namespace Example.CloudNative.DataProcessor {
     /// <summary>
-    /// Command target — methods become executable commands via CalqCmdController.
-    /// ProcessParallel calls ProcessChunk via LocalTool (distributed HTTP execution).
+    ///     Command target — methods become executable commands via CalqCmdController.
+    ///     ProcessParallel calls ProcessChunk via LocalTool (distributed HTTP execution).
     /// </summary>
     public class DataProcessingCommands {
         /// <summary>Processes input data in parallel chunks via distributed LocalTool calls.</summary>
         public async Task<string> ProcessParallel() {
-            if (LocalTerminal.Shell.In == null)
+            if (LocalTerminal.Shell.In == null) {
                 return "No input stream provided";
+            }
 
             using var reader = new StreamReader(LocalTerminal.Shell.In);
             var inputData = await reader.ReadToEndAsync();
@@ -43,8 +40,9 @@ namespace Example.CloudNative.DataProcessor {
 
         /// <summary>Processes a single chunk of data.</summary>
         public async Task<string> ProcessChunk() {
-            if (LocalTerminal.Shell.In == null)
+            if (LocalTerminal.Shell.In == null) {
                 return "Empty chunk";
+            }
 
             using var reader = new StreamReader(LocalTerminal.Shell.In);
             var data = await reader.ReadToEndAsync();
