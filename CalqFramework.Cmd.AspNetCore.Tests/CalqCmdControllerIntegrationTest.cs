@@ -2,7 +2,7 @@ using CalqFramework.Cmd.Shells;
 using CalqFramework.Cmd.TerminalComponents;
 using static CalqFramework.Cmd.Terminal;
 
-namespace CalqFramework.Cmd.AspNetCore.Test;
+namespace CalqFramework.Cmd.AspNetCore.Tests;
 
 /// <summary>
 ///     Integration tests for CalqCmdController using HttpTool from LocalHttpToolFactory

@@ -2,7 +2,7 @@ using CalqFramework.Cmd.Shells;
 using CalqFramework.Cmd.TerminalComponents;
 using static CalqFramework.Cmd.Terminal;
 
-namespace CalqFramework.Cmd.Test;
+namespace CalqFramework.Cmd.Tests;
 
 public class BashTest {
     [Fact]

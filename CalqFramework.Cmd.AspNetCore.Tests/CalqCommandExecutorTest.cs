@@ -1,4 +1,4 @@
-namespace CalqFramework.Cmd.AspNetCore.Test;
+namespace CalqFramework.Cmd.AspNetCore.Tests;
 
 public class CalqCommandExecutorTest {
     [Fact]

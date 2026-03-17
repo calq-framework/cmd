@@ -1,7 +1,7 @@
 using CalqFramework.Cmd.Shells;
 using static CalqFramework.Cmd.Terminal;
 
-namespace CalqFramework.Cmd.Test;
+namespace CalqFramework.Cmd.Tests;
 
 public class TerminalTest {
     [Fact]

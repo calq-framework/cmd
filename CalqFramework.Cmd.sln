@@ -5,11 +5,11 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalqFramework.Cmd", "CalqFramework.Cmd\CalqFramework.Cmd.csproj", "{906F141D-318A-401E-A97D-2366162535B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalqFramework.Cmd.Test", "CalqFramework.Cmd.Test\CalqFramework.Cmd.Test.csproj", "{23A0C00D-D6CF-4ADD-9657-8FA99E1953D0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalqFramework.Cmd.Tests", "CalqFramework.Cmd.Tests\CalqFramework.Cmd.Tests.csproj", "{23A0C00D-D6CF-4ADD-9657-8FA99E1953D0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalqFramework.Cmd.AspNetCore", "CalqFramework.Cmd.AspNetCore\CalqFramework.Cmd.AspNetCore.csproj", "{CFAF245B-BD11-42A2-B882-32785D5CD793}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalqFramework.Cmd.AspNetCore.Test", "CalqFramework.Cmd.AspNetCore.Test\CalqFramework.Cmd.AspNetCore.Test.csproj", "{3DA160D2-20E2-4766-9662-B30591C8A906}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalqFramework.Cmd.AspNetCore.Tests", "CalqFramework.Cmd.AspNetCore.Tests\CalqFramework.Cmd.AspNetCore.Tests.csproj", "{3DA160D2-20E2-4766-9662-B30591C8A906}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
