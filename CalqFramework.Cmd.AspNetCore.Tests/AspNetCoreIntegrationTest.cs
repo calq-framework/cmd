@@ -67,5 +67,5 @@ public class TestApiController : ControllerBase {
     }
 
     [HttpGet("run")]
-    public static async Task TestRun() => await RUNAsync("dotnet --version");
+    public async Task TestRun() => await RUNAsync("dotnet --version");
 }
