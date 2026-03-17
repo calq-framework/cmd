@@ -1,11 +1,10 @@
 using CalqFramework.Cmd.AspNetCore.Attributes;
-using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shells;
 using static CalqFramework.Cmd.Terminal;
 
-namespace CalqFramework.Cmd.AspNetCore.Test;
+namespace CalqFramework.Cmd.AspNetCore.Tests;
 
-public class UsePythonToolShellAttributeTest {
+public class UseLocalToolShellAttributeTest {
     private static ActionExecutingContext CreateEmptyContext() {
         DefaultHttpContext httpContext = new();
         ActionContext actionContext = new(httpContext, new RouteData(), new ActionDescriptor());
@@ -13,19 +12,15 @@ public class UsePythonToolShellAttributeTest {
     }
 
     [Fact]
-    public void UsePythonToolShellAttribute_WithProvidedShell_SetsLocalTerminalShellToProvidedPythonTool() {
+    public void UseLocalToolShellAttribute_SetsLocalTerminalShellToLocalTool() {
         // Arrange
-        Mock<IPythonToolServer> mockPythonServer = new();
-        mockPythonServer.Setup(x => x.Uri)
-            .Returns(new Uri("https://localhost:8000"));
-        PythonTool shell = new(mockPythonServer.Object);
-        UsePythonToolShellAttribute attribute = new(shell);
+        UseLocalToolShellAttribute attribute = new();
         ActionExecutingContext context = CreateEmptyContext();
 
         // Act
         attribute.OnActionExecuting(context);
 
         // Assert
-        Assert.Equal(shell, LocalTerminal.Shell);
+        Assert.IsType<LocalTool>(LocalTerminal.Shell);
     }
 }

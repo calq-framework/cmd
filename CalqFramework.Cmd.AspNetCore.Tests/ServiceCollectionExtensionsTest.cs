@@ -1,7 +1,7 @@
 using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shells;
 
-namespace CalqFramework.Cmd.AspNetCore.Test;
+namespace CalqFramework.Cmd.AspNetCore.Tests;
 
 public class ServiceCollectionExtensionsTest {
     private class TestCommandTarget {

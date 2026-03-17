@@ -2,7 +2,7 @@ using CalqFramework.Cmd.AspNetCore.Attributes;
 using CalqFramework.Cmd.Shells;
 using static CalqFramework.Cmd.Terminal;
 
-namespace CalqFramework.Cmd.AspNetCore.Test;
+namespace CalqFramework.Cmd.AspNetCore.Tests;
 
 public class UseBashShellAttributeTest {
     private static ActionExecutingContext CreateEmptyContext() {
