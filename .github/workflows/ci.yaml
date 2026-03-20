@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Calq Flow (dry-run)
+        uses: calq-framework/flow@latest
+        with:
+          subcommand: 'publish --dry-run'
+        env: ${{ secrets }}
