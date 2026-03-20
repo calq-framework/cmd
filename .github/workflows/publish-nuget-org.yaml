@@ -1,0 +1,28 @@
+name: Publish to NuGet.org
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Calq Flow (publish to nuget.org)
+        uses: calq-framework/flow@latest
+        with:
+          subcommand: 'publish --sources nuget.org --api-key ${{ secrets.NUGET_API_KEY }}'
+        env: ${{ secrets }}
