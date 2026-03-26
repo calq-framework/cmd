@@ -1,6 +1,4 @@
-using System.Text;
 using CalqFramework.Cmd.AspNetCore;
-using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shells;
 using Example.CloudNativePython.DataProcessor;
 using static CalqFramework.Cmd.Terminal;

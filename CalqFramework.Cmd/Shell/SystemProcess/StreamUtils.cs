@@ -24,9 +24,9 @@ internal class StreamUtils {
                     }
 
                     byte[] charBytes = System.Text.Encoding.UTF8.GetBytes(
-                        [
-                            keyChar
-                        ]);
+                    [
+                        keyChar
+                    ]);
                     await processInputStream.WriteAsync(charBytes.AsMemory(), cancellationToken);
                     await processInputStream.FlushAsync(cancellationToken);
                 }

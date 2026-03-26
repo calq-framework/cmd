@@ -1,5 +1,4 @@
 using CalqFramework.Cmd.AspNetCore;
-using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shells;
 using Example.CalqCmdAspNetCorePython.QuickStart;
 using static CalqFramework.Cmd.Terminal;

@@ -1,6 +1,6 @@
-global using global::CalqFramework.Cli;
-global using global::CalqFramework.Cli.DataAccess;
-global using global::CalqFramework.Cli.Formatting;
+global using CalqFramework.Cli;
+global using CalqFramework.Cli.DataAccess;
+global using CalqFramework.Cli.Formatting;
 global using global::Microsoft.AspNetCore.Hosting.Server;
 global using global::Microsoft.AspNetCore.Hosting.Server.Features;
 global using global::Microsoft.AspNetCore.Http;
