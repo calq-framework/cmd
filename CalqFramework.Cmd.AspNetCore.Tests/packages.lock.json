@@ -66,16 +66,16 @@
       },
       "CalqFramework.Cli": {
         "type": "Transitive",
-        "resolved": "0.63.1",
-        "contentHash": "LLTQn8c0qpIGiBnNp0S2eQBTOJSEzhmEyx5tPxUjCgl80PjDi9l89g5mW5O++MXVpCY1AStlZbpeTfoEkc9nIg==",
+        "resolved": "0.63.2",
+        "contentHash": "AegTcz8lH6R9qthkpBxNDelkWYvyW3ncgG08aSu8YbIyMcjom6r+nZJs0kf0BAIlLDl+TAMnlXFdzxiwdse/8w==",
         "dependencies": {
-          "CalqFramework.DataAccess": "0.63.1"
+          "CalqFramework.DataAccess": "0.63.2"
         }
       },
       "CalqFramework.DataAccess": {
         "type": "Transitive",
-        "resolved": "0.63.1",
-        "contentHash": "t6oMMUL/RGPRDI1J06vEPzmPNOaIcAz4cBYFGwOzKAghqzdQr87Wdp0ZUA4bckIfrnbI1qmxPj6kEv1TEFKp5w=="
+        "resolved": "0.63.2",
+        "contentHash": "3lUqexVvDXEw8Ph2Mjswxu2lMRxsHAy+nmZoN6l0ppkRX+Af00Rw1ImC1OlYzoI4S/ynkSI77um0U4LWfVVY1Q=="
       },
       "Castle.Core": {
         "type": "Transitive",
@@ -481,8 +481,8 @@
       "calqframework.cmd.aspnetcore": {
         "type": "Project",
         "dependencies": {
-          "CalqFramework.Cli": "[0.63.1, )",
-          "CalqFramework.Cmd": "[0.35.0, )",
+          "CalqFramework.Cli": "[0.63.2, )",
+          "CalqFramework.Cmd": "[0.36.0, )",
           "Microsoft.Extensions.Caching.Abstractions": "[9.0.0, )",
           "Microsoft.Extensions.Caching.Memory": "[9.0.0, )",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "[9.0.0, )",
