@@ -16,7 +16,7 @@
     <None Include="..\LICENSE.txt" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CalqFramework.Cli" Version="0.63.2" />
+    <PackageReference Include="CalqFramework.Cli" Version="1.0.0" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
