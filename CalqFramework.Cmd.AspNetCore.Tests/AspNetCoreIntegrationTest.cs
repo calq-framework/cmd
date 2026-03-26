@@ -1,4 +1,4 @@
-﻿using CalqFramework.Cmd.Shells;
+using CalqFramework.Cmd.Shells;
 using static CalqFramework.Cmd.Terminal;
 
 namespace CalqFramework.Cmd.AspNetCore.Tests;
@@ -67,5 +67,5 @@ public class TestApiController : ControllerBase {
     }
 
     [HttpGet("run")]
-    public async Task TestRun() => await RUNAsync("dotnet --version");
+    public static async Task TestRun() => await RUNAsync("dotnet --version");
 }
