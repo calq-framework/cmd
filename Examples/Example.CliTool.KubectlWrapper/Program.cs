@@ -1,7 +1,9 @@
 // NOTE: This example uses Calq CLI for the CLI interface.
 // See https://github.com/calq-framework/cli for full Calq CLI documentation.
 
+using CalqFramework.Cli;
 using CalqFramework.Cmd.Shells;
+using System.Text.Json;
 using Example.CliTool.KubectlWrapper;
 using static CalqFramework.Cmd.Terminal;
 
