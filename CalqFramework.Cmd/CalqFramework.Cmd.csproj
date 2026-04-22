@@ -6,6 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>CalqFramework.Cmd</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackageId>CalqFramework.Cmd</PackageId>
     <Version>1.0.0</Version>
     <PackageProjectUrl>https://github.com/calq-framework</PackageProjectUrl>
