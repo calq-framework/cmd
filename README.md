@@ -11,11 +11,11 @@ If information is missing from this README.md and the accompanied files, explain
 [![REUSE status](https://api.reuse.software/badge/github.com/calq-framework/cmd)](https://api.reuse.software/info/github.com/calq-framework/cmd)
 
 # Calq CMD  
-Calq CMD introduces distributed, shell-style scripting to C#, turning complex systems into simple scripts. Calq CMD makes it possible to build cross-platform tools, streaming data pipelines, parallel batch workloads, HPC processes, and AI-powered systems with unprecedented simplicity.
+Calq CMD is a distributed scripting framework that replaces Bash and JavaScript with shell-style C# for automation — enabling virtually any work traditionally handled by DevOps engineers to be written as simple, cloud-native scripts backed by ASP.NET Core. Calq CMD makes it possible to build cross-platform tools, streaming data pipelines, parallel batch workloads, HPC processes, and AI-powered systems.
 
-Easy cloud-native distributed computing - scale from single-process development to distributed microservices without changing your code.
+Calq CMD accelerates AI development via direct Python streaming over HTTP/2 that eliminates microservice development overhead. It turns complex distributed systems into simple scripts that scale from single-process development to distributed execution without changing your code.
 
-Supports Bash on Windows via WSL and Cygwin/MinGW/MSYS2. Python interoperability provided via high-performance asynchronous HTTP/2 server.
+Supports Bash on Windows via WSL and Cygwin/MinGW/MSYS2.
 
 ## Shell-Style Scripting for C#
 Calq CMD provides a set of static APIs that let you write C# in a style that mimics Unix shell scripts, with full async support, parallel pipeline execution, and automatic stream handling.
@@ -892,7 +892,7 @@ See also: [How to Handle Execution Failures](#how-to-handle-execution-failures)
 
 ## Usage - Calq CMD ASP.NET Core
 
-Calq CMD ASP.NET Core uses [Calq CLI](https://github.com/calq-framework/cli) for command parsing and execution. Command targets follow Calq CLI conventions for [submodules, subcommands, options, and parameters](https://github.com/calq-framework/cli?tab=readme-ov-file#2-command-structure--hierarchy).
+Calq CMD ASP.NET Core uses API mirroring via [Calq CLI](https://github.com/calq-framework/cli) for command parsing and execution. Command targets follow Calq CLI conventions for [submodules, subcommands, options, and parameters](https://github.com/calq-framework/cli?tab=readme-ov-file#2-command-structure--hierarchy).
 
 ### 1. Application Setup & Initialization
 
