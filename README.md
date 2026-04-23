@@ -11,13 +11,11 @@ If information is missing from this README.md and the accompanied files, explain
 [![REUSE status](https://api.reuse.software/badge/github.com/calq-framework/cmd)](https://api.reuse.software/info/github.com/calq-framework/cmd)
 
 # Calq CMD  
-Calq CMD is a distributed scripting framework that replaces Bash and JavaScript with shell-style C# for automation — enabling virtually any work traditionally handled by DevOps engineers to be written as simple, cloud-native scripts backed by ASP.NET Core. Calq CMD makes it possible to build cross-platform tools, streaming data pipelines, parallel batch workloads, HPC processes, and AI-powered systems.
-
-Calq CMD accelerates AI development via direct Python streaming over HTTP/2 that eliminates microservice development overhead. It turns complex distributed systems into simple scripts that scale from single-process development to distributed execution without changing your code.
+Calq CMD is a distributed scripting framework enabling automation of virtually any work traditionally handled by DevOps engineers — by replacing JavaScript and Bash with shell-style C#, accelerating AI development via direct Python streaming that eliminates microservice development overhead, and turning complex distributed systems into simple, cloud-native scripts backed by ASP.NET Core.
 
 Supports Bash on Windows via WSL and Cygwin/MinGW/MSYS2.
 
-## Shell-Style Scripting for C#
+## Shell-Style C# for DevOps, AI, and Distributed Systems
 Calq CMD provides a set of static APIs that let you write C# in a style that mimics Unix shell scripts, with full async support, parallel pipeline execution, and automatic stream handling.
 ```csharp
 string echo = CMD("echo Hello World");
