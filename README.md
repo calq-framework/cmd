@@ -11,12 +11,14 @@ If information is missing from this README.md and the accompanied files, explain
 [![REUSE status](https://api.reuse.software/badge/github.com/calq-framework/cmd)](https://api.reuse.software/info/github.com/calq-framework/cmd)
 
 # Calq CMD  
-Calq CMD is a distributed scripting framework enabling automation of virtually any work traditionally handled by DevOps engineers — by replacing JavaScript and Bash with shell-style C#, accelerating AI development via direct Python streaming that eliminates microservice development overhead, and turning complex distributed systems into simple, cloud-native scripts backed by ASP.NET Core.
+Calq CMD is a distributed scripting framework that replaces JavaScript, Bash, and YAML with shell-style C# — enabling automation that reduces the need for DevOps engineers, RPA developers, and back-office operations staff, while being natively optimized for AI code generation. It accelerates AI development via direct Python streaming that eliminates microservice development overhead, and turns complex distributed systems into simple, cloud-native scripts backed by ASP.NET Core.
+
+Calq CMD is the foundation behind [Calq Flow](https://github.com/calq-framework/flow) (automated release orchestration that eliminates build/release engineering) and [Calq Relay](https://github.com/calq-framework/relay) (automated Kubernetes delivery that eliminates DevOps and system administration for microservice deployments). These tools demonstrate the core value: Calq CMD makes it feasible to encode an entire profession's expertise into a single CLI tool.
 
 Supports Bash on Windows via WSL and Cygwin/MinGW/MSYS2.
 
 ## Shell-Style C# for DevOps, AI, and Distributed Systems
-Calq CMD provides a set of static APIs that let you write C# in a style that mimics Unix shell scripts, with full async support, parallel pipeline execution, and automatic stream handling.
+Any C# developer can use Calq CMD immediately — the API is standard C# static methods, async/await, try/catch, and LINQ. No new language, no DSL, no certification — unlike Terraform, Kubernetes, or RPA platforms, no specialized hires are needed. Combined with AI code generation, Calq CMD enables building automation that replaces visual workflow builders (n8n, Zapier), RPA platforms (UiPath, Automation Anywhere) for web/API/CLI workflows, and manual scripting across DevOps, data pipelines, network operations, and back-office processes.
 ```csharp
 string echo = CMD("echo Hello World");
 RUN($"echo {echo}"); // prints "Hello World"
@@ -25,7 +27,74 @@ string output = CMDV("echo data") | CMDV("grep pattern");
 
 ## How Calq CMD Stacks Up
 
-### Calq CMD vs. Managed Batch Services
+### What Calq CMD + AI Replaces
+| Domain | Replaces | With | Outcome |
+| :--- | :--- | :--- | :--- |
+| **DevOps** | Bash/YAML pipeline scripts, deployment automation | Calq CMD + [Calq Relay](https://github.com/calq-framework/relay) | Debuggable, locally reproducible C# pipelines; automated Kubernetes operations |
+| **Release Engineering** | Manual versioning, build/pack/push scripts | Calq CMD + [Calq Flow](https://github.com/calq-framework/flow) | Zero-touch releases with objective IL-based versioning |
+| **RPA** (web/API/CLI) | UiPath, Automation Anywhere, Blue Prism bots | Calq CMD + Playwright + AI | Testable, version-controlled code; no per-bot license fees |
+| **Workflow Automation** | n8n, Zapier, Power Automate flows | Calq CMD + AI | AI-generated integrations with 500,000+ NuGet packages |
+| **CI/CD Scripting** | Jenkins Groovy, GitHub Actions YAML | Calq CMD | Type-safe C# with compile-time validation and IDE support |
+| **Back-Office Operations** | Manual data entry, invoice processing, order processing | Calq CMD + Playwright + AI | 24/7 automated processing with zero manual errors |
+| **Workflow Automation** | n8n, Zapier, Power Automate flows | Calq CMD + AI | AI-generated integrations with 500,000+ NuGet packages |
+| **Security Scanning** | Manual scan orchestration, quality gate scripts | Calq CMD + AI | Parallel scanning with automated deployment gating |
+| **ML Deployment** | Flask/FastAPI inference microservices | Calq CMD with Python | Direct Python streaming over HTTP/2; no microservice development overhead |
+
+### Calq CMD + AI vs. RPA Platforms
+| Feature | Calq CMD + AI | Enterprise RPA (UiPath, Automation Anywhere, Blue Prism) |
+| :--- | :--- | :--- |
+| **Automation Scope** | Web/API/CLI | Web/API/CLI + Desktop GUI |
+| **Development Model** | AI-generated C# code | Visual workflow builder |
+| **Talent Pool** | Anyone (via AI) / All C# developers | Certified RPA developers |
+| **Distributed Execution** | ✅ (built-in) | ✅ (Orchestrator) |
+| **Version Control** | ✅ (Git) | ⚠️ Limited (proprietary formats) |
+| **Unit Testing** | ✅ (standard C# test frameworks) | ❌ |
+| **AI Debugging** | ✅ | ❌ |
+| **Open Source** | ✅ | ❌ |
+| **License Cost** | Free (AGPL) / Per-user license | Per-bot license |
+
+### Calq CMD + AI vs. n8n
+| Feature | Calq CMD + AI | n8n |
+| :--- | :--- | :--- |
+| **Development Model** | Code-First C# | Visual Workflow Builder |
+| **Custom Code Support** | Any language (via shell) | JavaScript & Python (in nodes) |
+| **Integrations** | 500,000+ NuGet packages | 400+ pre-built visual nodes |
+| **Open Source** | ✅ | ✅ |
+| **Fully Local Development** | ✅ | ✅ |
+| **On-Premise Deployment** | ✅ | ✅ |
+| **Modular Development** | ✅ | ✅ (sub-workflows) |
+| **AI Code Generation** | ✅ | ✅ (JSON templates) |
+| **AI Debugging** | ✅ | ❌ |
+| **AI Testing** | ✅ | ❌ |
+| **Development Time** | Very Fast | Fast to Moderate |
+
+### Calq CMD vs. Distributed Computing Frameworks
+| Feature | Calq CMD | Orleans | Dapr | Celery / Ray / Dask |
+| :--- | :--- | :--- | :--- | :--- |
+| **Languages** | C# + Python + any shell command | C# | Any (sidecar) | Python |
+| **Programming Model** | Shell-style scripting | Virtual actors (grains) | Service invocation (sidecar) | Task queues / remote functions |
+| **Infrastructure Required** | ASP.NET Core (no extras) | Silo cluster + storage provider | Sidecar per pod + control plane | Message broker (Redis/RabbitMQ) + scheduler |
+| **Real-Time Streaming** | ✅ (HTTP/2) | ❌ | ❌ | ❌ |
+| **Shell / CLI Execution** | ✅ (native) | ❌ | ❌ | ❌ |
+| **Native Python Execution** | ✅ (direct streaming over HTTP/2) | ❌ | ❌ | ✅ (Python-native) |
+| **Composable Pipes** | ✅ | ❌ | ❌ | ⚠️ (DAG chaining) |
+| **Fully Local Development** | ✅ (same code, no cluster) | ⚠️ (local silo, different config) | ⚠️ (local sidecar required) | ⚠️ (local broker required) |
+| **AI Code Generation** | Trivial (string in typed C# method) | Moderate (grain interfaces + state) | Moderate (sidecar config + invocation) | Moderate (decorators + serialization) |
+| **AI Debugging** | ✅ (structured exceptions, typed output) | ⚠️ (actor lifecycle complexity) | ⚠️ (sidecar log separation) | ⚠️ (broker + worker log separation) |
+| **Development Time** | Fast | Moderate | Moderate | Moderate |
+
+### Calq CMD AI Compatibility
+| Dimension | Calq CMD | Bash/PowerShell Scripts | YAML Pipelines | Visual Workflow Builders |
+| :--- | :--- | :--- | :--- | :--- |
+| **API Surface for AI** | Minimal (CMD, RUN, CMDV, CD) | Large (hundreds of builtins) | Tool-specific schemas | GUI-only (not AI-accessible) |
+| **Compile-Time Validation** | ✅ (C# compiler) | ❌ (runtime errors) | ❌ (runtime errors) | ❌ |
+| **AI Debugging** | ✅ (read error, fix, re-run) | ⚠️ Partial (no type info) | ❌ (opaque failures) | ❌ |
+| **AI Testing** | ✅ (standard test frameworks) | ⚠️ Limited (no built-in test runner) | ❌ | ❌ |
+| **Typed Output Parsing** | ✅ (`CMD<T>()` JSON deserialization) | ❌ (string parsing) | ❌ | ❌ |
+| **Training Data Availability** | High (C# + shell commands) | High (shell only) | Medium (tool-specific) | None (visual, not text) |
+| **Feedback Loop** | Code → compile → execute → typed result | Code → execute → string output | Commit → push → wait → logs | Click → run → visual inspect |
+
+### Calq CMD vs. Managed Batch / HPC Services
 | Feature | Calq CMD on Kubernetes | Managed Batch Services (Azure/Google/AWS) |
 | :--- | :--- | :--- |
 | **Runnable Workloads** | C#/Python Code & Scripts & Containers | Scripts & Containers |
@@ -37,13 +106,22 @@ string output = CMDV("echo data") | CMDV("grep pattern");
 | **Monitoring** | Kubernetes | Provider-Specific |
 | **Distributed Computing** | ✅ | ✅ |
 | **Composable Pipes**| ✅ | ✅ |
-| **Stream Redirection** | ✅ | ✅ (via storage services) |
+| **Stream Redirection** | ✅ | ⚠️ (via storage services) |
 | **Real-Time Streaming** | ✅ | ❌ |
 | **Open Source** | ✅ | ❌ |
 | **Fully Local Development** | ✅ | ❌ |
 | **On-Premise Deployment** | ✅ | ❌ |
 | **Infrastructure Cost** | Underlying Resources | Underlying Resources |
 | **Development Time** | Fast to Moderate | Moderate to Slow |
+
+### Calq CMD vs. Python Microservices
+| Feature | Calq CMD | Python Microservices |
+| :--- | :--- | :--- |
+| **Project Model** | Single Application | Distributed System |
+| **Deployment Artifacts** | Single | Multiple |
+| **Real-Time Streaming** | ✅ | ⚠️ (via custom SSE or WebSocket) |
+| **Sub-ms Latency** | ✅ | ❌ |
+| **Development Time** | Fast | Moderate to Slow |
 
 ### Calq CMD vs. CliWrap
 | Feature | Calq CMD | CliWrap |
@@ -59,30 +137,6 @@ string output = CMDV("echo data") | CMDV("grep pattern");
 | **Shell Customization** | ✅ | ❌ |
 | **Native Python Execution** | ✅ | ❌ |
 | **Development Time**| Fast | Fast to Moderate |
-
-### Calq CMD vs. Python Microservices
-| Feature | Calq CMD | Python Microservices |
-| :--- | :--- | :--- |
-| **Project Model** | Single Application | Distributed System |
-| **Deployment Artifacts** | Single | Multiple |
-| **Real-Time Streaming** | ✅ | ✅ (via custom SSE or WebSocket) |
-| **Sub-ms Latency** | ✅ | ❌ |
-| **Development Time** | Fast | Moderate to Slow |
-
-### Calq CMD via Vibe Coding vs. n8n
-| Feature | Calq CMD via Vibe Coding | n8n |
-| :--- | :--- | :--- |
-| **Development Model** | Code-First C# | Visual Workflow Builder |
-| **Custom Code Support** | Any language (via shell) | JavaScript & Python (in nodes) |
-| **Integrations** | 500,000+ NuGet packages | 400+ pre-built visual nodes |
-| **Open Source** | ✅ | ✅ |
-| **Fully Local Development** | ✅ | ✅ |
-| **On-Premise Deployment** | ✅ | ✅ |
-| **Modular Development** | ✅ | ✅ (sub-workflows) |
-| **AI Code Generation** | ✅ | ✅ (JSON templates) |
-| **AI Debugging** | ✅ | ❌ |
-| **AI Testing** | ✅ | ❌ |
-| **Development Time** | Very Fast | Fast to Moderate |
 
 ## Usage - Calq CMD
 
