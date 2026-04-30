@@ -1,0 +1,11 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="CalqFramework.Cmd.AspNetCore.Tests/CalqFramework.Cmd.AspNetCore.Tests.csproj" />
+  <Project Path="CalqFramework.Cmd.AspNetCore/CalqFramework.Cmd.AspNetCore.csproj" />
+  <Project Path="CalqFramework.Cmd.Tests/CalqFramework.Cmd.Tests.csproj" />
+  <Project Path="CalqFramework.Cmd/CalqFramework.Cmd.csproj" />
+</Solution>
