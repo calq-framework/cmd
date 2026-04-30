@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\CalqFramework.Cmd\CalqFramework.Cmd.csproj" />
-    <PackageReference Include="CalqFramework.Cli" Version="1.0.1" />
+    <PackageReference Include="CalqFramework.Cli" Version="1.0.2" />
   </ItemGroup>
 
 </Project>
