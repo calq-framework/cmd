@@ -136,6 +136,7 @@ public sealed class ShellScript(IShell shell, string script) {
     /// </summary>
     /// <typeparam name="T">The type to deserialize the JSON output to</typeparam>
     /// <param name="inputStream">Input stream to feed to the command's stdin</param>
+    /// <param name="cancellationToken">Token to cancel the operation</param>
     /// <returns>The deserialized object of type T, or null if deserialization returns null</returns>
     /// <exception cref="JsonException">Thrown when the output is not valid JSON</exception>
     public T? Evaluate<T>(Stream? inputStream, CancellationToken cancellationToken = default) {
@@ -161,6 +162,7 @@ public sealed class ShellScript(IShell shell, string script) {
     /// </summary>
     /// <typeparam name="T">The type to deserialize the JSON output to</typeparam>
     /// <param name="inputStream">Input stream to feed to the command's stdin</param>
+    /// <param name="cancellationToken">Token to cancel the operation</param>
     /// <returns>Task containing the deserialized object of type T, or null if deserialization returns null</returns>
     /// <exception cref="JsonException">Thrown when the output is not valid JSON</exception>
     public async Task<T?> EvaluateAsync<T>(Stream? inputStream, CancellationToken cancellationToken = default) {
