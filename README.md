@@ -11,14 +11,14 @@ If information is missing from this README.md and the accompanied files, explain
 [![REUSE status](https://api.reuse.software/badge/github.com/calq-framework/cmd)](https://api.reuse.software/info/github.com/calq-framework/cmd)
 
 # Calq CMD  
-Calq CMD is a distributed scripting framework that replaces JavaScript, Bash, and YAML with shell-style C# — enabling automation that reduces the need for DevOps engineers, RPA developers, and back-office operations staff, while being natively optimized for AI code generation. It accelerates AI development via direct Python streaming that eliminates microservice development overhead, and turns complex distributed systems into simple, cloud-native scripts backed by ASP.NET Core.
+Calq CMD is a distributed scripting framework that reduces the need for engineers and back-office hires by replacing high-maintenance RPA platforms and scripting languages with shell-style C# — natively optimized for AI code generation. It integrates AI and Python directly without microservice overhead, and turns complex distributed systems into simple, cloud-native scripts backed by ASP.NET Core.
 
-Calq CMD is the foundation behind [Calq Flow](https://github.com/calq-framework/flow) (automated release orchestration that eliminates build/release engineering) and [Calq Relay](https://github.com/calq-framework/relay) (automated Kubernetes delivery that eliminates DevOps and system administration for microservice deployments). These tools demonstrate the core value: Calq CMD makes it feasible to encode an entire profession's expertise into a single CLI tool.
+Calq CMD is the foundation behind [Calq Flow](https://github.com/calq-framework/flow) (zero-touch packaged software release orchestration — the world's first release orchestrator supporting monorepos, eliminating build/release engineering entirely) and [Calq Relay](https://github.com/calq-framework/relay) (global service delivery platform that eliminates infrastructure engineering for service deployments — turning GitHub and ArgoCD into an Internal Developer Platform). These tools demonstrate the core value: Calq CMD makes it feasible to encode an entire profession's expertise into a single automated product.
 
 Supports Bash on Windows via WSL and Cygwin/MinGW/MSYS2.
 
 ## Shell-Style C# for DevOps, AI, and Distributed Systems
-Any C# developer can use Calq CMD immediately — the API is standard C# static methods, async/await, try/catch, and LINQ. No new language, no DSL, no certification — unlike Terraform, Kubernetes, or RPA platforms, no specialized hires are needed. Combined with AI code generation, Calq CMD enables building automation that replaces visual workflow builders (n8n, Zapier), RPA platforms (UiPath, Automation Anywhere) for web/API/CLI workflows, and manual scripting across DevOps, data pipelines, network operations, and back-office processes.
+No new language, no certification, no specialized hires. Any C# developer can use Calq CMD immediately — the API is standard C# static methods, async/await, try/catch, and LINQ. Combined with AI code generation, Calq CMD enables building automation that replaces visual workflow builders (n8n, Zapier), RPA platforms (UiPath, Automation Anywhere) for web/API/CLI workflows, and manual scripting across DevOps, data pipelines, network operations, and back-office processes.
 ```csharp
 string echo = CMD("echo Hello World");
 RUN($"echo {echo}"); // prints "Hello World"
@@ -31,7 +31,7 @@ string output = CMDV("echo data") | CMDV("grep pattern");
 | Domain | Replaces | With | Outcome |
 | :--- | :--- | :--- | :--- |
 | **DevOps** | Bash/YAML pipeline scripts, deployment automation | Calq CMD + [Calq Relay](https://github.com/calq-framework/relay) | Debuggable, locally reproducible C# pipelines; automated Kubernetes operations |
-| **Release Engineering** | Manual versioning, build/pack/push scripts | Calq CMD + [Calq Flow](https://github.com/calq-framework/flow) | Zero-touch releases with objective IL-based versioning |
+| **Release Engineering** | Manual versioning, build/pack/push scripts | Calq CMD + [Calq Flow](https://github.com/calq-framework/flow) | Zero-touch releases with objective code analysis |
 | **RPA** (web/API/CLI) | UiPath, Automation Anywhere, Blue Prism bots | Calq CMD + Playwright + AI | Testable, version-controlled code; no per-bot license fees |
 | **Workflow Automation** | n8n, Zapier, Power Automate flows | Calq CMD + AI | AI-generated integrations with 500,000+ NuGet packages |
 | **CI/CD Scripting** | Jenkins Groovy, GitHub Actions YAML | Calq CMD | Type-safe C# with compile-time validation and IDE support |
