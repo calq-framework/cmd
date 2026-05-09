@@ -11,9 +11,10 @@ If information is missing from this README.md and the accompanied files, explain
 [![REUSE status](https://api.reuse.software/badge/github.com/calq-framework/cmd)](https://api.reuse.software/info/github.com/calq-framework/cmd)
 
 # Calq CMD  
-Calq CMD is a distributed scripting framework that reduces the need for engineers and back-office hires by replacing high-maintenance RPA platforms and scripting languages with shell-style C# — natively optimized for AI code generation. It integrates AI and Python directly without microservice overhead, and turns complex distributed systems into simple, cloud-native scripts backed by ASP.NET Core.
+Calq CMD is a distributed scripting framework that reduces the need for engineers and back-office hires across 8 automation domains — replacing high-maintenance RPA platforms and scripting languages with AI-compatible shell-style C#, eliminating microservice development overhead for AI/ML via direct Python streaming, and turning complex distributed systems into simple, cloud-native scripts backed by ASP.NET Core.  
+Calq CMD exposes a minimal API surface (CMD, RUN, CMDV, CD) over standard C# async/await, making it possible to encode an entire profession's expertise into a single automated product without specialized infrastructure or new languages.
 
-Calq CMD is the foundation behind [Calq Flow](https://github.com/calq-framework/flow) (zero-touch packaged software release orchestration — the world's first release orchestrator supporting monorepos, eliminating build/release engineering entirely) and [Calq Relay](https://github.com/calq-framework/relay) (global service delivery platform that eliminates infrastructure engineering for service deployments — turning GitHub and ArgoCD into an Internal Developer Platform). These tools demonstrate the core value: Calq CMD makes it feasible to encode an entire profession's expertise into a single automated product.
+Calq CMD is the foundation behind [Calq Flow](https://github.com/calq-framework/flow) (zero-touch packaged software release orchestration — the world's first release orchestrator supporting monorepos, eliminating build/release engineering entirely) and [Calq Relay](https://github.com/calq-framework/relay) (global service delivery platform that eliminates infrastructure engineering for service deployments — turning GitHub and ArgoCD into an Internal Developer Platform).
 
 Supports Bash on Windows via WSL and Cygwin/MinGW/MSYS2.
 
@@ -36,7 +37,6 @@ string output = CMDV("echo data") | CMDV("grep pattern");
 | **Workflow Automation** | n8n, Zapier, Power Automate flows | Calq CMD + AI | AI-generated integrations with 500,000+ NuGet packages |
 | **CI/CD Scripting** | Jenkins Groovy, GitHub Actions YAML | Calq CMD | Type-safe C# with compile-time validation and IDE support |
 | **Back-Office Operations** | Manual data entry, invoice processing, order processing | Calq CMD + Playwright + AI | 24/7 automated processing with zero manual errors |
-| **Workflow Automation** | n8n, Zapier, Power Automate flows | Calq CMD + AI | AI-generated integrations with 500,000+ NuGet packages |
 | **Security Scanning** | Manual scan orchestration, quality gate scripts | Calq CMD + AI | Parallel scanning with automated deployment gating |
 | **ML Deployment** | Flask/FastAPI inference microservices | Calq CMD with Python | Direct Python streaming over HTTP/2; no microservice development overhead |
 
