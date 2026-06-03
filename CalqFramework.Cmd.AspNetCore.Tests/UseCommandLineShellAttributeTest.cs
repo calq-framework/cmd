@@ -12,7 +12,7 @@ public class UseCommandLineShellAttributeTest {
     }
 
     [Fact]
-    public void UseCommandLineShellAttribute_SetsLocalTerminalShellToCommandLine() {
+    public void UseCommandLineShellAttribute_SetsLocalTerminalShellToDurableShell() {
         // Arrange
         UseCommandLineShellAttribute attribute = new();
         ActionExecutingContext context = CreateEmptyContext();
@@ -20,12 +20,12 @@ public class UseCommandLineShellAttributeTest {
         // Act
         attribute.OnActionExecuting(context);
 
-        // Assert
-        Assert.IsType<CommandLine>(LocalTerminal.Shell);
+        // Assert — auto-wrapped in DurableShell (durability by default)
+        Assert.IsType<DurableShell>(LocalTerminal.Shell);
     }
 
     [Fact]
-    public void UseCommandLineShellAttribute_WithProvidedShell_SetsLocalTerminalShellToProvidedCommandLine() {
+    public void UseCommandLineShellAttribute_WithProvidedShell_DelegatesToCommandLine() {
         // Arrange
         CommandLine shell = new();
         UseCommandLineShellAttribute attribute = new(shell);
@@ -34,7 +34,8 @@ public class UseCommandLineShellAttributeTest {
         // Act
         attribute.OnActionExecuting(context);
 
-        // Assert
-        Assert.Equal(shell, LocalTerminal.Shell);
+        // Assert — wrapped in DurableShell, transparent delegation
+        Assert.IsType<DurableShell>(LocalTerminal.Shell);
+        Assert.Same(shell.ExceptionFactory, LocalTerminal.Shell.ExceptionFactory);
     }
 }

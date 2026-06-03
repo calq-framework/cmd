@@ -15,11 +15,12 @@ public class CommandLine : ShellBase {
             if (!command.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && !File.Exists(command)) {
                 string? resolved = ResolveExe(command);
                 if (resolved == null) {
-                    var wrapped = new ShellScript(this, $"cmd.exe /c {shellScript.Script}");
+                    ShellScript wrapped = new(this, $"cmd.exe /c {shellScript.Script}");
                     return new CommandLineWorker(wrapped, inputStream, disposeOnCompletion);
                 }
             }
         }
+
         return new CommandLineWorker(shellScript, inputStream, disposeOnCompletion);
     }
 
@@ -28,11 +29,15 @@ public class CommandLine : ShellBase {
     public override string MapToInternalPath(string hostPath) => Path.GetFullPath(hostPath);
 
     private static string? ResolveExe(string command) {
-        var paths = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? [];
+        string[] paths = Environment.GetEnvironmentVariable("PATH")
+            ?.Split(Path.PathSeparator) ?? [];
         foreach (string dir in paths) {
             string exePath = Path.Combine(dir, command + ".exe");
-            if (File.Exists(exePath)) return exePath;
+            if (File.Exists(exePath)) {
+                return exePath;
+            }
         }
+
         return null;
     }
 }

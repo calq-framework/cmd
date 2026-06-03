@@ -257,7 +257,7 @@ class H2Protocol(asyncio.Protocol):
         # Check if the endpoint is ReadErrorMessage
         path = headers.get(':path', '')
         if path == '/ReadErrorMessage':
-            error_code_str = headers.get("error_code")
+            error_code_str = headers.get("calq_cmd_error_code")
             response_data = self.EXCEPTION_CACHE.get(error_code_str)
             
             if response_data is not None:
@@ -286,7 +286,7 @@ class H2Protocol(asyncio.Protocol):
         )
         self.conn.send_headers(stream_id, response_headers)
 
-        value = fire.Fire(test_tool, command=headers["cmd"])
+        value = fire.Fire(test_tool, command=headers["calq_cmd"])
         if isinstance(value, types.AsyncGeneratorType):
             self.stream_task[stream_id] = asyncio.ensure_future(self.send_stream_data(value, stream_id))
         elif isinstance(value, str):

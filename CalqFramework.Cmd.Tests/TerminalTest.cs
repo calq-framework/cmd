@@ -42,7 +42,7 @@ public class TerminalTest {
         IShell cmd = LocalTerminal.Shell;
         await Task.Run(() => {
             LocalTerminal.Shell = new CommandLine(); // Changed from Bash to CommandLine
-            Assert.True(LocalTerminal.Shell is CommandLine);
+            Assert.True(LocalTerminal.Shell is DurableShell);
         });
         Assert.Equal(cmd, LocalTerminal.Shell);
     }

@@ -39,7 +39,7 @@ public class HttpToolWorker(HttpClient httpClient, ShellScript shellScript, Stre
 
                 // Cast to unsigned 32-bit for consistency with Python's 32-bit unsigned range
                 uint unsignedErrorCode = (uint)errorCode;
-                request.Headers.Add("error_code", unsignedErrorCode.ToString());
+                request.Headers.Add("calq_cmd_error_code", unsignedErrorCode.ToString());
 
                 using HttpResponseMessage errorResponse = await _httpClient.SendAsync(request, cancellationToken);
 
@@ -75,7 +75,7 @@ public class HttpToolWorker(HttpClient httpClient, ShellScript shellScript, Stre
         HttpRequestMessage request = new() {
             Version = new Version(2, 0)
         };
-        request.Headers.Add("cmd", shellScript.Script);
+        request.Headers.Add("calq_cmd", shellScript.Script);
 
         request.Method = HttpMethod.Post;
         if (InputStream != null) {

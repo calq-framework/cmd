@@ -36,7 +36,7 @@ public abstract class ShellWorkerOutputStream(IShellWorker shellWorker) : Stream
             bytesRead = TryRead(buffer);
         } catch (OperationCanceledException) {
             throw;
-        } catch (Exception ex) {
+        } catch (Exception ex) when (ex is not ShellWorkerException) {
             throw new ShellWorkerException(null, $"Error code: {null}", ex);
         }
 
@@ -61,7 +61,7 @@ public abstract class ShellWorkerOutputStream(IShellWorker shellWorker) : Stream
             bytesRead = await TryReadAsync(buffer, cancellationToken);
         } catch (OperationCanceledException) {
             throw;
-        } catch (Exception ex) {
+        } catch (Exception ex) when (ex is not ShellWorkerException) {
             throw new ShellWorkerException(null, $"Error code: {null}", ex);
         }
 

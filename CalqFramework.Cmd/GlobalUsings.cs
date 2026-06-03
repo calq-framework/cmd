@@ -7,6 +7,7 @@ global using global::System.Net.Sockets;
 global using global::System.Reflection;
 global using global::System.Runtime.CompilerServices;
 global using global::System.Runtime.InteropServices;
+global using global::System.Security.Cryptography;
 global using global::System.Text;
 global using global::System.Text.Json;
 global using global::System.Text.RegularExpressions;

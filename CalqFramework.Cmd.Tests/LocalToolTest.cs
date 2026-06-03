@@ -6,7 +6,7 @@ namespace CalqFramework.Cmd.Tests;
 public class LocalToolTest {
     [Fact]
     public void LocalTool_WithSingleArgument_ExecutesCurrentExecutable() {
-        LocalTerminal.Shell = new LocalTool();
+        LocalTerminal.SetRawShell(new LocalTool());
 
         ShellScriptException exception = Assert.Throws<ShellScriptException>(() => CMD("--version"));
 
@@ -15,7 +15,7 @@ public class LocalToolTest {
 
     [Fact]
     public void LocalTool_WithMultipleArguments_ExecutesCurrentExecutable() {
-        LocalTerminal.Shell = new LocalTool();
+        LocalTerminal.SetRawShell(new LocalTool());
 
         ShellScriptException exception = Assert.Throws<ShellScriptException>(() => CMD("--help"));
 

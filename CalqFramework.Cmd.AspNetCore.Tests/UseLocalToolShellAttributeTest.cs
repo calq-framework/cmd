@@ -12,7 +12,7 @@ public class UseLocalToolShellAttributeTest {
     }
 
     [Fact]
-    public void UseLocalToolShellAttribute_SetsLocalTerminalShellToLocalTool() {
+    public void UseLocalToolShellAttribute_SetsLocalTerminalShellToDurableShell() {
         // Arrange
         UseLocalToolShellAttribute attribute = new();
         ActionExecutingContext context = CreateEmptyContext();
@@ -20,7 +20,7 @@ public class UseLocalToolShellAttributeTest {
         // Act
         attribute.OnActionExecuting(context);
 
-        // Assert
-        Assert.IsType<LocalTool>(LocalTerminal.Shell);
+        // Assert — auto-wrapped in DurableShell (durability by default)
+        Assert.IsType<DurableShell>(LocalTerminal.Shell);
     }
 }

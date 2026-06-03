@@ -13,7 +13,7 @@ public class UsePythonToolShellAttributeTest {
     }
 
     [Fact]
-    public void UsePythonToolShellAttribute_WithProvidedShell_SetsLocalTerminalShellToProvidedPythonTool() {
+    public void UsePythonToolShellAttribute_WithProvidedShell_WrapsInDurableShell() {
         // Arrange
         Mock<IPythonToolServer> mockPythonServer = new();
         mockPythonServer.Setup(x => x.Uri)
@@ -25,7 +25,8 @@ public class UsePythonToolShellAttributeTest {
         // Act
         attribute.OnActionExecuting(context);
 
-        // Assert
-        Assert.Equal(shell, LocalTerminal.Shell);
+        // Assert — wrapped in DurableShell, transparent delegation to PythonTool
+        Assert.IsType<DurableShell>(LocalTerminal.Shell);
+        Assert.Same(shell.ExceptionFactory, LocalTerminal.Shell.ExceptionFactory);
     }
 }

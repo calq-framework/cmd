@@ -1,3 +1,4 @@
+using CalqFramework.Cmd.AspNetCore.Durability;
 using CalqFramework.Cmd.Python;
 using CalqFramework.Cmd.Shells;
 
@@ -134,7 +135,9 @@ public static class ServiceCollectionExtensions {
     private static IServiceCollection AddLocalToolFactoryInternal(this IServiceCollection services, CalqCmdControllerOptions options) {
         services.AddHttpContextAccessor();
 
-        services.AddHttpClient(options.HttpClientName, client => { client.Timeout = options.HttpClientTimeout; });
+        services.AddTransient<DurabilityPropagationHandler>();
+        services.AddHttpClient(options.HttpClientName, client => { client.Timeout = options.HttpClientTimeout; })
+            .AddHttpMessageHandler<DurabilityPropagationHandler>();
 
         services.AddSingleton<ILocalToolFactory, LocalHttpToolFactory>();
         return services;

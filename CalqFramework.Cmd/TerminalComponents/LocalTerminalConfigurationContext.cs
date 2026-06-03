@@ -1,3 +1,5 @@
+using CalqFramework.Cmd.Shell;
+using CalqFramework.Cmd.Shell.Durable;
 using CalqFramework.Cmd.Shells;
 
 namespace CalqFramework.Cmd.TerminalComponents;
@@ -23,15 +25,31 @@ public class LocalTerminalConfigurationContext {
     }
 
     /// <summary>
-    ///     Shell implementation for command execution. Defaults to CommandLine shell.
-    ///     Can be set to Bash, PythonTool, HttpTool, or ShellTool.
+    ///     Shell implementation for command execution. Auto-wraps in DurableShell unless already a decorator.
+    ///     When DurabilityContext carries a store (server context), uses that store.
+    ///     Otherwise defaults to filesystem DurableShell (CLI context).
     /// </summary>
     public IShell Shell {
         get {
-            _localShell.Value ??= new CommandLine();
+            if (_localShell.Value == null) {
+                if (DurabilityContext.Current.Value is { } ctx) {
+                    _localShell.Value = new DurableShell(new CommandLine(), ctx.Store, ctx.WorkflowId, ctx.SequencePath);
+                } else {
+                    _localShell.Value = new DurableShell(new CommandLine());
+                }
+            }
+
             return _localShell.Value!;
         }
-        set => _localShell.Value = value;
+        set {
+            if (value is ShellDecoratorBase) {
+                _localShell.Value = value;
+            } else if (DurabilityContext.Current.Value is { } ctx) {
+                _localShell.Value = new DurableShell(value, ctx.Store, ctx.WorkflowId, ctx.SequencePath);
+            } else {
+                _localShell.Value = new DurableShell(value);
+            }
+        }
     }
 
     /// <summary>
@@ -54,4 +72,10 @@ public class LocalTerminalConfigurationContext {
         get => ShellScript.LocalWorkingDirectory.Value!;
         set => ShellScript.LocalWorkingDirectory.Value = value;
     }
+
+    /// <summary>
+    ///     Sets the shell without auto-wrapping in DurableShell.
+    ///     Used by framework internals and explicit durability opt-out.
+    /// </summary>
+    public void SetRawShell(IShell shell) => _localShell.Value = shell;
 }

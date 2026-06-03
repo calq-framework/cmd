@@ -12,4 +12,6 @@ global using global::Microsoft.Extensions.Caching.Distributed;
 global using global::Microsoft.Extensions.DependencyInjection;
 global using global::Microsoft.Extensions.Options;
 global using global::Microsoft.Extensions.Primitives;
+global using global::System.Collections.Concurrent;
+global using global::System.Security.Cryptography;
 global using global::System.Text;

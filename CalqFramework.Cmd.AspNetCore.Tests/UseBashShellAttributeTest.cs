@@ -12,7 +12,7 @@ public class UseBashShellAttributeTest {
     }
 
     [Fact]
-    public void UseBashShellAttribute_SetsLocalTerminalShellToBash() {
+    public void UseBashShellAttribute_SetsLocalTerminalShellToDurableShell() {
         // Arrange
         UseBashShellAttribute attribute = new();
         ActionExecutingContext context = CreateEmptyContext();
@@ -20,12 +20,12 @@ public class UseBashShellAttributeTest {
         // Act
         attribute.OnActionExecuting(context);
 
-        // Assert
-        Assert.IsType<Bash>(LocalTerminal.Shell);
+        // Assert — auto-wrapped in DurableShell (durability by default)
+        Assert.IsType<DurableShell>(LocalTerminal.Shell);
     }
 
     [Fact]
-    public void UseBashShellAttribute_WithProvidedShell_SetsLocalTerminalShellToProvidedBash() {
+    public void UseBashShellAttribute_WithProvidedShell_DelegatesToBash() {
         // Arrange
         Bash shell = new();
         UseBashShellAttribute attribute = new(shell);
@@ -34,7 +34,9 @@ public class UseBashShellAttributeTest {
         // Act
         attribute.OnActionExecuting(context);
 
-        // Assert
-        Assert.Equal(shell, LocalTerminal.Shell);
+        // Assert — wrapped in DurableShell, transparent delegation to provided Bash
+        Assert.IsType<DurableShell>(LocalTerminal.Shell);
+        Assert.Same(shell.ExceptionFactory, LocalTerminal.Shell.ExceptionFactory);
+        Assert.Same(shell.Postprocessor, LocalTerminal.Shell.Postprocessor);
     }
 }

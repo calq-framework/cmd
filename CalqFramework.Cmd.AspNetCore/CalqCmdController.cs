@@ -32,8 +32,8 @@ public class CalqCmdController : ControllerBase {
             // Try query string first (GET), then header (POST)
             string? cmdValue = cmd;
             if (string.IsNullOrEmpty(cmdValue)) {
-                if (!Request.Headers.TryGetValue("cmd", out StringValues cmdValues)) {
-                    return BadRequest("Missing 'cmd' query parameter or 'cmd' header");
+                if (!Request.Headers.TryGetValue("calq_cmd", out StringValues cmdValues)) {
+                    return BadRequest("Missing 'cmd' query parameter or 'calq_cmd' header");
                 }
 
                 cmdValue = cmdValues.FirstOrDefault() ?? "";
@@ -43,7 +43,7 @@ public class CalqCmdController : ControllerBase {
             LocalTerminal.Shell = new CommandLine {
                 In = Request.Body
             };
-            LocalTerminal.Out = responseStream; // Void methods return ValueTuple and might write directly to the response body via RUN or LocalTerminal.Out
+            LocalTerminal.Out = responseStream;
 
             string[] args = cmdValue.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
@@ -82,8 +82,8 @@ public class CalqCmdController : ControllerBase {
         // Try query string first (GET), then header (POST)
         string? errorCodeValue = errorCode;
         if (string.IsNullOrEmpty(errorCodeValue)) {
-            if (!Request.Headers.TryGetValue("error_code", out StringValues errorCodeValues)) {
-                return BadRequest("Missing 'error_code' header");
+            if (!Request.Headers.TryGetValue("calq_cmd_error_code", out StringValues errorCodeValues)) {
+                return BadRequest("Missing 'calq_cmd_error_code' header");
             }
 
             errorCodeValue = errorCodeValues.FirstOrDefault() ?? "";

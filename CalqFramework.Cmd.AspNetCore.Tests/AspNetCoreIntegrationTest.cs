@@ -67,5 +67,6 @@ public class TestApiController : ControllerBase {
     }
 
     [HttpGet("run")]
-    public static async Task TestRun() => await RUNAsync("dotnet --version");
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822")]
+    public async Task TestRun() => await RUNAsync("dotnet --version");
 }
